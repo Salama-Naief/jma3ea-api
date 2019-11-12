@@ -164,6 +164,20 @@ module.exports.buy = async function (req, res) {
 				}
 			});
 
+
+		if (data.user_data._id) {
+			const points = parseInt(total_prods) + (data.user_data.points ? parseInt(data.user_data.points) : 0);
+			const member_collection = req.custom.db.client().collection('member');
+			member_collection.updateOne({
+					_id: ObjectID(data.user_data._id.toString())
+				}, {
+					$set: {
+						points: points
+					}
+				})
+				.catch((error) => {});
+		}
+
 		// Copy to client
 		mail.send_mail(req.custom.settings['site_name'][req.custom.lang], data.user_data.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom));
 
