@@ -29,6 +29,10 @@ exports.get = (key, cb) => {
  */
 exports.set = (key, value, expire = 0) => {
 	return new Promise((resolve, reject) => {
+		if(!key || !value)
+		{
+			reject(false);
+		}
 		client.set(key, JSON.stringify(value), (err) => {
 			if (err) {
 				reject(err);
