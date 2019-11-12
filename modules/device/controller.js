@@ -1,0 +1,88 @@
+// Device Controller
+const collectionName = 'device';
+const enums = require("../../libraries/enums");
+
+/**
+ * List all devices
+ * @param {Object} req
+ * @param {Object} res
+ */
+module.exports.list = function (req, res) {
+    req.custom.clean_sort = { "_id": 1 };
+    if (req.custom.isAuthorized === false) {
+        return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+    }
+    const collection = req.custom.db.client().collection(collectionName);
+    collection.count(req.custom.clean_filter, (err, total) => {
+        if (err) {
+            return res.out({ message: err.message }, enums.status_message.UNEXPECTED_ERROR);
+        }
+        if (total === 0) {
+            return res.out({ count: 0, total: 0, links: [], data: [] }, enums.status_message.NO_DATA);
+        }
+        collection
+            .find(req.custom.clean_filter)
+            .sort(req.custom.clean_sort)
+            .limit(req.custom.limit)
+            .skip(req.custom.skip)
+            .toArray(function (err, docs) {
+                if (err) {
+                    return res.out({ message: err.message }, enums.status_message.UNEXPECTED_ERROR);
+                }
+                res.out({
+                    total: total,
+                    count: docs.length,
+                    per_page: req.custom.limit,
+                    current_page: req.query.skip || 1,
+                    data: docs
+                });
+            });
+    });
+};
+
+/**
+ * Add new device
+ * @param {Object} req
+ * @param {Object} res
+ */
+module.exports.add = async function (req, res) {
+    if (req.custom.isAuthorized === false) {
+        return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+    }
+    req.custom.model = require('./model/add');
+    let { data, error } = await req.custom.getValidData(req);
+    if (error) {
+        return res.out(error, enums.status_message.VALIDATION_ERROR);
+    }
+    const collection = req.custom.db.client().collection(collectionName);
+    collection.createIndex({ token: 1 }, { unique: true });
+    collection.insertOne(data)
+        .then((response) => {
+            res.out({ message: req.custom.local.device_added, insertedId: response.insertedId });
+        })
+        .catch((error) => res.out({ 'message': error.message }, enums.status_message.UNEXPECTED_ERROR));
+};
+
+/**
+ * Remove Device
+ * @param {Object} req
+ * @param {Object} res
+ */
+module.exports.remove = async function (req, res) {
+    if (req.custom.isAuthorized === false) {
+        return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+    }
+    req.custom.model = require('./model/remove');
+    req.body.token = req.params.Id;
+    let { data, error } = await req.custom.getValidData(req);
+    if (error) {
+        return res.out(error, enums.status_message.VALIDATION_ERROR);
+    }
+    const collection = req.custom.db.client().collection(collectionName);
+
+    collection.deleteOne({ token: data.token })
+        .then((response) => {
+            res.out({ message: req.custom.local.device_removed });
+        })
+        .catch((error) => res.out({ 'message': error.message }, enums.status_message.UNEXPECTED_ERROR));
+};
