@@ -343,8 +343,11 @@ module.exports.resetpassword = async function (req, res) {
 			_id: user._id
 		}, {
 			$set: {
-				password: password
-			}
+				password: password,
+			},
+			$unset: {
+				reset_hash: 1
+			},
 		})
 		.then((response) => res.out({
 			message: req.custom.local.password_has_been_updated
