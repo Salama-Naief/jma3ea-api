@@ -38,7 +38,7 @@ exports.set = (key, value, expire = 0) => {
 				reject(err);
 			}
 			if (expire > 0) {
-				client.expire(key, expire * 60 * 60)
+				client.expire(key, expire * 60)
 			}
 			resolve(true);
 		});
