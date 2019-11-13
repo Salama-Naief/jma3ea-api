@@ -35,7 +35,7 @@ module.exports.buy = async function (req, res) {
 
 	let hash = uuid();
 
-	if (only_validation) {
+	if (only_validation && !req.body.hash) {
 		req.body.hash = hash;
 
 		req.custom.authorizationObject.hash = hash;
