@@ -1,6 +1,6 @@
 'use strict';
 // Load required modules
-
+const config = require('./config');
 const redis = require("redis"),
 	client = redis.createClient();
 
@@ -13,6 +13,7 @@ client.on("error", function (err) {
  * @return {Promise}
  */
 exports.get = (key, cb) => {
+	key = config.cache.prefix + '_' + key;
 	return new Promise((resolve, reject) => {
 		client.get(key, (err, res) => {
 			if (err) {
@@ -28,6 +29,7 @@ exports.get = (key, cb) => {
  * @return {Promise}
  */
 exports.set = (key, value, expire = 0) => {
+	key = config.cache.prefix + '_' + key;
 	return new Promise((resolve, reject) => {
 		if(!key || !value)
 		{

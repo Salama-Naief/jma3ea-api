@@ -173,7 +173,7 @@ function loadSettings(req, res) {
 								reject({
 									message: req.custom.local.no_settings
 								}) :
-								req.custom.cache.set('settings', docs, req.custom.config.cache_life_time);
+								req.custom.cache.set('settings', docs, req.custom.config.cache.life_time);
 							resolve(docs);
 						});
 

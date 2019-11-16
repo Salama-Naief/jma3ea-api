@@ -155,7 +155,7 @@ module.exports.featured = async function (req, res) {
 		}
 
 		if (cache_key && featured.length > 0) {
-			cache.set(cache_key, featured, req.custom.config.cache_life_time).catch(() => null);
+			cache.set(cache_key, featured, req.custom.config.cache.life_time).catch(() => null);
 		}
 
 		res.out(featured);
@@ -257,7 +257,7 @@ module.exports.read = async function (req, res) {
 		results.old_price = (results.old_price || 0).toFixed(3);
 
 		if (cache_key && Object.keys(results).length > 0) {
-			cache.set(cache_key, results, req.custom.config.cache_life_time).catch(() => null);
+			cache.set(cache_key, results, req.custom.config.cache.life_time).catch(() => null);
 		}
 
 		res.out(results);

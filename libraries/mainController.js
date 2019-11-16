@@ -114,7 +114,7 @@ module.exports.list = async function (req, res, collectionName, projection, call
 				} else {
 
 					if (req.custom.cache_key && results.length > 0) {
-						cache.set(req.custom.cache_key, out, req.custom.config.cache_life_time).catch(() => null);
+						cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time).catch(() => null);
 					}
 					const message = results.length > 0 ? enums.status_message.DATA_LOADED : enums.status_message.NO_DATA;
 					res.out(out, message);
@@ -191,7 +191,7 @@ module.exports.list_all = async function (req, res, collectionName, projection, 
 		} else {
 
 			if (req.custom.cache_key && results.length > 0) {
-				cache.set(req.custom.cache_key, out, req.custom.config.cache_life_time).catch(() => null);
+				cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time).catch(() => null);
 			}
 
 			res.out(out, message);
@@ -268,7 +268,7 @@ module.exports.read = async function (req, res, collectionName, projection, call
 		} else {
 
 			if (req.custom.cache_key && Object.keys(row).length > 0) {
-				cache.set(req.custom.cache_key, row, req.custom.config.cache_life_time).catch(() => null);
+				cache.set(req.custom.cache_key, row, req.custom.config.cache.life_time).catch(() => null);
 			}
 
 			const message = Object.keys(row) > 0 ? enums.status_message.DATA_LOADED : enums.status_message.NO_DATA;

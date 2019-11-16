@@ -16,10 +16,13 @@ module.exports = {
 		username: process.env.MAIL_USERNAME,
 		password: process.env.MAIL_PASSWORD,
 	},
+	cache: {
+		life_time: parseInt(process.env.CACHE_LIFE_TIME),
+    	prefix: process.env.CACHE_PREFIX,
+	},
     local: process.env.APP_LOCAL,
     base_url_level: process.env.APP_BASE_URL_LEVEL,
     media_url: process.env.MEDIA_URL,
     api_base_url: process.env.API_BASE_URL,
     site_base_url: process.env.SITE_BASE_URL,
-    cache_life_time: parseInt(process.env.CACHE_LIFE_TIME),
 };

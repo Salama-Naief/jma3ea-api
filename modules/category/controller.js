@@ -47,7 +47,7 @@ module.exports.list = function (req, res) {
 			req.custom.cache.set(req.custom.cache_key, {
 				"count": rows.length,
 				"data": rows
-			}, req.custom.config.cache_life_time).catch(() => null);
+			}, req.custom.config.cache.life_time).catch(() => null);
 		}
 
 		res.out({
