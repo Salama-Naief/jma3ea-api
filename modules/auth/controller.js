@@ -14,11 +14,9 @@ const uuid = require('uuid');
 module.exports.check = async function (req, res) {
 	const collection = req.custom.db.client().collection('application');
 	const cache = req.custom.cache;
-	const config = req.custom.config;
 	const local = req.custom.local;
 
-	if ((!req.custom.config.origin === '*' && config.origin.indexOf(req.headers.origin) === -1) ||
-		(!req.body.appId || !req.body.appSecret)) {
+	if (!req.body.appId || !req.body.appSecret) {
 
 		return res.out({
 			message: local.failed_create_auth_app
@@ -26,8 +24,8 @@ module.exports.check = async function (req, res) {
 
 	}
 
-	let appId = req.body.appId || config.appId;
-	let appSecret = req.body.appSecret || config.appSecret;
+	let appId = req.body.appId;
+	let appSecret = req.body.appSecret;
 
 	let where = {
 		appId: appId
