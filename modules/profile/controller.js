@@ -150,9 +150,9 @@ module.exports.register = async function (req, res) {
 				username: data.username
 			};
 
-			await mail.send_mail(req.custom.settings.site_name[req.custom.lang], data.email,
+			mail.send_mail(req.custom.settings.site_name[req.custom.lang], data.email,
 				`${req.custom.settings['site_name'][req.custom.lang]} :: ${req.custom.local.mail.registerion_subject}`,
-				format(req.custom.local.mail.registerion_message, mail_data));
+				format(req.custom.local.mail.registerion_message, mail_data)).catch(() => null);
 			res.out({
 				message: req.custom.local.saved_done,
 				insertedId: response.insertedId
@@ -294,7 +294,7 @@ module.exports.forgotpassword = async function (req, res) {
 
 			mail.send_mail(req.custom.settings.site_name[req.custom.lang], data.email,
 				req.custom.local.mail.reset_password_subject,
-				mail_forgotpassword_view.mail_forgotpassword(forgotpassword_data, req.custom));
+				mail_forgotpassword_view.mail_forgotpassword(forgotpassword_data, req.custom)).catch(() => null);
 
 			res.out({
 				message: req.custom.local.mail.reset_password_link_sent,
