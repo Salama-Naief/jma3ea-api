@@ -18,6 +18,7 @@ module.exports = {
 	device_removed: 'تم حذف الجهاز بنجاح',
 	direction: 'rtl',
 	discount: 'الخصم',
+	evaluated_before: 'هذا الطلب تم تقييمه من قبل',
     failed_auth: 'خطأ في التحقق',
     failed_auth_app: 'خطأ في التحقق من التطبيق',
     failed_auth_user: 'خطا في التحقق من بيانات المستخدم',

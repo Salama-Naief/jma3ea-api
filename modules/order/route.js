@@ -13,4 +13,9 @@ router.get('/', controller.list);
  */
 router.get('/:Id', controller.read);
 
+/**
+ * PUT /:Id/evaluate
+ */
+router.put('/:Id/evaluate', controller.evaluate);
+
 module.exports = router;

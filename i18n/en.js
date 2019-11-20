@@ -18,6 +18,7 @@ module.exports = {
 	device_removed: 'Device has been removed successfully',
 	direction: 'ltr',
 	discount: 'Discount',
+	evaluated_before: 'This order is evaluated before',
 	failed_auth: 'Failed to authenticate token.',
 	failed_auth_app: 'There was a problem checking the application.',
 	failed_auth_user: 'There was a problem checking user credentials.',

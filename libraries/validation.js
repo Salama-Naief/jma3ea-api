@@ -68,6 +68,10 @@ async function validateRow(req, $set, model) {
 			$error[k] = `${k} should be equal to ${field.equal_to}`;
 		} else if (field.length && (row_data.length !== field.length)) {
 			$error[k] = `${k} length should be equal ${field.length}`;
+		} else if (field.min >= 0 && (row_data < field.min)) {
+			$error[k] = `${k} should be more then ${field.min}`;
+		} else if (field.max && (row_data > field.max)) {
+			$error[k] = `${k} should be less then ${field.max}`;
 		} else if (!field.isLang &&
 			(
 				(row_data && typeof row_data !== 'object' && field.type == Object) ||
@@ -118,6 +122,8 @@ async function validateRow(req, $set, model) {
 			} else {
 				delete $set[k];
 			}
+		} else if (field.ignore) {
+			delete $set[k];
 		}
 	}
 	return {
