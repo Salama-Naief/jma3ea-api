@@ -93,6 +93,7 @@ module.exports.buy = async function (req, res) {
 		"categories": `$prod_n_categoryArr.name.${req.custom.config.local}`,
 		"picture": 1,
 		"price": 1,
+		"uom": 1,
 		"prod_n_storeArr": 1
 	}, async (out) => {
 		if (out.data.length === 0) {
