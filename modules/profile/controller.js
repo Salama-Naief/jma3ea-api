@@ -75,7 +75,7 @@ module.exports.login = async function (req, res) {
 			}, enums.status_message.CITY_REQUIRED);
 		}
 
-		update_address(theuser);
+		update_address(theuser, cityid);
 
 		const token = 'u_' + auth.generateToken();
 		const data = req.custom.authorizationObject;
@@ -409,7 +409,7 @@ module.exports.updatecity = async function (req, res) {
 			_id: ObjectID(req.custom.authorizationObject.member_id.toString())
 		}).then((c) => c).catch(() => {});
 
-		update_address(userObj);
+		update_address(userObj, data.city_id);
 	}
 
 	req.custom.cache.set(req.custom.token, row)
@@ -426,9 +426,9 @@ module.exports.updatecity = async function (req, res) {
 		}, enums.status_message.UNEXPECTED_ERROR));
 };
 
-function update_address(userObj) {
+function update_address(userObj, city_id) {
 	let address = userObj.address;
-	address.city_id = ObjectID(data.city_id.toString());
+	address.city_id = ObjectID(city_id.toString());
 	address.widget = userObj.address.widget || 'N/A';
 	address.street = userObj.address.street || 'N/A';
 	address.gada = userObj.address.gada || 'N/A';
