@@ -403,12 +403,14 @@ module.exports.updatecity = async function (req, res) {
 		language: req.custom.lang
 	};
 
-	const userCollection = req.custom.db.client().collection('member');
-	const userObj = await userCollection.findOne({
-		_id: ObjectID(req.custom.authorizationObject.member_id.toString())
-	}).then((c) => c).catch(() => {});
+	if (req.custom.authorizationObject.member_id) {
+		const userCollection = req.custom.db.client().collection('member');
+		const userObj = await userCollection.findOne({
+			_id: ObjectID(req.custom.authorizationObject.member_id.toString())
+		}).then((c) => c).catch(() => {});
 
-	update_address(userObj);
+		update_address(userObj);
+	}
 
 	req.custom.cache.set(req.custom.token, row)
 		.then((response) => res.out({
