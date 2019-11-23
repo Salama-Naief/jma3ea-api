@@ -434,8 +434,8 @@ function update_address(req, userObj, city_id) {
 	address.street = userObj.address.street || 'N/A';
 	address.gada = userObj.address.gada || 'N/A';
 	address.house = userObj.address.house || 'N/A';
-	address.latitude = userObj.address.latitude || 'N/A';
-	address.longitude = userObj.address.longitude || 'N/A';
+	address.latitude = userObj.address.latitude || 0;
+	address.longitude = userObj.address.longitude || 0;
 
 	userCollection.updateOne({
 			_id: userObj._id
