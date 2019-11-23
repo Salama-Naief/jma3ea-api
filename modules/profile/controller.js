@@ -427,6 +427,7 @@ module.exports.updatecity = async function (req, res) {
 };
 
 function update_address(userObj, city_id) {
+	const userCollection = req.custom.db.client().collection('member');
 	let address = userObj.address;
 	address.city_id = ObjectID(city_id.toString());
 	address.widget = userObj.address.widget || 'N/A';
