@@ -75,7 +75,7 @@ module.exports.login = async function (req, res) {
 			}, enums.status_message.CITY_REQUIRED);
 		}
 
-		update_address(theuser, cityid);
+		update_address(req, theuser, cityid);
 
 		const token = 'u_' + auth.generateToken();
 		const data = req.custom.authorizationObject;
@@ -409,7 +409,7 @@ module.exports.updatecity = async function (req, res) {
 			_id: ObjectID(req.custom.authorizationObject.member_id.toString())
 		}).then((c) => c).catch(() => {});
 
-		update_address(userObj, data.city_id);
+		update_address(req, userObj, data.city_id);
 	}
 
 	req.custom.cache.set(req.custom.token, row)
@@ -426,7 +426,7 @@ module.exports.updatecity = async function (req, res) {
 		}, enums.status_message.UNEXPECTED_ERROR));
 };
 
-function update_address(userObj, city_id) {
+function update_address(req, userObj, city_id) {
 	const userCollection = req.custom.db.client().collection('member');
 	let address = userObj.address;
 	address.city_id = ObjectID(city_id.toString());
