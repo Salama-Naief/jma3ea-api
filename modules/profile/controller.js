@@ -75,6 +75,8 @@ module.exports.login = async function (req, res) {
 			}, enums.status_message.CITY_REQUIRED);
 		}
 
+		update_address(theuser);
+
 		const token = 'u_' + auth.generateToken();
 		const data = req.custom.authorizationObject;
 		data.member_id = theuser._id;
@@ -401,6 +403,13 @@ module.exports.updatecity = async function (req, res) {
 		language: req.custom.lang
 	};
 
+	const userCollection = req.custom.db.client().collection('member');
+	const userObj = await userCollection.findOne({
+		_id: ObjectID(req.custom.authorizationObject.member_id.toString())
+	}).then((c) => c).catch(() => {});
+
+	update_address(userObj);
+
 	req.custom.cache.set(req.custom.token, row)
 		.then((response) => res.out({
 			message: req.custom.local.saved_done,
@@ -414,6 +423,26 @@ module.exports.updatecity = async function (req, res) {
 			'message': error.message
 		}, enums.status_message.UNEXPECTED_ERROR));
 };
+
+function update_address(userObj) {
+	let address = userObj.address;
+	address.city_id = ObjectID(data.city_id.toString());
+	address.widget = userObj.address.widget || 'N/A';
+	address.street = userObj.address.street || 'N/A';
+	address.gada = userObj.address.gada || 'N/A';
+	address.house = userObj.address.house || 'N/A';
+	address.latitude = userObj.address.latitude || 'N/A';
+	address.longitude = userObj.address.longitude || 'N/A';
+
+	userCollection.updateOne({
+			_id: userObj._id
+		}, {
+			$set: {
+				address: address
+			}
+		})
+		.catch(() => null);
+}
 
 function getInfo(req, projection = {}) {
 	return new Promise((resolve, reject) => {
