@@ -152,6 +152,8 @@ module.exports.buy = async function (req, res) {
 			user_data: data.user_data,
 			products: products,
 			hash: req.body.hash,
+			delivery_time: req.body.delivery_time,
+			notes: req.body.notes,
 			created: new Date(),
 			status: 1
 		};
@@ -279,7 +281,13 @@ module.exports.list = async function (req, res) {
 		let total = total_prods + shipping_cost - out_coupon.value;
 		total = total > 0 ? total : 0;
 
-		const payment_methods = require('../../libraries/enums').payment_methods.filter(payment_method => !(total == 0 && payment_method.valid == true));
+		const payment_methods = enums.payment_methods.filter(payment_method => !(total == 0 && payment_method.valid == true));
+
+		const delivery_times = req.custom.settings.orders.delivery_times
+			.filter((delivery_time, idx) => idx >= req.custom.settings.orders.min_delivery_time)
+			.map((delivery_time) => {
+				return delivery_time[req.custom.lang];
+			});
 
 		res.out({
 			subtotal: total_prods.toFixed(3),
@@ -287,6 +295,7 @@ module.exports.list = async function (req, res) {
 			coupon: out_coupon,
 			total: total.toFixed(3),
 			payment_methods: payment_methods,
+			delivery_times: delivery_times,
 			products: products
 		});
 	});

@@ -10,6 +10,12 @@ module.exports = {
 	"payment_details": {
 		"type": Object,
 	},
+	"notes": {
+		"type": String,
+	},
+	"delivery_time": {
+		"required": true,
+	},
 	"hash": {
         "unique": true,
         "collection": 'order'
