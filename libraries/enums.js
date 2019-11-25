@@ -1,15 +1,21 @@
 const config = require("./config");
 const local = require(`../i18n/${config.local}`);
 
-exports.payment_methods = [{
+exports.payment_methods = [
+	{
 		id: "cod",
-		name: local.cod,
+		name: local.payment_method.cod,
 		valid: false
 	},
 	{
-	    id: "knet",
-	    name: local.knet,
-	    valid: true
+		id: "points",
+		name: local.payment_method.points,
+		valid: false
+	},
+	{
+		id: "knet",
+		name: local.payment_method.knet,
+		valid: true
 	}
 ];
 
@@ -26,7 +32,7 @@ exports.status_message = {
 	"NO_DATA": "NO_DATA", // No data found : 200
 	"NOT_FOUND": "NOT_FOUND", // Request url is not found : 404
 	"RESOURCE_EXISTS": "RESOURCE_EXISTS", // Resource exists & doesn't accept dupplication : 500
-	"UNAUTHENTICATED": "UNAUTHENTICATED",  // User token invalid : 403
+	"UNAUTHENTICATED": "UNAUTHENTICATED", // User token invalid : 403
 	"UNAUTHORIZED": "UNAUTHORIZED", // Application token invalid : 401
 	"UNEXPECTED_ERROR": "UNEXPECTED_ERROR", // Unexpected error : 500
 	"UPDATED": "UPDATED", // Recored has been updated : 200

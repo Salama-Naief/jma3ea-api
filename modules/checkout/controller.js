@@ -27,6 +27,7 @@ module.exports.buy = async function (req, res) {
 		email: 1,
 		mobile: 1,
 		address: 1,
+		points: 1,
 	}).catch(() => null);
 
 	if (user_info) {
@@ -142,6 +143,15 @@ module.exports.buy = async function (req, res) {
 		let total = total_prods + shipping_cost - out_coupon.value;
 		total = total > 0 ? total : 0;
 
+		const user_points = user_info ? user_info.points : 0;
+		const points2money = user_points / 100 >= parseInt(total) ? parseInt(user_points / 100) : 0;
+		if (req.body.payment_method == 'points' && points2money < parseInt(total)) {
+			save_failed_payment(req);
+			return res.out({
+				message: req.custom.local.no_enough_points
+			}, enums.status_message.VALIDATION_ERROR);
+		}
+
 		const order_data = {
 			payment_method: payment_method,
 			payment_details: data.payment_details,
@@ -169,7 +179,7 @@ module.exports.buy = async function (req, res) {
 
 
 		if (data.user_data._id) {
-			const points = parseInt(total_prods) + (data.user_data.points ? parseInt(data.user_data.points) : 0);
+			let points = req.body.payment_method == 'points' ? user_info.points - points2money * 100 : parseInt(total_prods) + (data.user_data.points ? parseInt(data.user_data.points) : 0);
 			const member_collection = req.custom.db.client().collection('member');
 			member_collection.updateOne({
 					_id: ObjectID(data.user_data._id.toString())
@@ -281,7 +291,22 @@ module.exports.list = async function (req, res) {
 		let total = total_prods + shipping_cost - out_coupon.value;
 		total = total > 0 ? total : 0;
 
-		const payment_methods = enums.payment_methods.filter(payment_method => !(total == 0 && payment_method.valid == true));
+
+		const user_collection = req.custom.db.client().collection('member');
+		const userObj = req.custom.authorizationObject.member_id ? await user_collection
+			.findOne({
+				_id: ObjectID(req.custom.authorizationObject.member_id.toString())
+			})
+			.then((c) => c)
+			.catch(() => null) : null;
+
+		const user_points = userObj ? userObj.points : 0;
+		const points2money = user_points / 100 >= parseInt(total) ? parseInt(user_points / 100) : 0;
+
+		const payment_methods = enums.payment_methods.
+		filter(payment_method =>
+			!(total == 0 && payment_method.valid == true) &&
+			!(payment_method.id == 'points' && points2money < total));
 
 		const delivery_times = req.custom.settings.orders.delivery_times
 			.filter((delivery_time, idx) => idx >= req.custom.settings.orders.min_delivery_time)
