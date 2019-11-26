@@ -10,6 +10,9 @@ module.exports.send_mail = async function (fromName, to, subject, body) {
 		auth: {
 			user: config.mail.username, // generated ethereal user
 			pass: config.mail.password // generated ethereal password
+		},
+		tls: {
+			rejectUnauthorized: false
 		}
 	});
 
