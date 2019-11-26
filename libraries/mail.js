@@ -6,7 +6,7 @@ module.exports.send_mail = async function (fromName, to, subject, body) {
 	let transporter = nodemailer.createTransport({
 		host: config.mail.host,
 		port: config.mail.port,
-		secure: true, // true for 465, false for other ports
+		secure: config.mail.secure, // true for 465, false for other ports
 		auth: {
 			user: config.mail.username, // generated ethereal user
 			pass: config.mail.password // generated ethereal password
