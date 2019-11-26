@@ -24,6 +24,13 @@ module.exports.list = function (req, res) {
 		"subtotal": 1,
 		"total": 1,
 		"created": 1,
+		"status": 1,
+	}, (results) => {
+		results.data = results.data.map((i) => {
+			i.status = req.custom.local.order_status_list[i.status];
+			return i;
+		});
+		res.out(results);
 	});
 };
 /**
@@ -46,7 +53,10 @@ module.exports.read = function (req, res) {
 	collection.findOne({
 			_id: ObjectID(req.params.Id),
 		})
-		.then((order) => res.out(order))
+		.then((order) => {
+			order.status = req.custom.local.order_status_list[order.status];
+			res.out(order);
+		})
 		.catch(() => res.out({
 			'message': err.message
 		}, enums.status_message.UNEXPECTED_ERROR));
