@@ -19,7 +19,7 @@ exports.connect = () => {
         return Promise.resolve(state.db)
 	}
 	const url = `mongodb://${config.db.username}:${config.db.password}@localhost:27017/`;
-    return MongoClient.connect(url, {useNewUrlParser: true})
+    return MongoClient.connect(url, {useNewUrlParser: true, useUnifiedTopology: true })
             .then((client) => {
                 state.db = client.db(config.db.name);
                 return true;
