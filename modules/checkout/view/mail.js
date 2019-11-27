@@ -182,7 +182,7 @@ module.exports.mail_checkout = function (checkout, custom) {
 											</tr>
 											<tr>
 												<td colspan="5">
-													${ local.payment_method }
+													${ local.the_payment_method }
 													:
 													${ checkout.payment_method.name }
 												</td>
