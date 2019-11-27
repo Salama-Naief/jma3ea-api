@@ -34,7 +34,7 @@ module.exports.buy = async function (req, res) {
 		req.body.user_data = user_info;
 	}
 
-	let hash = uuid();
+	let hash = uuid().replace('-', '');
 
 	if (only_validation && !req.body.hash) {
 		req.body.hash = hash;
