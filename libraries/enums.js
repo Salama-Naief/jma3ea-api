@@ -8,8 +8,8 @@ exports.payment_methods = [
 		valid: false
 	},
 	{
-		id: "points",
-		name: local.payment_method.points,
+		id: "wallet",
+		name: local.payment_method.wallet,
 		valid: false
 	},
 	{

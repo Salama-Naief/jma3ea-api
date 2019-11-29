@@ -426,9 +426,66 @@ module.exports.updatecity = async function (req, res) {
 		}, enums.status_message.UNEXPECTED_ERROR));
 };
 
+/**
+ * Update exists user
+ * @param {Object} req
+ * @param {Object} res
+ */
+module.exports.points2wallet = async function (req, res) {
+	if (req.custom.isAuthorized === false) {
+		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+	}
+	const collection = req.custom.db.client().collection(collectionName);
+
+	const user = await getInfo(req).catch(() => {});
+
+	if (!user) {
+		return res.out({
+			"message": req.custom.local.no_user_found
+		}, enums.status_message.VALIDATION_ERROR);
+	}
+
+	if (!req.custom.settings.wallet.user_can_convert_points_to_wallet) {
+		return res.out({
+			"message": req.custom.local.convert2wallet_closed
+		}, enums.status_message.VALIDATION_ERROR);
+	}
+
+	let points = user.points;
+	let wallet = user.wallet;
+
+	if (points > 100) {
+		const tmp_wallet = parseInt(points / 100);
+		wallet += tmp_wallet;
+		points -= tmp_wallet * 100;
+	} else {
+		return res.out({
+			"message": req.custom.local.no_enough_points
+		}, enums.status_message.VALIDATION_ERROR);
+	}
+
+	collection.updateOne({
+			_id: ObjectID(user._id)
+		}, {
+			$set: {
+				points: points,
+				wallet: wallet,
+			}
+		})
+		.then((response) => res.out({
+			message: req.custom.local.points2wallet_saved_done,
+			points: points,
+			wallet: wallet,
+		}))
+		.catch((error) => res.out({
+			'message': error.message
+		}, enums.status_message.UNEXPECTED_ERROR));
+};
+
 function fix_user_data(req, userObj, city_id) {
 	const userCollection = req.custom.db.client().collection('member');
 	let points = userObj.points || 0;
+	let wallet = userObj.wallet || 0;
 	let address = userObj.address;
 	address.city_id = ObjectID(city_id.toString());
 	address.widget = userObj.address.widget || 'N/A';
@@ -444,6 +501,7 @@ function fix_user_data(req, userObj, city_id) {
 			$set: {
 				address: address,
 				points: points,
+				wallet: wallet,
 			}
 		})
 		.catch(() => null);

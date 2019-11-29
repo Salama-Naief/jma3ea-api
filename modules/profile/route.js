@@ -53,4 +53,9 @@ router.put('/updatecity', controller.updatecity);
  */
 router.put('/updateemail', controller.me);
 
+/**
+ * PUT /profile/wallet
+ */
+router.put('/wallet', controller.points2wallet);
+
 module.exports = router;

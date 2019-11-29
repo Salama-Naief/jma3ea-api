@@ -28,6 +28,7 @@ module.exports.buy = async function (req, res) {
 		mobile: 1,
 		address: 1,
 		points: 1,
+		wallet: 1,
 	}).catch(() => null);
 
 	if (user_info) {
@@ -143,13 +144,18 @@ module.exports.buy = async function (req, res) {
 		let total = total_prods + shipping_cost - out_coupon.value;
 		total = total > 0 ? total : 0;
 
-		const user_points = user_info ? user_info.points : 0;
-		const points2money = user_points / 100 >= parseInt(total) ? parseInt(user_points / 100) : 0;
-		if (req.body.payment_method == 'points' && points2money < parseInt(total)) {
+		const user_wallet = user_info ? user_info.wallet : 0;
+		const wallet2money = user_wallet <= parseInt(total) ? user_wallet : (user_info ? total : 0);
+
+		if (req.body.payment_method == 'wallet' && wallet2money < parseInt(total)) {
 			save_failed_payment(req);
 			return res.out({
-				message: req.custom.local.no_enough_points
+				message: req.custom.local.no_enough_wallet
 			}, enums.status_message.VALIDATION_ERROR);
+		}
+
+		if (req.body.discount_by_wallet == true && wallet2money > 0) {
+			total -= wallet2money;
 		}
 
 		const order_data = {
@@ -158,11 +164,13 @@ module.exports.buy = async function (req, res) {
 			subtotal: total_prods,
 			shipping_cost: shipping_cost,
 			coupon: out_coupon,
-			total: total,
+			total: total.toFixed(3),
 			user_data: data.user_data,
 			products: products,
 			hash: req.body.hash,
 			delivery_time: req.body.delivery_time,
+			discount_by_wallet: req.body.discount_by_wallet,
+			discount_by_wallet_value: wallet2money,
 			notes: req.body.notes,
 			created: new Date(),
 			status: 1
@@ -179,13 +187,20 @@ module.exports.buy = async function (req, res) {
 
 
 		if (data.user_data._id) {
-			let points = req.body.payment_method == 'points' ? user_info.points - points2money * 100 : parseInt(total_prods) + (data.user_data.points ? parseInt(data.user_data.points) : 0);
+			let wallet = 0;
+
+			if (req.body.payment_method == 'wallet' || req.body.discount_by_wallet == true) {
+				wallet = user_info.wallet - wallet2money;
+			} else {
+				wallet = parseInt(total_prods) + (data.user_data.wallet ? parseInt(data.user_data.wallet) : 0);
+			}
+
 			const member_collection = req.custom.db.client().collection('member');
 			member_collection.updateOne({
 					_id: ObjectID(data.user_data._id.toString())
 				}, {
 					$set: {
-						points: points
+						wallet: wallet
 					}
 				})
 				.catch((error) => {});
@@ -300,13 +315,20 @@ module.exports.list = async function (req, res) {
 			.then((c) => c)
 			.catch(() => null) : null;
 
-		const user_points = userObj ? userObj.points : 0;
-		const points2money = user_points / 100 >= parseInt(total) ? parseInt(user_points / 100) : 0;
+		const user_wallet = userObj ? userObj.wallet : 0;
+		const can_pay_by_wallet = user_wallet >= parseInt(total) ? true : false;
 
 		const payment_methods = enums.payment_methods.
-		filter(payment_method =>
-			!(total == 0 && payment_method.valid == true) &&
-			!(payment_method.id == 'points' && points2money < total));
+		filter(payment_method => {
+			if (payment_method.valid == true && total > 0) {
+				return true;
+			} else if (payment_method.id == 'wallet' && can_pay_by_wallet) {
+				return true;
+			} else if (['cod'].indexOf(payment_method.id) > -1) {
+				return true;
+			}
+			return false;
+		});
 
 		const delivery_times = req.custom.settings.orders.delivery_times
 			.filter((delivery_time, idx) => idx >= req.custom.settings.orders.min_delivery_time)
@@ -318,6 +340,8 @@ module.exports.list = async function (req, res) {
 			subtotal: total_prods.toFixed(3),
 			shipping_cost: shipping_cost.toFixed(3),
 			coupon: out_coupon,
+			discount_by_wallet: user_wallet,
+			can_pay_by_wallet: can_pay_by_wallet,
 			total: total.toFixed(3),
 			payment_methods: payment_methods,
 			delivery_times: delivery_times,
