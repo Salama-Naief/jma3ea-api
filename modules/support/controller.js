@@ -15,7 +15,7 @@ module.exports.list = function (req, res) {
 	mainController.list_all(req, res, collectionName, {
 		"_id": 1,
 		"name": {
-			$ifNull: [`$answer.${req.custom.lang}`, `$answer.${req.custom.config.local}`]
+			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 		},
 		"parent_id": 1,
 		"enable_chatting": 1,
