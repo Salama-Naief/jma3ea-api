@@ -35,6 +35,7 @@ module.exports = {
 	points2wallet_saved_done: 'Point has been converted to wallet successfully',
 	price: 'Price',
 	quantity: 'Quantity',
+	registered_successfully: 'Your account has been registered successfully',
 	saved_done: 'Item has been saved successfully.',
 	shipping_cost: 'Shipping Cost',
 	subtotal: 'Total Products',

@@ -40,6 +40,7 @@ module.exports = {
 	points2wallet_saved_done: 'تم تحويل النقاط إلى رصيد بنجاح',
 	price: 'السعر',
 	quantity: 'الكمية',
+	registered_successfully: 'تم تسجيل حسابك بنجاح',
 	saved_done: 'تم الحفظ بنجاح',
 	shipping_cost: 'تكلفة الشحن',
 	subtotal: 'إجمالي المنتجات',
