@@ -141,18 +141,8 @@ module.exports.register = async function (req, res) {
 	data.password = sha1(md5(data.password));
 	collection.insertOne(data)
 		.then(async (response) => {
-			const mail_data = {
-				fullname: data.fullname,
-				login_url: '#',
-				profile_url: '#',
-				site_email: req.custom.settings.email,
-				site_name: req.custom.settings.site_name[req.custom.lang],
-				site_phone: req.custom.settings.Phone,
-				site_url: '#',
-				username: data.username
-			};
 
-			mail.send_mail(req.custom.settings['site_name'][req.custom.lang], data.user_data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch(() => null);
+			mail.send_mail(req.custom.settings['site_name'][req.custom.lang], data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch(() => null);
 
 			res.out({
 				message: req.custom.local.saved_done,
