@@ -21,7 +21,6 @@ app.use(express.urlencoded({
 	extended: false
 }));
 app.use(cookieParser());
-app.set('json spaces', 2);
 
 const cors = require('cors')
 const corsOptions = {

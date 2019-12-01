@@ -6,9 +6,9 @@ const enums = require('../../libraries/enums');
 const mail = require('../../libraries/mail');
 const sha1 = require('sha1');
 const md5 = require('md5');
-const format = require('string-format')
 const auth = require('../auth/controller');
 const mail_forgotpassword_view = require("./view/forgotpassword");
+const mail_register_view = require("./view/register");
 const collectionName = 'member';
 
 /**
@@ -152,9 +152,8 @@ module.exports.register = async function (req, res) {
 				username: data.username
 			};
 
-			mail.send_mail(req.custom.settings.site_name[req.custom.lang], data.email,
-				`${req.custom.settings['site_name'][req.custom.lang]} :: ${req.custom.local.mail.registerion_subject}`,
-				format(req.custom.local.mail.registerion_message, mail_data)).catch(() => null);
+			mail.send_mail(req.custom.settings['site_name'][req.custom.lang], data.user_data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch(() => null);
+
 			res.out({
 				message: req.custom.local.saved_done,
 				insertedId: response.insertedId

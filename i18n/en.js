@@ -72,76 +72,25 @@ module.exports = {
 		forgotpassword_thanks: 'Thanks.',
 		reset_password_link_sent: 'Reset password link has been sent to your email, check your email.',
 		reset_password_subject: 'Reset password',
-		registerion_message: `
-        <table align="center" cellpadding="0" cellspacing="0" dir="ltr">
-   <tbody>
-      <tr>
-         <td>
-            Hello {fullname},
-                        
-            <p> To access your account on {site_name},
-                            Click the 
-               <a href="{login_url}" target="_blank"> Sign in </a> link
-                            
-               <a href="{profile_url}" target="_blank"> My Account </a> at the top of the page, then enter your email address and password. 
-            </p>
-            <p> IMPORTANT: Your username is currently: {username} 
-               <br />
-                            Your username is declared and will be used in your personal page URL,
-                            The name of your personal page, linked to the goods you will purchase
-                           
-            </p>
-            <ul>
-               <li> Once you've signed in to your account, you'll be able to: </li>
-               <li> Your entire purchase will be faster. </li>
-               <li> You will be able to follow up your requests. </li>
-               <li> You can view previous requests. </li>
-               <li> You will be able to change your account information at any time. </li>
-               <li> You can change your password whenever you want. </li>
-            </ul>
-         </td>
-      </tr>
-   </tbody>
-</table>
-<table align="center" cellpadding="0" cellspacing="0" dir="rtl">
-   <tbody>
-      <tr>
-         <td>
-            <table cellpadding="0" style="width: 100%">
-               <tbody>
-                  <tr>
-                     <td>
-                        <p>
-                           If you need any queries or support send an email to {site_email} or contact us at
-                           <strong> {site_phone} </strong>. 
-                        </p>
-                        <p> Shopping with us is easier! 
-                           <br />
-                           <a href="{site_url}" target="_blank"> {site_name} </a>
-                        </p>
-                     </td>
-                  </tr>
-                  <tr>
-                     <td>
-                        <table cellpadding="0" cellspacing="0" style="width: 100%">
-                           <tbody>
-                              <tr>
-                                 <td>
-                                    <p> Please note that the page that will be forwarded to you via any e-mail issued by the Online Mart is your account page. Also, we would like to draw your attention to the fact that Ab Mart Online will not transfer you to a non-existent page on the Mart Online website. 
-                                    </P>
-                                    <p> Your cooperation with us is the most important way to maintain the integrity of your dealings with Ab Mart Online and to keep your information confidential. </p>
-                                 </td>
-                              </tr>
-                           </tbody>
-                        </table>
-                     </td>
-                  </tr>
-               </tbody>
-            </table>
-         </td>
-      </tr>
-   </tbody>
-</table>
-        `
+		registerion_click_on: `Click on the link`,
+		registerion_easy_shopping: `Shopping with us easier!`,
+		registerion_footer1: 'Please note that the page to which you will be redirected via any email from App Mart Online is your account page. Also, we would like to draw your attention that Jm3eia will not redirect you to a page that is not on the Jm3eia website. ',
+		registerion_footer2: 'Your cooperation with us is the most important way to maintain the integrity of your transactions through App Mart Online and the confidentiality of your information and privacy.',
+		registerion_login: `Login`,
+		registerion_need_help_send_to: 'If you need any queries or support send an email to',
+		registerion_note1: 'When you log into your account, you will be able to do the following:',
+		registerion_note2: 'The entire purchase process will be faster.',
+		registerion_note3: 'You will be able to track your requests.',
+		registerion_note4: 'You can browse previous requests.',
+		registerion_note5: 'You will be able to change your account information at any time.',
+		registerion_note6: 'You can change your password at any time.',
+		registerion_or_call: 'Or contact us at',
+		registerion_profile: `My Account`,
+		registerion_subject: `Register new user`,
+		registerion_to_login: 'To access your account at',
+		registerion_top_page: 'At the top of the page, enter your email and password.',
+		registerion_welcome: 'Hello',
+		registerion_your_name: 'IMPORTANT: Your current username is:',
+		registerion_your_username_description: 'Your username is advertised and will be used in the URL of your profile address, profile name, and linked to the items you will purchase',
 	}
 };

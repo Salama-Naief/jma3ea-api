@@ -23,7 +23,6 @@
     "qs": "^6.5.2",
     "redis": "^2.8.0",
     "sha1": "^1.1.1",
-    "string-format": "^2.0.0",
     "uuid": "^3.3.3"
   },
   "devDependencies": {
