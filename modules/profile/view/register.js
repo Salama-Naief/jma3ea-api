@@ -102,9 +102,9 @@ module.exports.mail_register = function (user, custom) {
 									<tr>
 										<td>
 										<p>
-										${local.mail.registerion_need_help_send_to} {site_email}
+										${local.mail.registerion_need_help_send_to} ${setting.email}
 										${local.mail.registerion_or_call}
-										<strong>${setting.site_phone}</strong>.</p>
+										<strong>${setting.site_phones.join(' - ')}</strong>.</p>
 				
 										<p>${local.mail.registerion_easy_shopping}<br />
 											<a href="${base_link}" target="_blank">${setting.site_name[lang]}</a>
