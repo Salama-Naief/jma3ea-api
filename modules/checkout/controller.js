@@ -187,8 +187,8 @@ module.exports.buy = async function (req, res) {
 
 
 		if (data.user_data._id) {
-			let points = data.user_data.points || 0;
-			let wallet = data.user_data.wallet;
+			let points = user_info.points || 0;
+			let wallet = user_info.wallet || 0;
 
 			if (req.body.payment_method == 'wallet' || req.body.discount_by_wallet == true) {
 				wallet = user_info.wallet - wallet2money;
