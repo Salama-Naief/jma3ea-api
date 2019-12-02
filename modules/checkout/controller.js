@@ -193,7 +193,7 @@ module.exports.buy = async function (req, res) {
 			if (req.body.payment_method == 'wallet' || req.body.discount_by_wallet == true) {
 				wallet = user_info.wallet - wallet2money;
 			} else {
-				points = points + parseInt(total_prods);
+				points += parseInt(total_prods);
 			}
 
 			const member_collection = req.custom.db.client().collection('member');
