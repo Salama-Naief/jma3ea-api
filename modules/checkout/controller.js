@@ -332,11 +332,20 @@ module.exports.list = async function (req, res) {
 			return false;
 		});
 
-		const delivery_times = req.custom.settings.orders.delivery_times
-			.filter((delivery_time, idx) => idx >= req.custom.settings.orders.min_delivery_time)
-			.map((delivery_time) => {
-				return delivery_time[req.custom.lang];
-			});
+		let delivery_times = [];
+
+		let min_delivery_time_setting = new Date();
+		if(Date.parse(req.custom.settings.orders.min_delivery_time) > 0 && 
+			Date.parse(req.custom.settings.orders.min_delivery_time.toLocaleString()) > Date.parse(new Date().toLocaleString())){
+				min_delivery_time_setting = new Date(req.custom.settings.orders.min_delivery_time.toLocaleString());
+		}
+		const min_delivery_time = getRoundedDate(15, addMinutes(min_delivery_time_setting, 30));
+
+		let new_date = min_delivery_time;
+		for (let idx = 0; idx < 10; idx++) {
+			new_date = addMinutes(new_date, 15);
+			delivery_times.push(new_date.toLocaleString());
+		}
 
 		res.out({
 			subtotal: total_prods.toFixed(3),
@@ -392,4 +401,13 @@ function save_failed_payment(req) {
 				message: error.message
 			}
 		});
+}
+
+function getRoundedDate(minutes, d = new Date()) {
+	let ms = 1000 * 60 * minutes; // convert minutes to ms
+	return new Date(Math.round(d.getTime() / ms) * ms);
+}
+
+function addMinutes(date, minutes) {
+	return new Date(date.getTime() + minutes * 60000);
 }
