@@ -9,6 +9,8 @@ const config = require('./libraries/config');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
+process.env.TZ = 'Asia/Kuwait';
+
 const app = express();
 
 const middleware = require('./libraries/middleware');
