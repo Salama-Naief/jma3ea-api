@@ -145,7 +145,7 @@ module.exports.register = async function (req, res) {
 			mail.send_mail(req.custom.settings['site_name'][req.custom.lang], data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch(() => null);
 
 			res.out({
-				message: req.custom.local.registered_successfully,
+				message: `${req.custom.local.registered_successfully} ${data.fullname}`,
 				insertedId: response.insertedId
 			});
 		})
