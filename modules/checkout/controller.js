@@ -129,6 +129,7 @@ module.exports.buy = async function (req, res) {
 			.then((c) => c)
 			.catch(() => null);
 		const shipping_cost = parseInt(cityObj.shipping_cost);
+		user_data.address.city_name = cityObj.name[req.custom.lang];
 
 		const coupon_collection = req.custom.db.client().collection('coupon');
 		const coupon = user.coupon ? await coupon_collection.findOne({
