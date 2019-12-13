@@ -18,4 +18,9 @@ router.get('/:Id', controller.read);
  */
 router.put('/:Id/evaluate', controller.evaluate);
 
+/**
+ * POST /:Id/repeat
+ */
+router.post('/:Id/repeat', controller.repeat);
+
 module.exports = router;

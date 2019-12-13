@@ -117,3 +117,47 @@ module.exports.evaluate = async function (req, res) {
 			'message': error.message
 		}, enums.status_message.UNEXPECTED_ERROR));
 };
+/**
+ * Read order by id
+ * @param {Object} req
+ * @param {Object} res
+ */
+module.exports.repeat = function (req, res) {
+	if (req.custom.isAuthorized === false) {
+		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+	}
+
+	if (!ObjectID.isValid(req.params.Id)) {
+		return res.out({
+			'message': req.custom.local.id_not_valid
+		}, enums.status_message.INVALID_URL_PARAMETER);
+	}
+
+	const collection = req.custom.db.client().collection('order');
+	collection.findOne({
+			_id: ObjectID(req.params.Id),
+		})
+		.then((order) => {
+			const products = {};
+			Object.keys(order.products).forEach((key) => {
+				for (const prod of order.products[key]) {
+					products[prod._id.toString()]= prod.quantity;
+				}
+			});
+
+			let user = req.custom.authorizationObject;
+			user.cart = products;
+			req.custom.cache.set(req.custom.token, user)
+				.then((response) => res.out({
+					message: req.custom.local.cart_repeated
+				}, enums.status_message.CREATED))
+				.catch((error) => res.out({
+					'message': error.message
+				}, enums.status_message.UNEXPECTED_ERROR));
+
+
+		})
+		.catch((err) => res.out({
+			'message': err.message
+		}, enums.status_message.UNEXPECTED_ERROR));
+};
