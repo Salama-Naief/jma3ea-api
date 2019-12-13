@@ -43,6 +43,9 @@ module.exports = {
 	total: 'Total',
 	unexpected_error: 'Unexpected error',
 	unauthorized_user: "You don't have permission to access this page",
+	wishlist_product_added: "The product has been added successfully",
+	wishlist_product_not: "The product is not exists in wishlist",
+	wishlist_product_removed: "The product has been removed successfully",
 	payment_method: {
 		cod: 'Cash on delivery',
 		knet: 'KNET Online Payment',
