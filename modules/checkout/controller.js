@@ -370,7 +370,7 @@ module.exports.list = async function (req, res) {
 function group_products_by_suppliers(products, user, req) {
 	total_prods = 0;
 	return products.reduce((prod, curr) => {
-		curr.supplier = curr.supplier || req.custom.settings['site_name'][req.custom.lang]
+		curr.supplier = curr.supplier || req.custom.settings['site_name']['en']
 		//If this supplier wasn't previously stored
 		if (!prod[curr.supplier]) {
 			prod[curr.supplier] = [];
