@@ -321,7 +321,7 @@ module.exports.list = async function (req, res) {
 			.then((c) => c)
 			.catch(() => null) : null;
 
-		const user_wallet = userObj ? parseInt(total > userObj.wallet ? userObj.wallet : total) : 0;
+		const user_wallet = userObj ? parseInt(total > userObj.wallet ? userObj.wallet : Math.round(total)) : 0;
 		const can_pay_by_wallet = user_wallet >= parseInt(total) ? true : false;
 
 		const payment_methods = enums.payment_methods.
