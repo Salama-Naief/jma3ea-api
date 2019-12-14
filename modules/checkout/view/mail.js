@@ -124,7 +124,7 @@ module.exports.mail_checkout = function (checkout, custom) {
 														<img src="${i.picture}?w=48&h=48" />
 													</td>
 													<td>
-														${ i.name }
+														${ i.name[lang] }
 													</td>
 													<td>
 														${ i.quantity }
