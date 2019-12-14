@@ -89,10 +89,8 @@ module.exports.buy = async function (req, res) {
 	};
 	mainController.list(req, res, 'product', {
 		"_id": 1,
-		"name": {
-			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
-		},
-		"categories": `$prod_n_categoryArr.name.${req.custom.config.local}`,
+		"name": 1,
+		"categories": `$prod_n_categoryArr.name`,
 		"picture": 1,
 		"price": 1,
 		"uom": 1,
@@ -323,7 +321,7 @@ module.exports.list = async function (req, res) {
 			.then((c) => c)
 			.catch(() => null) : null;
 
-		const user_wallet = userObj ? userObj.wallet : 0;
+		const user_wallet = userObj ? parseInt(total > userObj.wallet ? userObj.wallet : total) : 0;
 		const can_pay_by_wallet = user_wallet >= parseInt(total) ? true : false;
 
 		const payment_methods = enums.payment_methods.
@@ -358,7 +356,6 @@ module.exports.list = async function (req, res) {
 			shipping_cost: shipping_cost.toFixed(3),
 			coupon: out_coupon,
 			discount_by_wallet: user_wallet,
-			can_pay_by_wallet: can_pay_by_wallet,
 			total: total.toFixed(3),
 			payment_methods: payment_methods,
 			delivery_times: delivery_times,
