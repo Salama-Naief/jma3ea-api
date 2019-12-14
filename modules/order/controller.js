@@ -64,7 +64,7 @@ module.exports.read = function (req, res) {
 			order.status = req.custom.local.order_status_list[order.status];
 			res.out(order);
 		})
-		.catch(() => res.out({
+		.catch((err) => res.out({
 			'message': err.message
 		}, enums.status_message.UNEXPECTED_ERROR));
 };
