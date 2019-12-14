@@ -56,7 +56,7 @@ module.exports.read = function (req, res) {
 		.then((order) => {
 			let products = [];
 			for (const supplier_key of Object.keys(order.products)) {
-				products[supplier_key] = products[supplier_key].map((p)=>{
+				products[supplier_key] = order.products[supplier_key].map((p)=>{
 					p.name = p.name[req.custom.lang] || p.name[req.custom.config.local];
 					return p;
 				});  
