@@ -146,7 +146,7 @@ module.exports.buy = async function (req, res) {
 		total = total > 0 ? total : 0;
 
 		const user_wallet = user_info ? user_info.wallet : 0;
-		const wallet2money = user_wallet <= parseInt(total) ? user_wallet : (user_info ? total : 0);
+		const wallet2money = user_wallet <= parseInt(total) ? user_wallet : (user_info ? Math.round(total) : 0);
 
 		if (req.body.payment_method == 'wallet' && wallet2money < parseInt(total)) {
 			save_failed_payment(req);
