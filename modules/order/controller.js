@@ -54,6 +54,13 @@ module.exports.read = function (req, res) {
 			_id: ObjectID(req.params.Id),
 		})
 		.then((order) => {
+			let products = [];
+			for (const supplier_key of Object.keys(order.products)) {
+				products[supplier_key] = products[supplier_key].map((p)=>{
+					p.name = p.name[req.custom.lang] || p.name[req.custom.config.local];
+					return p;
+				});  
+			}
 			order.status = req.custom.local.order_status_list[order.status];
 			res.out(order);
 		})
