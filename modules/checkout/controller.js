@@ -155,15 +155,15 @@ module.exports.buy = async function (req, res) {
 			}, enums.status_message.VALIDATION_ERROR);
 		}
 
-		if (req.body.discount_by_wallet == true && wallet2money > 0) {
+		if (req.body.discount_by_wallet == true && wallet2money > 0 && wallet2money < total) {
 			total -= wallet2money;
 		}
 
 		const order_data = {
 			payment_method: payment_method,
 			payment_details: data.payment_details,
-			subtotal: total_prods,
-			shipping_cost: shipping_cost,
+			subtotal: total_prods.toFixed(3),
+			shipping_cost: shipping_cost.toFixed(3),
 			coupon: out_coupon,
 			total: total.toFixed(3),
 			user_data: data.user_data,
@@ -171,7 +171,7 @@ module.exports.buy = async function (req, res) {
 			hash: req.body.hash,
 			delivery_time: req.body.delivery_time,
 			discount_by_wallet: req.body.discount_by_wallet,
-			discount_by_wallet_value: wallet2money,
+			discount_by_wallet_value: wallet2money.toFixed(3),
 			notes: req.body.notes,
 			created: new Date(),
 			status: 1
