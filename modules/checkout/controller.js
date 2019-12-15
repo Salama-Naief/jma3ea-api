@@ -343,11 +343,11 @@ module.exports.list = async function (req, res) {
 			Date.parse(req.custom.settings.orders.min_delivery_time.toLocaleString()) > Date.parse(new Date().toLocaleString())){
 				min_delivery_time_setting = new Date(req.custom.settings.orders.min_delivery_time.toLocaleString());
 		}
-		const min_delivery_time = getRoundedDate(15, addMinutes(min_delivery_time_setting, 30));
+		const min_delivery_time = getRoundedDate(30, addMinutes(min_delivery_time_setting, 30));
 
 		let new_date = min_delivery_time;
-		for (let idx = 0; idx < 10; idx++) {
-			new_date = addMinutes(new_date, 15);
+		for (let idx = 0; idx < 96; idx++) {
+			new_date = addMinutes(new_date, 30);
 			delivery_times.push(new_date.toLocaleString());
 		}
 
