@@ -92,6 +92,10 @@ module.exports.list = async function (req, res, collectionName, projection, call
 			}
 
 			pipeline.push({
+				$project: projection
+			});
+
+			pipeline.push({
 				$sort: sort
 			});
 
@@ -101,10 +105,6 @@ module.exports.list = async function (req, res, collectionName, projection, call
 
 			pipeline.push({
 				$limit: req.custom.limit
-			});
-
-			pipeline.push({
-				$project: projection
 			});
 
 			const options = {
