@@ -17,7 +17,7 @@ module.exports.list = async function (req, res, collectionName, projection, call
 	if (req.custom.cache_key) {
 		const cached_data = await cache.get(req.custom.cache_key).catch(() => null);
 		if (cached_data) {
-			// return res.out(cached_data);
+			return res.out(cached_data);
 		}
 	}
 	const collection = req.custom.db.client().collection(collectionName);
