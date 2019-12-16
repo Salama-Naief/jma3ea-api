@@ -105,10 +105,6 @@ module.exports.list = async function (req, res, collectionName, projection, call
 			});
 
 			pipeline.push({
-				$sort: sort
-			});
-
-			pipeline.push({
 				$project: projection
 			});
 
