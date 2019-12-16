@@ -72,7 +72,6 @@ module.exports.list = async function (req, res, collectionName, projection, call
 					}
 				});
 
-				// Stage 2
 				pipeline.push({
 					$addFields: {
 						"order": {
