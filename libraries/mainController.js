@@ -17,7 +17,7 @@ module.exports.list = async function (req, res, collectionName, projection, call
 	if (req.custom.cache_key) {
 		const cached_data = await cache.get(req.custom.cache_key).catch(() => null);
 		if (cached_data) {
-			return res.out(cached_data);
+			// return res.out(cached_data);
 		}
 	}
 	const collection = req.custom.db.client().collection(collectionName);
@@ -33,9 +33,6 @@ module.exports.list = async function (req, res, collectionName, projection, call
 			return res.out({
 				'message': req.custom.local.choose_city_first
 			}, enums.status_message.CITY_REQUIRED);
-		}
-		req.custom.clean_sort = {
-			"prod_n_categoryArr.sorting": 1
 		}
 
 	}
@@ -55,34 +52,66 @@ module.exports.list = async function (req, res, collectionName, projection, call
 				res.out(out);
 			}
 		} else {
-			const sort = Object.keys(req.custom.clean_sort).length > 0 ? req.custom.clean_sort : {
+			let sort = Object.keys(req.custom.clean_sort).length > 0 ? req.custom.clean_sort : {
 				"sorting": 1,
 				"name": 1
 			};
 
 			// Pipeline
-			const pipeline = [
-				// Stage 1
-				{
-					$match: filter
-				},
+			let pipeline = [];
+
+			pipeline.push({
+				$match: filter
+			});
+
+			if (req.custom.isProducts && req.route.path == "/:Id/category") {
+
+				pipeline.push({
+					$match: {
+						"prod_n_categoryArr.category_id": ObjectID(req.params.Id)
+					}
+				});
+
 				// Stage 2
-				{
-					$skip: req.custom.skip
-				},
-				// Stage 3
-				{
-					$limit: req.custom.limit
-				},
-				// Stage 4
-				{
-					$project: projection
-				},
-				// Stage 5
-				{
-					$sort: sort
-				}
-			];
+				pipeline.push({
+					$addFields: {
+						"order": {
+							"$filter": {
+								"input": "$prod_n_categoryArr",
+								"as": "p",
+								"cond": {
+									"$eq": ["$$p.category_id", ObjectID(req.params.Id)]
+								}
+							}
+						}
+					}
+				});
+
+				sort = {
+					"order": 1
+				};
+			}
+
+			pipeline.push({
+				$sort: sort
+			});
+
+			pipeline.push({
+				$skip: req.custom.skip
+			});
+
+			pipeline.push({
+				$limit: req.custom.limit
+			});
+
+			pipeline.push({
+				$sort: sort
+			});
+
+			pipeline.push({
+				$project: projection
+			});
+
 			const options = {
 				"allowDiskUse": true
 			};
