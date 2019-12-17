@@ -48,9 +48,9 @@ module.exports = {
 	wishlist_product_not: "The product is not exists in wishlist",
 	wishlist_product_removed: "The product has been removed successfully",
 	payment_method: {
-		cod: 'Cash on delivery',
-		knet: 'KNET Online Payment',
-		wallet: 'Pay by Wallet',
+		cod: 'Cash on delivery (Cash / Knet)',
+		knet: 'KNET Online Payment (Online)',
+		wallet: 'Pay by Jm3eia Wallet',
 	},
 	order_status_list: {
 		"0": 'Not confirmed',
