@@ -60,11 +60,7 @@ module.exports.list = async function (req, res, collectionName, projection, call
 			// Pipeline
 			let pipeline = [];
 
-			pipeline.push({
-				$match: filter
-			});
-
-			if (req.custom.isProducts && req.route.path == "/:Id/category") {
+			if (req.custom.isProducts && ["/:Id/category", "/:Id/category/:rankId/rank"].indexOf(req.route.path) > -1) {
 
 				pipeline.push({
 					$match: {
@@ -87,12 +83,12 @@ module.exports.list = async function (req, res, collectionName, projection, call
 				});
 
 				sort = {
-					"order": 1
+					"order.sorting": 1
 				};
 			}
 
 			pipeline.push({
-				$project: projection
+				$match: filter
 			});
 
 			pipeline.push({
@@ -105,6 +101,10 @@ module.exports.list = async function (req, res, collectionName, projection, call
 
 			pipeline.push({
 				$limit: req.custom.limit
+			});
+
+			pipeline.push({
+				$project: projection
 			});
 
 			const options = {
