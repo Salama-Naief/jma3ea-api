@@ -159,6 +159,8 @@ module.exports.buy = async function (req, res) {
 			total -= wallet2money;
 		}
 
+		req.body.discount_by_wallet = req.body.discount_by_wallet == true ? true : false;
+
 		const order_data = {
 			payment_method: payment_method,
 			payment_details: data.payment_details,
