@@ -17,8 +17,8 @@ module.exports = {
 		"required": true,
 	},
 	"hash": {
-        "unique": true,
-        "collection": 'order'
+		"unique": true,
+		"collection": 'order'
 	},
 	"user_data": {
 		"type": Object,
@@ -45,12 +45,24 @@ module.exports = {
 						"collection": "city",
 						"required": true
 					},
-					"widget": {},
-					"street": {},
-					"gada": {},
-					"house": {},
-					"latitude": {},
-					"longitude": {}
+					"widget": {
+						"default": 0
+					},
+					"street": {
+						"default": 0
+					},
+					"gada": {
+						"default": 0
+					},
+					"house": {
+						"default": 0
+					},
+					"latitude": {
+						"default": 0
+					},
+					"longitude": {
+						"default": 0
+					}
 				}
 			}
 		}

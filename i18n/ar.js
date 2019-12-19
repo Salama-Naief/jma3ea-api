@@ -1,4 +1,5 @@
 module.exports = {
+	address_name_exists: 'إسم العنوان موجود مسبقاً',
 	cart_has_not_products: 'السلة لا تحتوي على منتجات',
 	cart_coupon_added: 'تم إضافة الكوبون',
 	cart_coupon_unavailable: 'الكوبون غير متاح',
