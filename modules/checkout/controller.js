@@ -359,6 +359,7 @@ module.exports.list = async function (req, res) {
 			coupon: out_coupon,
 			discount_by_wallet: user_wallet,
 			total: total.toFixed(3),
+			addresses: userObj && userObj.addresses ? userObj.addresses : [],
 			payment_methods: payment_methods,
 			delivery_times: delivery_times,
 			products: products
