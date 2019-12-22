@@ -384,7 +384,6 @@ module.exports.updatecity = async function (req, res) {
 	}).then((c) => c).catch(() => null);
 
 	const row = {
-		cart: {},
 		city_id: data.city_id,
 		country_id: cityObj.country_id,
 		store_id: cityObj.store_id,
