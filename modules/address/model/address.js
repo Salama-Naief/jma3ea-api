@@ -23,10 +23,10 @@ module.exports = {
 		"required": true
 	},
 	"latitude": {
-		"required": true
+		"required": false
 	},
 	"longitude": {
-		"required": true
+		"required": false
 	},
     "created": {
         "type": Date,
