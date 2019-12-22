@@ -90,7 +90,7 @@ module.exports.buy = async function (req, res) {
 	mainController.list(req, res, 'product', {
 		"_id": 1,
 		"name": 1,
-		"categories": `$prod_n_categoryArr.name`,
+		"categories": 1,
 		"picture": 1,
 		"price": 1,
 		"uom": 1,
@@ -105,7 +105,7 @@ module.exports.buy = async function (req, res) {
 			}, enums.status_message.NO_DATA);
 		}
 
-		const products = group_products_by_suppliers(out.data, user, req);
+		const products = await group_products_by_suppliers(out.data, user, req);
 
 		const payment_method = require('../../libraries/enums').payment_methods.find((pm) => pm.id == data.payment_method);
 
@@ -155,8 +155,10 @@ module.exports.buy = async function (req, res) {
 			}, enums.status_message.VALIDATION_ERROR);
 		}
 
+		let discount_by_wallet_value = 0;
 		if (req.body.discount_by_wallet == true && wallet2money > 0 && wallet2money < total) {
 			total -= wallet2money;
+			discount_by_wallet_value = wallet2money.toFixed(3);
 		}
 
 		req.body.discount_by_wallet = req.body.discount_by_wallet == true ? true : false;
@@ -173,7 +175,7 @@ module.exports.buy = async function (req, res) {
 			hash: req.body.hash,
 			delivery_time: req.body.delivery_time,
 			discount_by_wallet: req.body.discount_by_wallet,
-			discount_by_wallet_value: wallet2money.toFixed(3),
+			discount_by_wallet_value: discount_by_wallet_value,
 			notes: req.body.notes,
 			created: new Date(),
 			status: 1
@@ -267,7 +269,7 @@ module.exports.list = async function (req, res) {
 		"name": {
 			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 		},
-		"categories": `$prod_n_categoryArr.name.${req.custom.config.local}`,
+		"categories": 1,
 		"picture": 1,
 		"price": 1,
 		"uom": 1,
@@ -281,7 +283,7 @@ module.exports.list = async function (req, res) {
 			}, enums.status_message.NO_DATA);
 		}
 
-		const products = group_products_by_suppliers(out.data, user, req);
+		const products = await group_products_by_suppliers(out.data, user, req);
 
 		let total_prods = 0;
 		for (const s of Object.keys(products)) {
@@ -341,9 +343,9 @@ module.exports.list = async function (req, res) {
 		let delivery_times = [];
 
 		let min_delivery_time_setting = new Date();
-		if(Date.parse(req.custom.settings.orders.min_delivery_time) > 0 && 
-			Date.parse(req.custom.settings.orders.min_delivery_time.toLocaleString()) > Date.parse(new Date().toLocaleString())){
-				min_delivery_time_setting = new Date(req.custom.settings.orders.min_delivery_time.toLocaleString());
+		if (Date.parse(req.custom.settings.orders.min_delivery_time) > 0 &&
+			Date.parse(req.custom.settings.orders.min_delivery_time.toLocaleString()) > Date.parse(new Date().toLocaleString())) {
+			min_delivery_time_setting = new Date(req.custom.settings.orders.min_delivery_time.toLocaleString());
 		}
 		const min_delivery_time = getRoundedDate(30, addMinutes(min_delivery_time_setting, 30));
 
@@ -367,7 +369,7 @@ module.exports.list = async function (req, res) {
 	});
 };
 
-function group_products_by_suppliers(products, user, req) {
+async function group_products_by_suppliers(products, user, req) {
 	total_prods = 0;
 	return products.reduce((prod, curr) => {
 		curr.supplier = curr.supplier || req.custom.settings['site_name']['en']
@@ -392,6 +394,22 @@ function group_products_by_suppliers(products, user, req) {
 		}
 
 		delete curr.prod_n_storeArr;
+		if (curr.categories) {
+			const category_collection = req.custom.db.client().collection('category');
+			const all_categories = await category_collection.find({
+					status: true
+				})
+				.toArray() || [];
+			curr.categories = curr.categories.map(async (i) => {
+				const cat_obj = await all_categories.find((c) => c._id.toString() == i.category_id.toString());
+				i._id = cat_obj._id;
+				i.name = cat_obj.name;
+				return i;
+			});
+		} else {
+			curr.categories = [];
+		}
+
 		prod[curr.supplier].push(curr);
 		total_prods += curr.quantity * curr.price;
 		return prod;
