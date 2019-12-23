@@ -90,7 +90,7 @@ module.exports.buy = async function (req, res) {
 	mainController.list(req, res, 'product', {
 		"_id": 1,
 		"name": 1,
-		"categories": 1,
+		"categories": "$prod_n_categoryArr",
 		"picture": 1,
 		"price": 1,
 		"uom": 1,
@@ -269,7 +269,7 @@ module.exports.list = async function (req, res) {
 		"name": {
 			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 		},
-		"categories": 1,
+		"categories": "$prod_n_categoryArr",
 		"picture": 1,
 		"price": 1,
 		"uom": 1,
@@ -371,7 +371,23 @@ module.exports.list = async function (req, res) {
 
 async function group_products_by_suppliers(products, user, req) {
 	total_prods = 0;
-	return products.reduce(async (prod, curr) => {
+	let all_categories = [];
+	await (async () => {
+		const cache = req.custom.cache;
+		const cache_key = `category_all_solid`;
+		all_categories = await cache.get(cache_key).catch(() => null);
+		if (!all_categories) {
+			const category_collection = req.custom.db.client().collection('category');
+			all_categories = await category_collection.find({
+					status: true
+				})
+				.toArray() || [];
+			if (all_categories) {
+				cache.set(cache_key, all_categories, req.custom.config.cache.life_time).catch(() => null);
+			}
+		}
+	})();
+	return products.reduce((prod, curr) => {
 		curr.supplier = curr.supplier || req.custom.settings['site_name']['en']
 		//If this supplier wasn't previously stored
 		if (!prod[curr.supplier]) {
@@ -395,17 +411,18 @@ async function group_products_by_suppliers(products, user, req) {
 
 		delete curr.prod_n_storeArr;
 		if (curr.categories) {
-			const category_collection = req.custom.db.client().collection('category');
-			const all_categories = await category_collection.find({
-					status: true
-				})
-				.toArray() || [];
-			curr.categories = curr.categories.map(async (i) => {
-				const cat_obj = await all_categories.find((c) => c._id.toString() == i.category_id.toString());
-				i._id = cat_obj._id;
-				i.name = cat_obj.name;
-				return i;
+			curr.categories = curr.categories.map((i) => {
+				const cat_obj = all_categories.find((c) => c._id.toString() == i.category_id.toString());
+				if (cat_obj) {
+					const y = {};
+					y._id = cat_obj._id;
+					y.name = cat_obj.name;
+					if (y._id && y.name) {
+						return y;
+					}
+				}
 			});
+			curr.categories = curr.categories.filter((i) => i != null);
 		} else {
 			curr.categories = [];
 		}
