@@ -355,6 +355,8 @@ module.exports.list = async function (req, res) {
 			delivery_times.push(new_date.toLocaleString());
 		}
 
+		const purchase_possibility = !(req.custom.settings.orders && req.custom.settings.orders.min_value && parseInt(req.custom.settings.orders.min_value) > 0 && total_prods < parseInt(req.custom.settings.orders.min_value));
+
 		res.out({
 			subtotal: total_prods.toFixed(3),
 			shipping_cost: shipping_cost.toFixed(3),
@@ -364,6 +366,7 @@ module.exports.list = async function (req, res) {
 			addresses: userObj && userObj.addresses ? userObj.addresses : [],
 			payment_methods: payment_methods,
 			delivery_times: delivery_times,
+			purchase_possibility: purchase_possibility,
 			products: products
 		});
 	});
