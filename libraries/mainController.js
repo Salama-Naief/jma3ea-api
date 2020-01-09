@@ -182,11 +182,11 @@ module.exports.list_all = async function (req, res, collectionName, projection, 
 		},
 		// Stage 2
 		{
-			$project: projection
+			$sort: sort
 		},
 		// Stage 3
 		{
-			$sort: sort
+			$project: projection
 		}
 	];
 	const options = {
