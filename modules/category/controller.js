@@ -13,7 +13,7 @@ const collectionName = 'category';
  */
 module.exports.list = function (req, res) {
 	req.custom.clean_sort = {
-		"category_n_storeArr.sorting": -1
+		"category_n_storeArr.sorting": 1
 	};
 	req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
 	mainController.list_all(req, res, collectionName, {
@@ -94,7 +94,7 @@ module.exports.ranks = function (req, res) {
 		category_id: ObjectID(req.params.Id)
 	};
 	req.custom.clean_sort = {
-		"sorting": -1
+		"sorting": 1
 	};
 	mainController.list_all(req, res, 'rank', {
 		"_id": 1,
