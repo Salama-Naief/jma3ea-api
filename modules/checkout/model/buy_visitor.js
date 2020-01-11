@@ -45,16 +45,16 @@ module.exports = {
 						"required": true
 					},
 					"widget": {
-						"default": 0
+						"default": ""
 					},
 					"street": {
-						"default": 0
+						"default": ""
 					},
 					"gada": {
-						"default": 0
+						"default": ""
 					},
 					"house": {
-						"default": 0
+						"default": ""
 					},
 					"latitude": {
 						"default": 0

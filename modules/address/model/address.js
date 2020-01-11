@@ -3,7 +3,7 @@ const ObjectID = require("mongodb").ObjectID;
 module.exports = {
 	"name": {
 		"required": true,
-        "insertOnly": true
+		"insertOnly": true
 	},
 	"city_id": {
 		"type": ObjectID,
@@ -11,16 +11,16 @@ module.exports = {
 		"required": true
 	},
 	"widget": {
-		"required": true
+		"default": ""
 	},
 	"street": {
-		"required": true
+		"default": ""
 	},
 	"gada": {
-		"required": true
+		"default": ""
 	},
 	"house": {
-		"required": true
+		"default": ""
 	},
 	"latitude": {
 		"required": false
@@ -28,12 +28,12 @@ module.exports = {
 	"longitude": {
 		"required": false
 	},
-    "created": {
-        "type": Date,
-        "default": new Date(),
-        "insertOnly": true,
-        "auto": true
-    },
+	"created": {
+		"type": Date,
+		"default": new Date(),
+		"insertOnly": true,
+		"auto": true
+	},
 	"modified": {
 		"type": Date,
 		"default": new Date(),
