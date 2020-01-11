@@ -27,6 +27,7 @@ module.exports.buy = async function (req, res) {
 		email: 1,
 		mobile: 1,
 		address: 1,
+		addresses: 1,
 		points: 1,
 		wallet: 1,
 	}).catch(() => null);
@@ -45,7 +46,7 @@ module.exports.buy = async function (req, res) {
 
 	}
 
-	req.custom.model = require('./model/buy');
+	req.custom.model = require(`./model/buy_${user_info ? 'user' : 'visitor'}`);
 	let {
 		data,
 		error
@@ -60,6 +61,14 @@ module.exports.buy = async function (req, res) {
 			message: true,
 			hash: hash,
 		});
+	}
+
+	if (user_info) {
+		data.user_data.address = user_info.addresses.find((i) => i.name == data.address_name);
+		if (!data.user_data.address) {
+			data.user_data.address = user_info.address;
+		}
+		delete data.user_data.addresses;
 	}
 
 	if (!data.hash || req.custom.authorizationObject.hash != data.hash) {

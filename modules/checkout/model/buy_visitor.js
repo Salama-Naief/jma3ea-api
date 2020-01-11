@@ -34,7 +34,6 @@ module.exports = {
 			"mobile": {
 				"required": true,
 				"length": 8,
-				"unique": true
 			},
 			"address": {
 				"type": Object,

@@ -45,6 +45,7 @@ async function validateRow(req, $set, model) {
 	const keys = typeof model == 'object' ? Object.keys(model) : [];
 	const default_local = req.custom.config.local;
 	const arr_lang = req.custom.available_languages;
+	const local = req.custom.local;
 	for (const k of keys) {
 		let row_data = $set[k];
 		const field = model[k];

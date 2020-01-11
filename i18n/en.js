@@ -20,6 +20,7 @@ module.exports = {
 	device_removed: 'Device has been removed successfully',
 	direction: 'ltr',
 	discount: 'Discount',
+	error_required_address: 'Address is required',
 	evaluated_before: 'This order is evaluated before',
 	failed_auth: 'Failed to authenticate token.',
 	failed_auth_app: 'There was a problem checking the application.',
@@ -48,6 +49,9 @@ module.exports = {
 	wishlist_product_added: "The product has been added successfully",
 	wishlist_product_not: "The product is not exists in wishlist",
 	wishlist_product_removed: "The product has been removed successfully",
+	error_message: {
+		required: "",
+	},
 	payment_method: {
 		cod: 'Cash on delivery (Cash / Knet)',
 		knet: 'KNET Online Payment (Online)',
