@@ -80,11 +80,12 @@ module.exports.login = async function (req, res) {
 		const token = 'u_' + auth.generateToken();
 		const data = req.custom.authorizationObject;
 		data.member_id = theuser._id;
-
+		delete theuser.password;
 		req.custom.cache.set(token, data)
 			.then(() => {
 				res.out({
-					token: token
+					token: token,
+					user: theuser
 				});
 			})
 			.catch(() => res.out({
