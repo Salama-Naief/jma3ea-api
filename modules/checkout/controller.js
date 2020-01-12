@@ -364,7 +364,7 @@ module.exports.list = async function (req, res) {
 			delivery_times.push(new_date.toLocaleString());
 		}
 
-		const purchase_possibility = !(req.custom.settings.orders && req.custom.settings.orders.min_value && parseInt(req.custom.settings.orders.min_value) > 0 && total_prods < parseInt(req.custom.settings.orders.min_value));
+		const purchase_possibility = req.custom.settings.orders && req.custom.settings.orders.min_value && parseInt(req.custom.settings.orders.min_value) > 0 && total_prods < parseInt(req.custom.settings.orders.min_value) ? false : true;
 
 		res.out({
 			subtotal: total_prods.toFixed(3),
