@@ -64,6 +64,7 @@ module.exports.buy = async function (req, res) {
 	}
 
 	if (user_info) {
+		data.user_data = user_info;
 		data.user_data.address = user_info.addresses.find((i) => i.name == data.address_name);
 		if (!data.user_data.address) {
 			data.user_data.address = user_info.address;
