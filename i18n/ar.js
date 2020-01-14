@@ -47,6 +47,7 @@ module.exports = {
 	saved_done: 'تم الحفظ بنجاح',
 	shipping_cost: 'تكلفة الشحن',
 	subtotal: 'إجمالي المنتجات',
+	thanks_for_evaluation: 'شكراً لتقييم ومساهمتك في تطور الجمعية',
 	the_payment_method: 'وسيلة الدفع',
 	total: 'الإجمالي',
 	unexpected_error: 'خطأ غير متوقع',

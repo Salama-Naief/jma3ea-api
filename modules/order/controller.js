@@ -118,7 +118,7 @@ module.exports.evaluate = async function (req, res) {
 			}
 		})
 		.then((response) => res.out({
-			message: req.custom.local.saved_done
+			message: req.custom.local.thanks_for_evaluation
 		}))
 		.catch((error) => res.out({
 			'message': error.message

@@ -42,6 +42,7 @@ module.exports = {
 	saved_done: 'Item has been saved successfully.',
 	shipping_cost: 'Shipping Cost',
 	subtotal: 'Total Products',
+	thanks_for_evaluation: 'Thank you for evaluating and contributing to the development Jm3eia',
 	the_payment_method: 'Payment Method',
 	total: 'Total',
 	unexpected_error: 'Unexpected error',
