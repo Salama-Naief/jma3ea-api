@@ -104,5 +104,11 @@ module.exports = {
 		registerion_welcome: 'مرحبــاً',
 		registerion_your_name: 'هام: إسم المستخدم الخاص بك حالياً هو:',
 		registerion_your_username_description: 'إسم المستخدم الخاص بك مُعلن و سيتم إستخدامه في رابط عنوان صفحتك الشخصية، إسم صفحتك الشخصية، و مربوط مع السلع اللتي ستقوم بشرائها',
-	}
+	},
+	order_should_be_more_then: ({
+		value,
+		currency
+	}) => {
+		return `الطلب يجب أن يكون أكبر من ${value} ${currency}`
+	},
 };

@@ -102,5 +102,11 @@ module.exports = {
 		registerion_welcome: 'Hello',
 		registerion_your_name: 'IMPORTANT: Your current username is:',
 		registerion_your_username_description: 'Your username is advertised and will be used in the URL of your profile address, profile name, and linked to the items you will purchase',
-	}
+	},
+	order_should_be_more_then: ({
+		value,
+		currency
+	}) => {
+		return `The order should be more then ${value} ${currency}`
+	},
 };

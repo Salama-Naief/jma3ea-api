@@ -366,16 +366,25 @@ module.exports.list = async function (req, res) {
 
 		const purchase_possibility = req.custom.settings.orders && req.custom.settings.orders.min_value && parseInt(req.custom.settings.orders.min_value) > 0 && total_prods < parseInt(req.custom.settings.orders.min_value) ? false : true;
 
+		let message = null;
+		if (req.custom.settings.orders && req.custom.settings.orders.min_value && req.custom.settings.orders.min_value > total_prods) {
+			message = req.custom.local.order_should_be_more_then({
+				value: req.custom.settings.orders.min_value,
+				currency: req.custom.authorizationObject.currency[req.custom.lang]
+			});
+		}
+
 		res.out({
 			subtotal: total_prods.toFixed(3),
 			shipping_cost: shipping_cost.toFixed(3),
 			coupon: out_coupon,
 			discount_by_wallet: user_wallet,
 			total: total.toFixed(3),
+			purchase_possibility: purchase_possibility,
+			message: message,
 			addresses: userObj && userObj.addresses ? userObj.addresses : [],
 			payment_methods: payment_methods,
 			delivery_times: delivery_times,
-			purchase_possibility: purchase_possibility,
 			products: products
 		});
 	});
