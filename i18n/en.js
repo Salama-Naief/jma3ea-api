@@ -15,6 +15,7 @@ module.exports = {
 	city_is_not_exists: 'City is not exists',
 	convert2wallet_closed: 'Convert points to wallet is not available now',
 	dear: 'Dear',
+	default_address: 'Primary Address',
 	deleted_done: 'Item has been deleted successfully.',
 	device_added: 'Device has been added successfully',
 	device_removed: 'Device has been removed successfully',

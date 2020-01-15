@@ -375,6 +375,13 @@ module.exports.list = async function (req, res) {
 			});
 		}
 
+		let addresses = [];
+		if (userObj) {
+			const base_address = userObj.address || {};
+			base_address.name = req.custom.local.default_address;
+			addresses = [base_address, ...userObj.addresses || []];
+		}
+
 		res.out({
 			subtotal: total_prods.toFixed(3),
 			shipping_cost: shipping_cost.toFixed(3),
@@ -383,7 +390,7 @@ module.exports.list = async function (req, res) {
 			total: total.toFixed(3),
 			purchase_possibility: purchase_possibility,
 			message: message,
-			addresses: userObj && userObj.addresses ? userObj.addresses : [],
+			addresses: addresses,
 			payment_methods: payment_methods,
 			delivery_times: delivery_times,
 			products: products

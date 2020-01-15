@@ -15,6 +15,7 @@ module.exports = {
 	city_is_not_exists: 'المدينة غير موجودة',
 	convert2wallet_closed: 'تحويل النقاط إلى رصيد غير متاح حالياً',
 	dear: 'عزيزي',
+	default_address: 'العنوان الأساسي',
 	deleted_done: 'تم الحذف بنجاح',
 	device_added: 'تم إضافة الجهاز بنجاح',
 	device_removed: 'تم حذف الجهاز بنجاح',
