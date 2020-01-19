@@ -28,6 +28,7 @@ module.exports = {
 	failed_auth_user: 'There was a problem checking user credentials.',
 	failed_create_auth_app: 'There was a problem registering the application.',
 	id_not_valid: 'Id is not valid',
+	invalid_location: 'You selected invalid location, Please select another location that we cover it',
 	new_order: 'New Order',
 	no_data_found: 'No data found',
 	no_enough_points: 'There is no enough points',

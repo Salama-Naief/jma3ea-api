@@ -25,4 +25,5 @@ module.exports = {
     media_url: process.env.MEDIA_URL,
     api_base_url: process.env.API_BASE_URL,
     site_base_url: process.env.SITE_BASE_URL,
+    google_api_key: process.env.GOOGLE_API_KEY,
 };
