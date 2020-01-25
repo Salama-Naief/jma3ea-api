@@ -192,7 +192,7 @@ function checkIsUnique(req, collectionName, key, value) {
 			};
 			if (req.method === 'PUT') {
 				where._id = {
-					'$ne': ObjectID(req.params.Id)
+					'$ne': ObjectID(req.path == '/profile/update' ? req.params.Id : req.custom.authorizationObject.member_id.toString())
 				};
 			}
 			const collection = req.custom.db.client().collection(collectionName);
