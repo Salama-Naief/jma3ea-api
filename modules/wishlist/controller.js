@@ -1,5 +1,6 @@
 // Carts Controller
 const enums = require('../../libraries/enums');
+const profile = require('../profile/controller');
 const ObjectID = require('mongodb').ObjectID;
 const collectionName = 'member';
 
@@ -103,7 +104,7 @@ module.exports.list = async function (req, res) {
 	}
 	const mainController = require("../../libraries/mainController");
 	const ObjectID = require('mongodb').ObjectID;
-	let user = req.custom.authorizationObject;
+	let user = await profile.getInfo(req);
 	let prods = [];
 	if (user && user.wishlist) {
 		for (const i of user.wishlist) {
