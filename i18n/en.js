@@ -52,6 +52,7 @@ module.exports = {
 	wishlist_product_added: "The product has been added successfully",
 	wishlist_product_not: "The product is not exists in wishlist",
 	wishlist_product_removed: "The product has been removed successfully",
+	wishlist_product_unavailable: "The product is unavailable",
 	error_message: {
 		required: "",
 	},

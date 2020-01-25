@@ -1,6 +1,7 @@
 // Carts Controller
 const enums = require('../../libraries/enums');
 const ObjectID = require('mongodb').ObjectID;
+const collectionName = 'member';
 
 /**
  * Add new product to Cart
@@ -36,7 +37,9 @@ module.exports.add = async function (req, res) {
 	}
 
 	user.wishlist = user.wishlist || [];
-	user.wishlist.push(data.product_id.toString());
+	if (user.wishlist.indexOf(data.product_id.toString()) === -1) {
+		user.wishlist.push(data.product_id.toString());
+	}
 
 	req.custom.cache.set(req.custom.token, user)
 		.then((response) => res.out({
@@ -45,6 +48,9 @@ module.exports.add = async function (req, res) {
 		.catch((error) => res.out({
 			'message': error.message
 		}, enums.status_message.UNEXPECTED_ERROR));
+
+	updateWishlist(req, user);
+
 };
 
 /**
@@ -72,7 +78,7 @@ module.exports.remove = async function (req, res) {
 			'message': req.custom.local.wishlist_product_not
 		}, enums.status_message.NO_DATA)
 	} else {
-		user.wishlist = user.wishlist.filter((elm)=> elm != data.product_id.toString());
+		user.wishlist = user.wishlist.filter((elm) => elm != data.product_id.toString());
 
 		req.custom.cache.set(req.custom.token, user)
 			.then((response) => res.out({
@@ -82,6 +88,8 @@ module.exports.remove = async function (req, res) {
 				'message': error.message
 			}, enums.status_message.UNEXPECTED_ERROR));
 	}
+
+	updateWishlist(req, user);
 };
 
 /**
@@ -116,3 +124,14 @@ module.exports.list = async function (req, res) {
 		res.out(data.data);
 	});
 };
+
+function updateWishlist(req, user) {
+	const collection = req.custom.db.client().collection(collectionName);
+	return collection.updateOne({
+		_id: ObjectID(user.member_id.toString())
+	}, {
+		$set: {
+			wishlist: user.wishlist,
+		}
+	});;
+}

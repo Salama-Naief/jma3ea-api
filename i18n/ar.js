@@ -57,6 +57,7 @@ module.exports = {
 	wishlist_product_added: "تم إضافة المنتج إلى قائمة رغباتي بنجاح",
 	wishlist_product_not: "المنتج غير موجود في قائمة رغباتي",
 	wishlist_product_removed: "تم حذف المنتج من قائمة رغباتي بنجاح",
+	wishlist_product_unavailable: "هذا المنتج غير متاح",
 	payment_method: {
 		cod: 'الدفع عند الاستلام (كاش / كي نت)',
 		knet: 'الدفع ببطاقة الكي نت (أون لاين)',
