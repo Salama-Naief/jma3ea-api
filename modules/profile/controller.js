@@ -174,7 +174,7 @@ module.exports.update = async function (req, res) {
 		return res.out(error, enums.status_message.VALIDATION_ERROR);
 	}
 
-	const user = await getInfo().catch(() => {});
+	const user = await getInfo(req).catch(() => {});
 
 	if (!user) {
 		return res.out({
