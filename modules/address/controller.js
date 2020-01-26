@@ -29,7 +29,20 @@ module.exports.get = async function (req, res) {
 		}, enums.status_message.VALIDATION_ERROR);
 	}
 
-	return res.out(user.addresses || []);
+	const cityCollection = req.custom.db.client().collection('city');
+	const cities = await cityCollection.find({}).toArray();
+
+	user.addresses = user.addresses || [];
+	user.addresses = user.addresses.map((i) => {
+		const parent_city = cities.find((c) => c._id.toString() == i.city_id.toString());
+
+		i.country_id = parent_city ? parent_city.country_id : null;
+		i.parent_city_id = parent_city ? parent_city._id : null;
+
+		return i;
+	});
+
+	return res.out(user.addresses);
 };
 
 /**
