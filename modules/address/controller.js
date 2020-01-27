@@ -37,7 +37,7 @@ module.exports.get = async function (req, res) {
 		const parent_city = cities.find((c) => c._id.toString() == i.city_id.toString());
 
 		i.country_id = parent_city ? parent_city.country_id : null;
-		i.parent_city_id = parent_city ? parent_city._id : null;
+		i.parent_city_id = parent_city ? parent_city.parent_id : null;
 
 		return i;
 	});
