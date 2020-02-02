@@ -15,7 +15,7 @@ module.exports.list = function (req, res) {
         "_id": 1,
         "title": { $ifNull: [`$title.${req.custom.lang}`, `$title.${req.custom.config.local}`] },
         "description": { $ifNull: [`$description.${req.custom.lang}`, `$description.${req.custom.config.local}`] },
-        "url": { $ifNull: [`$url.${req.custom.lang}`, `$url.${req.custom.config.local}`] },
+        "url": 1,
         "picture": 1
     });
 };
