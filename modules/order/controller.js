@@ -25,6 +25,7 @@ module.exports.list = function (req, res) {
 		"total": 1,
 		"created": 1,
 		"status": 1,
+		"evaluation": 1,
 	}, (results) => {
 		results.data = results.data.map((i) => {
 			i.status = req.custom.local.order_status_list[i.status];
