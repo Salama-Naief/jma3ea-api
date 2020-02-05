@@ -24,6 +24,9 @@ module.exports.random_banner = function (req, res) {
 		url: 1,
 	}, (data) => {
 		const out = data.data[Math.floor(Math.random() * data.data.length)];
-		res.out(out);
+		if (out) {
+			return res.out(out);
+		}
+		res.out(null);
 	});
 };
