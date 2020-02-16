@@ -4,6 +4,7 @@
 const ObjectID = require('mongodb').ObjectID;
 const enums = require('../../libraries/enums');
 const mail = require('../../libraries/mail');
+const common = require('../../libraries/common');
 const sha1 = require('sha1');
 const md5 = require('md5');
 const auth = require('../auth/controller');
@@ -139,6 +140,11 @@ module.exports.register = async function (req, res) {
 	if (error && Object.keys(error).length > 0) {
 		return res.out(error, enums.status_message.VALIDATION_ERROR);
 	}
+
+	if(!await common.valid_gmap_address(req, res, req.body.address)){
+		return false;
+	}
+
 	data.password = sha1(md5(data.password));
 	collection.insertOne(data)
 		.then(async (response) => {

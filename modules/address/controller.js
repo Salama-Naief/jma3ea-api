@@ -5,11 +5,8 @@ const ObjectID = require('mongodb').ObjectID;
 const enums = require('../../libraries/enums');
 const profile = require('../profile/controller');
 const collectionName = 'member';
-const config = require('../../libraries/config');
-const googleMapsClient = require('@google/maps').createClient({
-	key: config.google_api_key,
-	Promise: Promise
-});
+const common = require('../../libraries/common');
+
 
 /**
  * Register new address
@@ -101,45 +98,9 @@ async function update_user(req, res, action = 'insert') {
 	let addresses = user.addresses || [];
 
 	if (action == 'insert' || action == 'update') {
-		const geo_info = await googleMapsClient.reverseGeocode({
-				latlng: `${req.body.latitude},${req.body.longitude}`
-			})
-			.asPromise()
-			.then((geo_res) => geo_res.json)
-			.catch((err) => null);
-
-		if (!geo_info || !geo_info.results) {
-			return res.out({
-				"message": req.custom.local.invalid_location
-			}, enums.status_message.VALIDATION_ERROR);
+		if(!await common.valid_gmap_address(req, res, req.body)){
+			return false;
 		}
-
-		const geo_city = geo_info.results.find((i) => i.types.indexOf('sublocality') > -1);
-		if (!geo_city) {
-			return res.out({
-				"message": req.custom.local.invalid_location
-			}, enums.status_message.VALIDATION_ERROR);
-		}
-
-		const geo_city_info = geo_city.address_components.find((i) => i.types.indexOf('sublocality') > -1);
-
-		const cityCollection = req.custom.db.client().collection('city');
-		const cityObj = await cityCollection.findOne({
-			$where: function () {
-				for (var key in this.name) {
-					if (this.name[key] == geo_city_info.long_name) {
-						return true;
-					}
-				}
-				return false;
-			}
-		}).then((c) => c).catch(() => null);
-		if (!cityObj) {
-			return res.out({
-				"message": req.custom.local.invalid_location
-			}, enums.status_message.VALIDATION_ERROR);
-		}
-
 	}
 
 	if (action == 'insert') {
