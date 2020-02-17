@@ -1,6 +1,7 @@
 // Checkout Controller
 const ObjectID = require("mongodb").ObjectID;
 const uuid = require('uuid');
+const common = require('../../libraries/common');
 const enums = require('../../libraries/enums');
 const mainController = require("../../libraries/mainController");
 const mail = require("../../libraries/mail");
@@ -169,7 +170,7 @@ module.exports.buy = async function (req, res) {
 		let discount_by_wallet_value = 0;
 		if (req.body.discount_by_wallet == true && wallet2money > 0 && wallet2money < total) {
 			total -= wallet2money;
-			discount_by_wallet_value = wallet2money.toFixed(3);
+			discount_by_wallet_value = common.getRoundedPrice(wallet2money);
 		}
 
 		req.body.discount_by_wallet = req.body.discount_by_wallet == true ? true : false;
@@ -177,10 +178,10 @@ module.exports.buy = async function (req, res) {
 		const order_data = {
 			payment_method: payment_method,
 			payment_details: data.payment_details,
-			subtotal: total_prods.toFixed(3),
-			shipping_cost: shipping_cost.toFixed(3),
+			subtotal: common.getRoundedPrice(total_prods),
+			shipping_cost: common.getRoundedPrice(shipping_cost),
 			coupon: out_coupon,
-			total: total.toFixed(3),
+			total: common.getRoundedPrice(total),
 			user_data: data.user_data,
 			products: products,
 			hash: req.body.hash,
@@ -214,14 +215,14 @@ module.exports.buy = async function (req, res) {
 
 			const member_collection = req.custom.db.client().collection('member');
 			member_collection.updateOne({
-					_id: ObjectID(data.user_data._id.toString())
-				}, {
-					$set: {
-						points: points,
-						wallet: wallet
-					}
-				})
-				.catch((error) => {});
+				_id: ObjectID(data.user_data._id.toString())
+			}, {
+				$set: {
+					points: points,
+					wallet: wallet
+				}
+			})
+				.catch((error) => { });
 		}
 
 		// Copy to client
@@ -340,16 +341,16 @@ module.exports.list = async function (req, res) {
 		const can_pay_by_wallet = user_wallet >= parseInt(total) ? true : false;
 
 		const payment_methods = enums.payment_methods.
-		filter(payment_method => {
-			if (payment_method.valid == true && total > 0) {
-				return true;
-			} else if (payment_method.id == 'wallet' && can_pay_by_wallet) {
-				return true;
-			} else if (['cod'].indexOf(payment_method.id) > -1) {
-				return true;
-			}
-			return false;
-		});
+			filter(payment_method => {
+				if (payment_method.valid == true && total > 0) {
+					return true;
+				} else if (payment_method.id == 'wallet' && can_pay_by_wallet) {
+					return true;
+				} else if (['cod'].indexOf(payment_method.id) > -1) {
+					return true;
+				}
+				return false;
+			});
 
 		let delivery_times = [];
 
@@ -384,11 +385,11 @@ module.exports.list = async function (req, res) {
 		}
 
 		res.out({
-			subtotal: total_prods.toFixed(3),
-			shipping_cost: shipping_cost.toFixed(3),
+			subtotal: common.getRoundedPrice(total_prods),
+			shipping_cost: common.getRoundedPrice(shipping_cost),
 			coupon: out_coupon,
 			discount_by_wallet: user_wallet,
-			total: total.toFixed(3),
+			total: common.getRoundedPrice(total),
 			purchase_possibility: purchase_possibility,
 			message: message,
 			addresses: addresses,
@@ -409,8 +410,8 @@ async function group_products_by_suppliers(products, user, req) {
 		if (!all_categories) {
 			const category_collection = req.custom.db.client().collection('category');
 			all_categories = await category_collection.find({
-					status: true
-				})
+				status: true
+			})
 				.toArray() || [];
 			if (all_categories) {
 				cache.set(cache_key, all_categories, req.custom.config.cache.life_time).catch(() => null);

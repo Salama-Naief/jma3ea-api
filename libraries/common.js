@@ -9,6 +9,10 @@ const googleMapsClient = require('@google/maps').createClient({
 });
 
 
+module.exports.getRoundedPrice = function(price) {
+	return (Math.ceil(price*200)/200).toFixed(3);
+}
+
 module.exports.valid_gmap_address = async function (req, res, body) {
         if(!body.latitude && !body.longitude){
             return true;
