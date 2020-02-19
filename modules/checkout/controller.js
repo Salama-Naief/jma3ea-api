@@ -151,7 +151,7 @@ module.exports.buy = async function (req, res) {
 
 		const out_coupon = {
 			code: coupon ? coupon.code : null,
-			value: coupon ? (coupon.percent_value ? (total_prods * coupon.percent_value) / 100 : coupon.discount_value) : 0
+			value: coupon ? common.getRoundedPrice(coupon.percent_value ? (total_prods * coupon.percent_value) / 100 : coupon.discount_value) : 0
 		};
 
 		let total = total_prods + shipping_cost - out_coupon.value;
@@ -323,7 +323,7 @@ module.exports.list = async function (req, res) {
 
 		const out_coupon = {
 			code: coupon ? coupon.code : null,
-			value: coupon ? (coupon.percent_value ? (total_prods * coupon.percent_value) / 100 : coupon.discount_value) : 0
+			value: coupon ? common.getRoundedPrice(coupon.percent_value ? (total_prods * coupon.percent_value) / 100 : coupon.discount_value) : 0
 		};
 
 		let total = total_prods + shipping_cost - out_coupon.value;
