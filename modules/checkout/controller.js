@@ -96,6 +96,7 @@ module.exports.buy = async function (req, res) {
 			prods.push(ObjectID(i));
 		}
 	}
+	const up_cart = user.cart;
 	req.custom.clean_filter._id = {
 		'$in': prods
 	};
@@ -116,6 +117,8 @@ module.exports.buy = async function (req, res) {
 				products: req.custom.local.cart_has_not_products
 			}, enums.status_message.NO_DATA);
 		}
+
+		const up_products = JSON.parse(JSON.stringify(out.data));
 
 		const products = await group_products_by_suppliers(out.data, user, req);
 
@@ -231,6 +234,9 @@ module.exports.buy = async function (req, res) {
 
 		// Copy to admin
 		mail.send_mail(req.custom.settings['site_name'][req.custom.lang], req.custom.config.mail.username, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch(() => null);
+
+		// Update quantities
+		update_quantities(req, up_products, up_cart)
 
 		res.out(order_data);
 	});
@@ -483,4 +489,29 @@ function getRoundedDate(minutes, d = new Date()) {
 
 function addMinutes(date, minutes) {
 	return new Date(date.getTime() + minutes * 60000);
+}
+
+function update_quantities(req, the_products, cart) {
+	const collection = req.custom.db.client().collection('product');
+	let promises = [];
+
+	for (const p of the_products) {
+		const quantity = cart[p._id];
+		let prod_n_storeArr = [];
+		for (const i of p.prod_n_storeArr) {
+			if (i.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
+				i.quantity -= quantity;
+			}
+			i.store_id = ObjectID(i.store_id.toString());
+			prod_n_storeArr.push(i);
+		}
+		const update = collection.updateOne({
+			_id: ObjectID(p._id.toString())
+		}, {
+			$set: { prod_n_storeArr: prod_n_storeArr }
+		});
+		promises.push(update);
+	}
+
+	return Promise.all(promises);
 }
