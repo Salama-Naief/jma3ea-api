@@ -30,6 +30,8 @@ module.exports.get = async function (req, res) {
 	const cities = await cityCollection.find({}).toArray();
 
 	user.addresses = user.addresses || [];
+	user.address.name = req.custom.local.default_address;
+	user.addresses = [user.address, ...user.addresses];
 	user.addresses = user.addresses.map((i) => {
 		const parent_city = cities.find((c) => c._id.toString() == i.city_id.toString());
 
@@ -87,7 +89,7 @@ async function update_user(req, res, action = 'insert') {
 		return res.out(error, enums.status_message.VALIDATION_ERROR);
 	}
 
-	const user = await profile.getInfo(req).catch(() => {});
+	const user = await profile.getInfo(req).catch(() => { });
 
 	if (!user) {
 		return res.out({
@@ -95,43 +97,65 @@ async function update_user(req, res, action = 'insert') {
 		}, enums.status_message.VALIDATION_ERROR);
 	}
 
+	if (action == 'remove' && req.params.Id == req.custom.local.default_address) {
+		return res.out({
+			"message": req.custom.local.can_not_delete_default_address
+		}, enums.status_message.VALIDATION_ERROR);
+	}
+
+	let address = user.address;
 	let addresses = user.addresses || [];
+	let updated_data = {};
 
 	if (action == 'insert' || action == 'update') {
-		if(!await common.valid_gmap_address(req, res, req.body)){
+		if (!await common.valid_gmap_address(req, res, req.body)) {
 			return false;
 		}
 	}
 
 	if (action == 'insert') {
 		const exists = addresses.find((a) => a.name == data.name);
-		if (exists) {
+		if (exists || data.name == req.custom.local.default_address) {
 			return res.out({
 				"name": req.custom.local.address_name_exists
 			}, enums.status_message.VALIDATION_ERROR);
 		}
 		addresses.push(data);
+		updated_data = {
+			addresses: addresses
+		};
 	} else if (action == 'update') {
-		addresses = addresses.map((a) => {
-			if (a.name == req.params.Id) {
-				data.name = req.params.Id;
-				return data;
-			}
-			return a;
-		});
+		if (req.params.Id != req.custom.local.default_address) {
+			addresses = addresses.map((a) => {
+				if (a.name == req.params.Id) {
+					data.name = req.params.Id;
+					return data;
+				}
+				return a;
+			});
+			updated_data = {
+				addresses: addresses
+			};
+		}else{
+			address = data;
+			updated_data = {
+				address: address
+			};
+		}
 	} else if (action == 'remove') {
 		addresses = addresses.filter((a) => {
 			return a.name != req.params.Id;
 		});
+		updated_data = {
+			addresses: addresses
+		};
 	}
 
 	collection.updateOne({
-			_id: ObjectID(user._id)
-		}, {
-			$set: {
-				addresses: addresses
-			}
-		})
+		_id: ObjectID(user._id)
+	}, {
+		$set: updated_data
+	})
 		.then((response) => res.out({
 			message: req.custom.local.saved_done
 		}))

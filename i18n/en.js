@@ -1,5 +1,6 @@
 module.exports = {
 	address_name_exists: 'Address name is already exists',
+	can_not_delete_default_address: 'You cannot delete the primary address',
 	cart_coupon_added: 'Coupon has been added',
 	cart_coupon_unavailable: 'Coupon is unavailable',
 	cart_has_not_products: 'Your cart has no products',

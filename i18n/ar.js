@@ -1,5 +1,6 @@
 module.exports = {
 	address_name_exists: 'إسم العنوان موجود مسبقاً',
+	can_not_delete_default_address: 'لا يمكنك حذف العنوان الأساسي',
 	cart_has_not_products: 'السلة لا تحتوي على منتجات',
 	cart_coupon_added: 'تم إضافة الكوبون',
 	cart_coupon_unavailable: 'الكوبون غير متاح',
