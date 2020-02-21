@@ -60,6 +60,26 @@ module.exports.list = async function (req, res, collectionName, projection, call
 			// Pipeline
 			let pipeline = [];
 
+			if (req.custom.isProducts) {
+				pipeline.push({
+					$addFields: {
+						"quantity_n_store": {
+							"$filter": {
+								"input": "$prod_n_storeArr",
+								"as": "q",
+								"cond": {
+									"$eq": ["$$q.store_id", ObjectID(req.custom.authorizationObject.store_id)]
+								}
+							}
+						},
+					}
+				});
+				filter['quantity_n_store.quantity'] = {
+					"$gt": 0
+				};
+
+			}
+
 			if (req.custom.isProducts && ["/:Id/category", "/:Id/category/:rankId/rank"].indexOf(req.route.path) > -1) {
 
 				pipeline.push({
