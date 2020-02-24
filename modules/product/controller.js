@@ -109,8 +109,27 @@ module.exports.featured = async function (req, res) {
 				"created": -1
 			};
 
+
+			filter['quantity_n_store.quantity'] = {
+				"$gt": 0
+			};
+
 			// Pipeline
 			const pipeline = [
+				// Stage 0
+				{
+					$addFields: {
+						"quantity_n_store": {
+							"$filter": {
+								"input": "$prod_n_storeArr",
+								"as": "q",
+								"cond": {
+									"$eq": ["$$q.store_id", ObjectID(req.custom.authorizationObject.store_id)]
+								}
+							}
+						},
+					}
+				},
 				// Stage 1
 				{
 					$match: filter
@@ -224,7 +243,7 @@ module.exports.read = async function (req, res) {
 			const brand_collection = req.custom.db.client().collection('brand');
 			const brand = await brand_collection.findOne({
 				status: true
-			}).then((b) => b).catch(() => {});
+			}).then((b) => b).catch(() => { });
 			results.brand = brand.name[req.custom.local] || brand.name[req.custom.config.local];
 		} else {
 			results.brand = null;
@@ -233,8 +252,8 @@ module.exports.read = async function (req, res) {
 		if (results.categories) {
 			const category_collection = req.custom.db.client().collection('category');
 			const all_categories = await category_collection.find({
-					status: true
-				})
+				status: true
+			})
 				.toArray() || [];
 			results.categories = results.categories.map((i) => {
 				const cat_obj = all_categories.find((c) => c._id.toString() == i.category_id.toString());
