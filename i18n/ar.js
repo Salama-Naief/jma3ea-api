@@ -6,7 +6,7 @@ module.exports = {
 	cart_coupon_unavailable: 'الكوبون غير متاح',
 	cart_product_added: 'تم إضافة المنتج إلى السلة',
 	cart_product_exceeded_allowed: 'عفوا هذه الكمية أكبر من المسموح به لهذا المنتج',
-	cart_product_exceeded_allowed_updated: 'عفوا هذه الكمية أكبر من المسموح به لهذا المنتج, تم تحديث الكمية',
+	cart_product_exceeded_allowed_updated: 'عفوا هذه الكمية أكبر من المتوفر لدينا, تم تحديث الكمية',
 	cart_product_exists: 'هذا المنتج موجود بالفعل في السلة',
 	cart_product_not: 'المنتج غير موجود بالسلة',
 	cart_product_removed: 'تم حذف المنتج',
