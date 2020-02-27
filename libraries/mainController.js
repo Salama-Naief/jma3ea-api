@@ -80,7 +80,7 @@ module.exports.list = async function (req, res, collectionName, projection, call
 
 			}
 
-			if (req.custom.isProducts && ["/:Id/category", "/:Id/category/:rankId/rank"].indexOf(req.route.path) > -1) {
+			if (req.custom.isProducts && ["/:Id/category", "/:Id/category/:rankId/rank", "/wishlist"].indexOf(req.route.path) > -1) {
 
 				pipeline.push({
 					$match: {
