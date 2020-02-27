@@ -114,6 +114,7 @@ module.exports.list = async function (req, res) {
 	req.custom.clean_filter._id = {
 		'$in': prods
 	};
+	req.custom.isProducts == true;
 	mainController.list(req, res, 'product', {
 		"_id": 1,
 		"name": {
