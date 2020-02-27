@@ -122,8 +122,28 @@ module.exports.list = async function (req, res) {
 		},
 		"picture": 1,
 		"price": 1,
+		"prod_n_categoryArr": 1,
 	}, async (data) => {
-		res.out(data.data);
+		data.data.map((i) => {
+			i.prod_n_categoryArr = i.prod_n_categoryArr[0];
+			return i;
+		});
+		res.out(data.data.sort((a, b) => {
+			const prodA = a.prod_n_categoryArr.category_id;
+			const prodB = b.prod_n_categoryArr.category_id;
+
+			let comparison = 0;
+			if (prodA > prodB) {
+				comparison = 1;
+			} else if (prodA < prodB) {
+				comparison = -1;
+			}
+
+			return comparison;
+		}).map((i) => {
+			delete i.prod_n_categoryArr;
+			return i;
+		}));
 	});
 };
 
