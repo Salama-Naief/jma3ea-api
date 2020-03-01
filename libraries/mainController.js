@@ -17,7 +17,7 @@ module.exports.list = async function (req, res, collectionName, projection, call
 
 	let user = req.custom.authorizationObject;
 	user.cart = user.cart || {};
-	user.wishlist = user.wishlist || [];
+	user.wishlist = Array.isArray(user.wishlist) ? user.wishlist : [];
 
 	if (req.custom.cache_key) {
 		let cached_data = await cache.get(req.custom.cache_key).catch(() => null);

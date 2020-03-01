@@ -73,7 +73,7 @@ module.exports.featured = async function (req, res) {
 
 	let user = req.custom.authorizationObject;
 	user.cart = user.cart || {};
-	user.wishlist = user.wishlist || [];
+	user.wishlist = Array.isArray(user.wishlist) ? user.wishlist : [];
 
 	const cache = req.custom.cache;
 	const cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_featred`;
@@ -215,7 +215,7 @@ module.exports.read = async function (req, res) {
 
 	let user = req.custom.authorizationObject;
 	user.cart = user.cart || {};
-	user.wishlist = user.wishlist || [];
+	user.wishlist = Array.isArray(user.wishlist) ? user.wishlist : [];
 	const prod_exists_in_cart = Object.keys(user.cart).indexOf(req.params.Id.toString()) > -1;
 
 	const cache = req.custom.cache;
