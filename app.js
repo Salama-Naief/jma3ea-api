@@ -51,15 +51,17 @@ app.use(function (err, req, res, next) {
 	res.locals.error = req.app.get('env') === 'development' ? err : {};
 	console.log('=====================Start of Error====================');
 	console.log('=========================================');
-	console.log('--------[Protocol]------', '::', req.protocol)
-	console.log('--------[Hostname]------', '::', req.hostname)
-	console.log('--------[OriginalUrl]---', '::', req.originalUrl)
-	console.log('--------[IP]------------', '::', req.ip)
-	console.log('--------[Method]--------', '::', req.method)
-	console.log('--------[Params]--------', '::', req.params)
-	console.log('--------[Query]---------', '::', req.query)
-	console.log('--------[Body]----------', '::', req.body)
-	console.log('--------[Error]---------', '::', err.message)
+	console.log('--------[Protocol]------', '::', req.protocol);
+	console.log('--------[Hostname]------', '::', req.hostname);
+	console.log('--------[OriginalUrl]---', '::', req.originalUrl);
+	console.log('--------[IP]------------', '::', req.ip);
+	console.log('--------[Method]--------', '::', req.method);
+	console.log('--------[Params]--------', '::', req.params);
+	console.log('--------[User-Agent]----', '::', req.get('User-Agent'));
+	console.log('--------[User-IP]-------', '::', req.headers['x-forwarded-for'] || req.connection.remoteAddress);
+	console.log('--------[Query]---------', '::', req.query);
+	console.log('--------[Body]----------', '::', req.body);
+	console.log('--------[Error]---------', '::', err.message);
 	console.log('=========================================');
 	console.log('=====================End of Error====================');
 	// render the error page
