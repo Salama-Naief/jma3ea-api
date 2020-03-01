@@ -118,17 +118,43 @@ module.exports.remove = async function (req, res) {
 		return res.out({
 			'message': req.custom.local.cart_product_not
 		}, enums.status_message.NO_DATA)
-	} else {
-		delete user.cart[data.product_id];
+	}
+	delete user.cart[data.product_id];
+
+
+
+	const total_products = Object.keys(user.cart).length;
+	const prods_obj_ids = Object.keys(user.cart).map((i) => ObjectID(i));
+	const projection = {
+		_id: 1,
+		price: 1,
+	};
+
+	req.custom.clean_filter._id = {
+		'$in': prods_obj_ids
+	};
+	mainController.list(req, res, 'product', projection, async (rows) => {
+		const products = rows.data;
+		let total_quantities = 0;
+		let total_prices = 0;
+		for (const i of Object.keys(user.cart)) {
+			total_quantities += user.cart[i];
+			const product = products.find((p) => p._id.toString() === i.toString());
+			total_prices += product.price * user.cart[i];
+		}
 
 		req.custom.cache.set(req.custom.token, user)
 			.then((response) => res.out({
-				message: req.custom.local.cart_product_removed
-			}, enums.status_message.DELETED))
+				message: req.custom.local.cart_product_removed,
+				total_products: total_products,
+				total_quantities: total_quantities,
+				total_prices: common.getRoundedPrice(total_prices),
+			}, enums.status_message.CREATED))
 			.catch((error) => res.out({
 				'message': error.message
 			}, enums.status_message.UNEXPECTED_ERROR));
-	}
+	});
+
 };
 
 /**
