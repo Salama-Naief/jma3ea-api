@@ -49,12 +49,24 @@ app.use(function (err, req, res, next) {
 	// set locals, only providing error in development
 	res.locals.message = err.message;
 	res.locals.error = req.app.get('env') === 'development' ? err : {};
-	console.log('[app.err]', err);
+	console.log('=====================Start of Error====================');
+	console.log('=========================================');
+	console.dir('--------[Protocol]------', '::', req.protocol)
+	console.dir('--------[Hostname]------', '::', req.hostname)
+	console.dir('--------[OriginalUrl]---', '::', req.originalUrl)
+	console.dir('--------[IP]------------', '::', req.ip)
+	console.dir('--------[Method]--------', '::', req.method)
+	console.dir('--------[Params]--------', '::', req.params)
+	console.dir('--------[Query]---------', '::', req.query)
+	console.dir('--------[Body]----------', '::', req.body)
+	console.dir('--------[Error]---------', '::', err.message)
+	console.log('=========================================');
+	console.log('=====================End of Error====================');
 	// render the error page
 	res.json({
 		success: false,
 		code: err.status,
-		errors: err,
+		errors: 'Error!',
 		results: null,
 	});
 });
