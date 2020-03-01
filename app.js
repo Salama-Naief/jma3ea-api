@@ -51,15 +51,15 @@ app.use(function (err, req, res, next) {
 	res.locals.error = req.app.get('env') === 'development' ? err : {};
 	console.log('=====================Start of Error====================');
 	console.log('=========================================');
-	console.dir('--------[Protocol]------', '::', req.protocol)
-	console.dir('--------[Hostname]------', '::', req.hostname)
-	console.dir('--------[OriginalUrl]---', '::', req.originalUrl)
-	console.dir('--------[IP]------------', '::', req.ip)
-	console.dir('--------[Method]--------', '::', req.method)
-	console.dir('--------[Params]--------', '::', req.params)
-	console.dir('--------[Query]---------', '::', req.query)
-	console.dir('--------[Body]----------', '::', req.body)
-	console.dir('--------[Error]---------', '::', err.message)
+	console.log('--------[Protocol]------', '::', req.protocol)
+	console.log('--------[Hostname]------', '::', req.hostname)
+	console.log('--------[OriginalUrl]---', '::', req.originalUrl)
+	console.log('--------[IP]------------', '::', req.ip)
+	console.log('--------[Method]--------', '::', req.method)
+	console.log('--------[Params]--------', '::', req.params)
+	console.log('--------[Query]---------', '::', req.query)
+	console.log('--------[Body]----------', '::', req.body)
+	console.log('--------[Error]---------', '::', err.message)
 	console.log('=========================================');
 	console.log('=====================End of Error====================');
 	// render the error page
