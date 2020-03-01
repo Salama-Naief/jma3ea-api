@@ -183,7 +183,7 @@ module.exports.featured = async function (req, res) {
 					}
 					i.price = i.price.toFixed(3);
 					i.old_price = (i.old_price || 0).toFixed(3);
-
+					const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id.toString()) > -1;
 					i.cart_status = {
 						is_exists: prod_exists_in_cart,
 						quantity: prod_exists_in_cart ? user.cart[i._id] : 0
