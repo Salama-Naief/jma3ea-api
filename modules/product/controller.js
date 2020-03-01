@@ -79,7 +79,7 @@ module.exports.featured = async function (req, res) {
 	const cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_featred`;
 
 	if (cache_key) {
-		const cached_data = await cache.get(cache_key).catch(() => null);
+		let cached_data = await cache.get(cache_key).catch(() => null);
 		if (cached_data) {
 			cached_data = cached_data.map((i) => {
 				const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id) > -1;
