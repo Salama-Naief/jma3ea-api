@@ -149,11 +149,11 @@ module.exports.list = async function (req, res) {
 
 function updateWishlist(req, user) {
 	const collection = req.custom.db.client().collection(collectionName);
-	return collection.updateOne({
+	return user.member_id ? collection.updateOne({
 		_id: ObjectID(user.member_id.toString())
 	}, {
 		$set: {
 			wishlist: user.wishlist,
 		}
-	});;
+	}) : false;
 }

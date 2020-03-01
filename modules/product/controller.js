@@ -71,12 +71,28 @@ module.exports.featured = async function (req, res) {
 
 	const collectionFeature = 'feature';
 
+	let user = req.custom.authorizationObject;
+	user.cart = user.cart || {};
+	user.wishlist = user.wishlist || [];
+
 	const cache = req.custom.cache;
 	const cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_featred`;
 
 	if (cache_key) {
 		const cached_data = await cache.get(cache_key).catch(() => null);
 		if (cached_data) {
+			cached_data = cached_data.map((i) => {
+				const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id) > -1;
+				i.cart_status = {
+					is_exists: prod_exists_in_cart,
+					quantity: prod_exists_in_cart ? user.cart[i._id] : 0
+				};
+				i.wishlist_status = {
+					is_exists: user.wishlist.indexOf(i._id.toString()) > -1
+				};
+
+				return i;
+			});
 			return res.out(cached_data);
 		}
 	}
@@ -167,6 +183,15 @@ module.exports.featured = async function (req, res) {
 					}
 					i.price = i.price.toFixed(3);
 					i.old_price = (i.old_price || 0).toFixed(3);
+
+					i.cart_status = {
+						is_exists: prod_exists_in_cart,
+						quantity: prod_exists_in_cart ? user.cart[i._id] : 0
+					};
+					i.wishlist_status = {
+						is_exists: user.wishlist.indexOf(i._id.toString()) > -1
+					};
+
 					return i;
 				});
 				featured.push(c);
@@ -188,10 +213,24 @@ module.exports.featured = async function (req, res) {
  */
 module.exports.read = async function (req, res) {
 
+	let user = req.custom.authorizationObject;
+	user.cart = user.cart || {};
+	user.wishlist = user.wishlist || [];
+	const prod_exists_in_cart = Object.keys(user.cart).indexOf(req.params.Id.toString()) > -1;
+
 	const cache = req.custom.cache;
 	const cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_id_${req.params.Id}`;
 	const cached_data = await cache.get(cache_key).catch(() => null);
 	if (cached_data) {
+		
+		cached_data.cart_status = {
+			is_exists: prod_exists_in_cart,
+			quantity: prod_exists_in_cart ? user.cart[cached_data._id] : 0
+		};
+		cached_data.wishlist_status = {
+			is_exists: user.wishlist.indexOf(cached_data._id) > -1
+		};
+
 		return res.out(cached_data);
 	}
 
@@ -278,6 +317,14 @@ module.exports.read = async function (req, res) {
 		if (cache_key && Object.keys(results).length > 0) {
 			cache.set(cache_key, results, req.custom.config.cache.life_time).catch(() => null);
 		}
+		
+		results.cart_status = {
+			is_exists: prod_exists_in_cart,
+			quantity: prod_exists_in_cart ? user.cart[results._id] : 0
+		};
+		results.wishlist_status = {
+			is_exists: user.wishlist.indexOf(results._id.toString()) > -1
+		};
 
 		res.out(results);
 	});

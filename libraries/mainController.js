@@ -14,9 +14,28 @@ module.exports.list = async function (req, res, collectionName, projection, call
 		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
 	}
 	const cache = req.custom.cache;
+
+	let user = req.custom.authorizationObject;
+	user.cart = user.cart || {};
+	user.wishlist = user.wishlist || {};
+
 	if (req.custom.cache_key) {
-		const cached_data = await cache.get(req.custom.cache_key).catch(() => null);
+		let cached_data = await cache.get(req.custom.cache_key).catch(() => null);
 		if (cached_data) {
+			if (req.custom.isProducts == true) {
+				cached_data.data = cached_data.data.map((i) => {
+					const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id.toString()) > -1;
+					i.cart_status = {
+						is_exists: prod_exists_in_cart,
+						quantity: prod_exists_in_cart ? user.cart[i._id] : 0
+					};
+					i.wishlist_status = {
+						is_exists: user.wishlist.indexOf(i._id.toString()) > -1
+					};
+
+					return i;
+				});
+			}
 			return res.out(cached_data);
 		}
 	}
@@ -149,6 +168,14 @@ module.exports.list = async function (req, res, collectionName, projection, call
 						if (req.custom.isProducts == true) {
 							i.price = i.price.toFixed(3);
 							i.old_price = (i.old_price || 0).toFixed(3);
+							const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id.toString()) > -1;
+							i.cart_status = {
+								is_exists: prod_exists_in_cart,
+								quantity: prod_exists_in_cart ? user.cart[i._id] : 0
+							};
+							i.wishlist_status = {
+								is_exists: user.wishlist.indexOf(i._id.toString()) > -1
+							};
 						}
 						return i;
 					}) : []
