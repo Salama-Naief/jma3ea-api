@@ -124,8 +124,19 @@ module.exports.list = async function (req, res) {
 		"price": 1,
 		"prod_n_categoryArr": 1,
 	}, async (data) => {
+
+		let user_obj = req.custom.authorizationObject;
+		user_obj.cart = user_obj.cart || {};
+
 		data.data.map((i) => {
 			i.prod_n_categoryArr = i.prod_n_categoryArr[0];
+
+			const prod_exists_in_cart = Object.keys(user_obj.cart).indexOf(i._id.toString()) > -1;
+			i.cart_status = {
+				is_exists: prod_exists_in_cart,
+				quantity: prod_exists_in_cart ? user_obj.cart[i._id] : 0
+			};
+
 			return i;
 		});
 		res.out(data.data.sort((a, b) => {
