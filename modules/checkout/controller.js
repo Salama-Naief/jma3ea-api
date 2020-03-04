@@ -7,7 +7,7 @@ const mainController = require("../../libraries/mainController");
 const mail = require("../../libraries/mail");
 const mail_view = require("./view/mail");
 const shortid = require('shortid');
-shortid.characters('0123456789abcdefghijklmnopqrstuvwxyz');
+shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-');
 
 
 let total_prods = 0;
