@@ -20,6 +20,7 @@ module.exports.list = function (req, res) {
 	req.custom.all_status = true;
 	mainController.list(req, res, collectionName, {
 		"_id": 1,
+		"order_id": 1,
 		"payment_method": 1,
 		"subtotal": 1,
 		"total": 1,
