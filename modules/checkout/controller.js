@@ -182,7 +182,7 @@ module.exports.buy = async function (req, res) {
 		req.body.discount_by_wallet = req.body.discount_by_wallet == true ? true : false;
 
 		const order_data = {
-			order_id: shortid.generate(),
+			order_id: (user_info ? 'u' : 'v') + '_' + shortid.generate(),
 			payment_method: payment_method,
 			payment_details: data.payment_details,
 			subtotal: common.getRoundedPrice(total_prods),
