@@ -162,7 +162,7 @@ module.exports.mail_checkout = function (checkout, custom) {
 												<td colspan="5">
 													${ local.order_id }
 													:
-													${ checkout._id }
+													${ checkout.order_id }
 												</td>
 											</tr>
 											<tr>

@@ -6,6 +6,7 @@ const enums = require('../../libraries/enums');
 const mainController = require("../../libraries/mainController");
 const mail = require("../../libraries/mail");
 const mail_view = require("./view/mail");
+const shortid = require('shortid');
 
 let total_prods = 0;
 
@@ -179,6 +180,7 @@ module.exports.buy = async function (req, res) {
 		req.body.discount_by_wallet = req.body.discount_by_wallet == true ? true : false;
 
 		const order_data = {
+			order_id: shortid.generate(),
 			payment_method: payment_method,
 			payment_details: data.payment_details,
 			subtotal: common.getRoundedPrice(total_prods),
