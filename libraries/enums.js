@@ -1,20 +1,24 @@
-const config = require("./config");
-const local = require(`../i18n/${config.local}`);
 
 exports.payment_methods = [
 	{
 		id: "cod",
-		name: local.payment_method.cod,
+		name: (req) => {
+			return req.custom.local.payment_method.cod
+		},
 		valid: false
 	},
 	{
 		id: "wallet",
-		name: local.payment_method.wallet,
+		name: (req) => {
+			return req.custom.local.payment_method.wallet
+		},
 		valid: false
 	},
 	{
 		id: "knet",
-		name: local.payment_method.knet,
+		name: (req) => {
+			return req.custom.local.payment_method.knet
+		},
 		valid: true
 	}
 ];

@@ -351,7 +351,7 @@ module.exports.list = async function (req, res) {
 		const user_wallet = userObj ? parseInt(total > userObj.wallet ? userObj.wallet : Math.round(total)) : 0;
 		const can_pay_by_wallet = user_wallet >= parseInt(total) ? true : false;
 
-		const payment_methods = enums.payment_methods.
+		let payment_methods = enums.payment_methods.
 			filter(payment_method => {
 				if (payment_method.valid == true && total > 0) {
 					return true;
@@ -361,6 +361,11 @@ module.exports.list = async function (req, res) {
 					return true;
 				}
 				return false;
+			});
+
+			payment_methods = payment_methods.map((pm)=>{
+				pm.name = pm.name(req);
+				return pm;
 			});
 
 		let delivery_times = [];
