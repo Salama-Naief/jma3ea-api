@@ -1,27 +1,23 @@
 
-exports.payment_methods = [
-	{
-		id: "cod",
-		name: (req) => {
-			return req.custom.local.payment_method.cod
+exports.payment_methods = (req) => {
+	return [
+		{
+			id: "cod",
+			name: req ? req.custom.local.payment_method.cod : 'cod',
+			valid: false
 		},
-		valid: false
-	},
-	{
-		id: "wallet",
-		name: (req) => {
-			return req.custom.local.payment_method.wallet
+		{
+			id: "wallet",
+			name: req ? req.custom.local.payment_method.wallet : 'wallet',
+			valid: false
 		},
-		valid: false
-	},
-	{
-		id: "knet",
-		name: (req) => {
-			return req.custom.local.payment_method.knet
-		},
-		valid: true
-	}
-];
+		{
+			id: "knet",
+			name: req ? req.custom.local.payment_method.knet : 'knet',
+			valid: true
+		}
+	];
+};
 
 exports.status_message = {
 	"AUTHORIZED": "AUTHORIZED", // Authorized : 200

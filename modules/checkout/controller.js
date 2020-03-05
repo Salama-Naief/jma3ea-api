@@ -126,7 +126,7 @@ module.exports.buy = async function (req, res) {
 
 		const products = await group_products_by_suppliers(out.data, user, req);
 
-		const payment_method = require('../../libraries/enums').payment_methods.find((pm) => pm.id == data.payment_method);
+		const payment_method = require('../../libraries/enums').payment_methods(req).find((pm) => pm.id == data.payment_method);
 
 
 		req.custom.authorizationObject.cart = {};
@@ -353,7 +353,7 @@ module.exports.list = async function (req, res) {
 		const user_wallet = userObj ? parseInt(total > userObj.wallet ? userObj.wallet : Math.round(total)) : 0;
 		const can_pay_by_wallet = user_wallet >= parseInt(total) ? true : false;
 
-		let payment_methods = enums.payment_methods.
+		let payment_methods = enums.payment_methods(req).
 			filter(payment_method => {
 				if (payment_method.valid == true && total > 0) {
 					return true;
@@ -363,11 +363,6 @@ module.exports.list = async function (req, res) {
 					return true;
 				}
 				return false;
-			});
-
-			payment_methods = payment_methods.map((pm)=>{
-				pm.name = pm.name(req);
-				return pm;
 			});
 
 		let delivery_times = [];
