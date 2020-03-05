@@ -112,7 +112,8 @@ module.exports.buy = async function (req, res) {
 		"uom": 1,
 		"barcode": 1,
 		"weight": 1,
-		"prod_n_storeArr": 1
+		"prod_n_storeArr": 1,
+		"supplier_id": 1
 	}, async (out) => {
 		if (out.data.length === 0) {
 			save_failed_payment(req);
@@ -298,7 +299,8 @@ module.exports.list = async function (req, res) {
 		"uom": 1,
 		"barcode": 1,
 		"weight": 1,
-		"prod_n_storeArr": 1
+		"prod_n_storeArr": 1,
+		"supplier_id": 1
 	}, async (out) => {
 		if (out.data.length === 0) {
 			return res.out({
