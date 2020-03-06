@@ -233,9 +233,9 @@ module.exports.updatepassword = async function (req, res) {
 		return res.out(error, enums.status_message.VALIDATION_ERROR);
 	}
 
-	data.password = sha1(md5(data.old_password));
+	data.password = sha1(md5(data.new_password));
 	collection.updateOne({
-			_id: userdecode._id
+			_id: ObjectID(userdecode._id.toString())
 		}, {
 			$set: {
 				password: data.password
