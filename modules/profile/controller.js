@@ -305,7 +305,7 @@ module.exports.forgotpassword = async function (req, res) {
 };
 
 /**
- * Forgot password
+ * Reset password
  * @param {Object} req
  * @param {Object} res
  */
@@ -338,7 +338,7 @@ module.exports.resetpassword = async function (req, res) {
 
 	const password = sha1(md5(data.new_password));
 	collection.updateOne({
-			_id: user._id
+			_id: ObjectID(user._id.toString())
 		}, {
 			$set: {
 				password: password,
