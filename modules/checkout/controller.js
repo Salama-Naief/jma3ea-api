@@ -128,14 +128,6 @@ module.exports.buy = async function (req, res) {
 
 		const payment_method = require('../../libraries/enums').payment_methods(req).find((pm) => pm.id == data.payment_method);
 
-
-		req.custom.authorizationObject.cart = {};
-		req.custom.authorizationObject.coupon = {
-			code: null,
-			value: 0,
-		};
-		req.custom.cache.set(req.custom.token, req.custom.authorizationObject)
-
 		if (user_info) {
 			data.user_data._id = user_info._id;
 		}
@@ -233,6 +225,13 @@ module.exports.buy = async function (req, res) {
 			})
 				.catch((error) => { });
 		}
+
+		req.custom.authorizationObject.cart = {};
+		req.custom.authorizationObject.coupon = {
+			code: null,
+			value: 0,
+		};
+		req.custom.cache.set(req.custom.token, req.custom.authorizationObject);
 
 		// Copy to client
 		mail.send_mail(req.custom.settings['site_name'][req.custom.lang], data.user_data.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch(() => null);
