@@ -5,7 +5,7 @@ const enums = require("../../../libraries/enums");
 module.exports = {
 	"payment_method": {
 		"required": true,
-		"in_array": enums.payment_methods.map((i) => i.id)
+		"in_array": enums.payment_methods().map((i) => i.id)
 	},
 	"payment_details": {
 		"type": Object,
