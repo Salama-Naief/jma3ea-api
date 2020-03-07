@@ -430,31 +430,42 @@ async function group_products_by_suppliers(products, user, req) {
 			}
 		}
 	})();
-	return products.reduce((prod, curr) => {
-		curr.supplier = curr.supplier || req.custom.settings['site_name']['en']
-		//If this supplier wasn't previously stored
-		if (!prod[curr.supplier]) {
-			prod[curr.supplier] = [];
-		}
-		curr.quantity = user.cart[curr._id.toString()];
 
-		curr.quantity = user.cart[curr._id.toString()];
-		for (const store of curr.prod_n_storeArr) {
+	let all_suppliers = [];
+	await (async () => {
+
+		const cache = req.custom.cache;
+		const cache_key = `supplier_all_solid`;
+		all_suppliers = await cache.get(cache_key).catch(() => null);
+		if (!all_suppliers) {
+			const supplier_collection = req.custom.db.client().collection('supplier');
+			all_suppliers = await supplier_collection.find({}).toArray() || [];
+			if (all_suppliers) {
+				cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch(() => null);
+			}
+		}
+
+	})();
+
+	product = await products.map(async (prod) => {
+
+		prod.quantity = user.cart[prod._id.toString()];
+		for (const store of prod.prod_n_storeArr) {
 			if (store.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
 				if (store.status == false || store.quantity <= 0) {
-					curr.quantity = 0;
-					curr.warning = req.custom.local.cart_product_unavailable;
-				} else if (store.quantity < curr.quantity) {
-					curr.quantity = store.quantity;
-					curr.warning = req.custom.local.cart_product_exceeded_allowed_updated;
+					prod.quantity = 0;
+					prod.warning = req.custom.local.cart_product_unavailable;
+				} else if (store.quantity < prod.quantity) {
+					prod.quantity = store.quantity;
+					prod.warning = req.custom.local.cart_product_exceeded_allowed_updated;
 				}
 				break;
 			}
 		}
 
-		delete curr.prod_n_storeArr;
-		if (curr.categories) {
-			curr.categories = curr.categories.map((i) => {
+		delete prod.prod_n_storeArr;
+		if (prod.categories) {
+			prod.categories = prod.categories.map((i) => {
 				const cat_obj = all_categories.find((c) => c._id.toString() == i.category_id.toString());
 				if (cat_obj) {
 					const y = {};
@@ -465,15 +476,32 @@ async function group_products_by_suppliers(products, user, req) {
 					}
 				}
 			});
-			curr.categories = curr.categories.filter((i) => i != null);
+			prod.categories = prod.categories.filter((i) => i != null);
 		} else {
-			curr.categories = [];
+			prod.categories = [];
 		}
 
-		prod[curr.supplier].push(curr);
-		total_prods += curr.quantity * curr.price;
+		prod.supplier_id = prod.supplier_id || req.custom.settings['site_name']['en'];
+		const supplier = all_suppliers.find((s) => prod.supplier_id && s._id.toString() == prod.supplier_id.toString());
+		prod.supplier = supplier ? {
+			_id: supplier._id,
+			name: {
+				ar: supplier.name['ar'],
+				en: supplier.name['en'],
+			}
+		} : null;
+
+		total_prods += prod.quantity * prod.price;
+
+		return prod;
+	});
+
+	return products.reduce((prod, curr) => {
+		prod[curr.supplier_id] = prod[curr.supplier_id] || [];
+		prod[curr.supplier_id].push(curr);
 		return prod;
 	}, {});
+
 }
 
 function save_failed_payment(req) {
