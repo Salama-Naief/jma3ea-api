@@ -61,66 +61,10 @@ module.exports.valid_gmap_address = async function (req, res, body) {
 	return true;
 }
 
-module.exports.group_products_by_suppliers = async function (products, user, req) {
-	total_prods = 0;
-	let all_categories = [];
-	await (async () => {
-		const cache = req.custom.cache;
-		const cache_key = `category_all_solid`;
-		all_categories = await cache.get(cache_key).catch(() => null);
-		if (!all_categories) {
-			const category_collection = req.custom.db.client().collection('category');
-			all_categories = await category_collection.find({
-				status: true
-			})
-				.toArray() || [];
-			if (all_categories) {
-				cache.set(cache_key, all_categories, req.custom.config.cache.life_time).catch(() => null);
-			}
-		}
-	})();
+module.exports.group_products_by_suppliers = (products) => {
 	return products.reduce((prod, curr) => {
-		curr.supplier = curr.supplier || req.custom.settings['site_name']['en']
-		//If this supplier wasn't previously stored
-		if (!prod[curr.supplier]) {
-			prod[curr.supplier] = [];
-		}
-		curr.quantity = user.cart[curr._id.toString()];
-
-		curr.quantity = user.cart[curr._id.toString()];
-		for (const store of curr.prod_n_storeArr) {
-			if (store.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
-				if (store.status == false || store.quantity <= 0) {
-					curr.quantity = 0;
-					curr.warning = req.custom.local.cart_product_unavailable;
-				} else if (store.quantity < curr.quantity) {
-					curr.quantity = store.quantity;
-					curr.warning = req.custom.local.cart_product_exceeded_allowed_updated;
-				}
-				break;
-			}
-		}
-
-		delete curr.prod_n_storeArr;
-		if (curr.categories) {
-			curr.categories = curr.categories.map((i) => {
-				const cat_obj = all_categories.find((c) => c._id.toString() == i.category_id.toString());
-				if (cat_obj) {
-					const y = {};
-					y._id = cat_obj._id;
-					y.name = cat_obj.name;
-					if (y._id && y.name) {
-						return y;
-					}
-				}
-			});
-			curr.categories = curr.categories.filter((i) => i != null);
-		} else {
-			curr.categories = [];
-		}
-
-		prod[curr.supplier].push(curr);
-		total_prods += curr.quantity * curr.price;
+		prod[curr.supplier_id] = prod[curr.supplier_id] || [];
+		prod[curr.supplier_id].push(curr);
 		return prod;
 	}, {});
 }

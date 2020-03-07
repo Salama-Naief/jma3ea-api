@@ -2,6 +2,7 @@
 
 // Load required modules
 const mainController = require("../../libraries/mainController");
+const common = require('../../libraries/common');
 const enums = require('../../libraries/enums');
 const ObjectID = require('mongodb').ObjectID;
 const collectionName = 'order';
@@ -56,6 +57,7 @@ module.exports.read = function (req, res) {
 			_id: ObjectID(req.params.Id),
 		})
 		.then((order) => {
+			order.products = common.group_products_by_suppliers(order.products);
 			let products = [];
 			for (const supplier_key of Object.keys(order.products)) {
 				products[supplier_key] = order.products[supplier_key].map((p)=>{

@@ -124,7 +124,9 @@ module.exports.buy = async function (req, res) {
 
 		const up_products = JSON.parse(JSON.stringify(out.data));
 
-		const products = await group_products_by_suppliers(out.data, user, req);
+		const products2save = await products_to_save(out.data, user, req);
+
+		const products = common.group_products_by_suppliers(products2save);
 
 		const payment_method = require('../../libraries/enums').payment_methods(req).find((pm) => pm.id == data.payment_method);
 
@@ -183,7 +185,7 @@ module.exports.buy = async function (req, res) {
 			coupon: out_coupon,
 			total: common.getRoundedPrice(total),
 			user_data: data.user_data,
-			products: products,
+			products: products2save,
 			hash: req.body.hash,
 			delivery_time: req.body.delivery_time,
 			discount_by_wallet: req.body.discount_by_wallet,
@@ -203,6 +205,7 @@ module.exports.buy = async function (req, res) {
 				}
 			});
 
+		order_data.products = products;
 
 		if (data.user_data._id) {
 			let points = user_info.points || 0;
@@ -307,7 +310,9 @@ module.exports.list = async function (req, res) {
 			}, enums.status_message.NO_DATA);
 		}
 
-		const products = await group_products_by_suppliers(out.data, user, req);
+		const products2save = await products_to_save(out.data, user, req);
+
+		const products = common.group_products_by_suppliers(products2save);
 
 		let total_prods = 0;
 		for (const s of Object.keys(products)) {
@@ -412,7 +417,7 @@ module.exports.list = async function (req, res) {
 	});
 };
 
-async function group_products_by_suppliers(products, user, req) {
+async function products_to_save(products, user, req) {
 	total_prods = 0;
 	let all_categories = [];
 	await (async () => {
@@ -447,7 +452,7 @@ async function group_products_by_suppliers(products, user, req) {
 
 	})();
 
-	product = await products.map(async (prod) => {
+	const out_data = products.map((prod) => {
 
 		prod.quantity = user.cart[prod._id.toString()];
 		for (const store of prod.prod_n_storeArr) {
@@ -496,12 +501,7 @@ async function group_products_by_suppliers(products, user, req) {
 		return prod;
 	});
 
-	return products.reduce((prod, curr) => {
-		prod[curr.supplier_id] = prod[curr.supplier_id] || [];
-		prod[curr.supplier_id].push(curr);
-		return prod;
-	}, {});
-
+	return out_data;
 }
 
 function save_failed_payment(req) {
