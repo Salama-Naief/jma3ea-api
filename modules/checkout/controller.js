@@ -310,7 +310,7 @@ module.exports.list = async function (req, res) {
 			}, enums.status_message.NO_DATA);
 		}
 
-		const products2save = await products_to_save(out.data, user, req);
+		const products2save = await products_to_save(out.data, user, req, true);
 
 		const products = common.group_products_by_suppliers(products2save, req);
 
@@ -417,7 +417,7 @@ module.exports.list = async function (req, res) {
 	});
 };
 
-async function products_to_save(products, user, req) {
+async function products_to_save(products, user, req, to_display = false) {
 	total_prods = 0;
 	let all_categories = [];
 	await (async () => {
@@ -493,6 +493,12 @@ async function products_to_save(products, user, req) {
 			name: {
 				ar: supplier.name['ar'],
 				en: supplier.name['en'],
+			}
+		} : to_display ? {
+			_id: req.custom.settings['site_name']['en'],
+			name: {
+				ar: req.custom.settings['site_name']['ar'],
+				en: req.custom.settings['site_name']['en'],
 			}
 		} : null;
 
