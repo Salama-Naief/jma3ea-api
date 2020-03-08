@@ -61,8 +61,9 @@ module.exports.valid_gmap_address = async function (req, res, body) {
 	return true;
 }
 
-module.exports.group_products_by_suppliers = (products) => {
+module.exports.group_products_by_suppliers = (products, req) => {
 	return products.reduce((prod, curr) => {
+		curr.supplier_id = curr.supplier_id || req.custom.settings['site_name'][req.custom.lang];
 		prod[curr.supplier_id] = prod[curr.supplier_id] || [];
 		prod[curr.supplier_id].push(curr);
 		return prod;

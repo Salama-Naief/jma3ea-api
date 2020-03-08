@@ -57,7 +57,7 @@ module.exports.read = function (req, res) {
 			_id: ObjectID(req.params.Id),
 		})
 		.then((order) => {
-			order.products = common.group_products_by_suppliers(order.products);
+			order.products = common.group_products_by_suppliers(order.products, req);
 			let products = [];
 			for (const supplier_key of Object.keys(order.products)) {
 				products[supplier_key] = order.products[supplier_key].map((p)=>{

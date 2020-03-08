@@ -126,7 +126,7 @@ module.exports.buy = async function (req, res) {
 
 		const products2save = await products_to_save(out.data, user, req);
 
-		const products = common.group_products_by_suppliers(products2save);
+		const products = common.group_products_by_suppliers(products2save, req);
 
 		const payment_method = require('../../libraries/enums').payment_methods(req).find((pm) => pm.id == data.payment_method);
 
@@ -312,7 +312,7 @@ module.exports.list = async function (req, res) {
 
 		const products2save = await products_to_save(out.data, user, req);
 
-		const products = common.group_products_by_suppliers(products2save);
+		const products = common.group_products_by_suppliers(products2save, req);
 
 		let total_prods = 0;
 		for (const s of Object.keys(products)) {
