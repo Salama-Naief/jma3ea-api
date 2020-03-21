@@ -502,6 +502,8 @@ async function products_to_save(products, user, req, to_display = false) {
 			}
 		} : null;
 
+		prod.delivery_time = supplier ? supplier.delivery_time : req.body.delivery_time;
+
 		total_prods += prod.quantity * prod.price;
 
 		return prod;
