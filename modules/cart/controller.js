@@ -57,6 +57,10 @@ module.exports.add = async function (req, res) {
 
 	user.cart[data.product_id] = data.quantity;
 
+	if (!data.quantity) {
+		delete user.cart[data.product_id];
+	}
+
 	const total_products = Object.keys(user.cart).length;
 
 	const prods_obj_ids = Object.keys(user.cart).map((i) => ObjectID(i));
