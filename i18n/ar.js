@@ -1,4 +1,4 @@
-module.exports = {
+const locals = {
 	address_name_exists: 'إسم العنوان موجود مسبقاً',
 	can_not_delete_default_address: 'لا يمكنك حذف العنوان الأساسي',
 	cart_has_not_products: 'السلة لا تحتوي على منتجات',
@@ -116,4 +116,65 @@ module.exports = {
 	}) => {
 		return `الطلب يجب أن يكون أكبر من ${value} ${currency}`
 	},
+	fields: {
+		address_name: 'إسم العنوان',
+		address: 'العنوان',
+		city_id: 'المدينة',
+		delivery_time: 'وقت التوصيل',
+		driver: 'السائق',
+		email: 'البريد الإلكتروني',
+		fullname: 'الإسم بالكامل',
+		gada: 'الجادة',
+		hash: 'الهاش',
+		house: 'المنزل',
+		latitude: 'موقع الخريطة',
+		longitude: 'موقع الخريطة',
+		mobile: 'التليفون',
+		name: 'الإسم',
+		new_password: 'كلمة المرور الجديدة',
+		notes: 'الملاحظات',
+		old_password: 'كلمة المرور القديمة',
+		password: 'كلمه السر',
+		payment_method: 'وسيلة الدفع',
+		product_id: 'المنتج',
+		quantity: 'الكمية',
+		re_new_password: 'إعادة كلمة المرور الجديدة',
+		reset_hash: 'شفرة إعادة كلمة المرور',
+		street: 'الشارع',
+		token: 'رقم الجهاز',
+		type: 'نوع الجهاز',
+		username: 'اسم المستخدم',
+		widget: 'القطعة',
+	},
+	errors: {
+		required: (key) => {
+			return `${locals.fields[key]} مطلوب`
+		},
+		required_or: (key, key_or) => {
+			return `${locals.fields[key]} أو ${locals.fields[key_or]} مطلوب`
+		},
+		should_be_equal: (key, value) => {
+			return `${locals.fields[key]} لا بد أن يساوي ${value}`
+		},
+		length_should_be_equal: (key, value) => {
+			return `${locals.fields[key]} لا بد أن يساوي ${value} حرفاً أو رقماً`
+		},
+		should_be_more_then: (key, value) => {
+			return `${locals.fields[key]} لا بد أن أكبر من ${value}`
+		},
+		should_be_less_then: (key, value) => {
+			return `${locals.fields[key]} لا بد أن أقل من ${value}`
+		},
+		is_not_valid: (key) => {
+			return `${locals.fields[key]} غير صالح`
+		},
+		should_be_unique: (key) => {
+			return `${locals.fields[key]} موجود مسبقاً`
+		},
+		is_not_exists: (key) => {
+			return `${locals.fields[key]} غير موجود`
+		},
+	}
 };
+
+module.exports = locals;

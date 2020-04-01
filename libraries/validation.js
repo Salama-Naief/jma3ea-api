@@ -60,19 +60,19 @@ async function validateRow(req, $set, model) {
 				}
 			}
 		} else if (field.required === true && ((!row_data && field.type !== Boolean) || (field.type === Boolean && row_data === undefined)) && field.type !== Object) {
-			$error[k] = `${k} Required`;
+			$error[k] = local.errors.required(k);
 		} else if (field.required_or && (!row_data && !$set[field.required_or])) {
-			$error[k] = `${k} Or ${field.required_or} Required`;
+			$error[k] = local.errors.required_or(k, field.required_or);
 		} else if (field.required_and && (!row_data && $set[field.required_and])) {
-			$error[k] = `${k} Required`;
+			$error[k] = local.errors.required(k);
 		} else if (field.equal_to && (row_data !== $set[field.equal_to])) {
-			$error[k] = `${k} should be equal to ${field.equal_to}`;
+			$error[k] = local.errors.should_be_equal(k, field.equal_to);
 		} else if (field.length && (row_data.length !== field.length)) {
-			$error[k] = `${k} length should be equal ${field.length}`;
+			$error[k] = local.errors.length_should_be_equal(k, field.length);
 		} else if (field.min >= 0 && (row_data < field.min)) {
-			$error[k] = `${k} should be more then ${field.min}`;
+			$error[k] = local.errors.should_be_more_then(k, field.min);
 		} else if (field.max && (row_data > field.max)) {
-			$error[k] = `${k} should be less then ${field.max}`;
+			$error[k] = local.errors.should_be_less_then(k, field.max);
 		} else if (!field.isLang &&
 			(
 				(row_data && typeof row_data !== 'object' && field.type == Object) ||
@@ -80,11 +80,11 @@ async function validateRow(req, $set, model) {
 				(field.type === Number && isNaN(row_data)) ||
 				(typeof field.in_array == 'object' && field.in_array.indexOf(row_data) == -1) ||
 				(field.type === ObjectID && typeof row_data.match == "function" && !row_data.match(/^[0-9a-fA-F]{24}$/) && !ObjectID.isValid(row_data)))) {
-			$error[k] = `${k} is not valid`;
+			$error[k] = local.errors.is_not_valid(k);
 		} else if (field.unique == true && !(await checkIsUnique(req, field.collection, k, row_data))) {
-			$error[k] = `${k} is unique`;
+			$error[k] = local.errors.should_be_unique(k);
 		} else if (field.exists == true && !(await checkIsExists(req, field.collection, k, row_data))) {
-			$error[k] = `${k} is not exists`;
+			$error[k] = local.errors.is_not_exists(k);
 		} else if (field.type === Object) {
 			row_data = row_data || {};
 			if (field.model) {

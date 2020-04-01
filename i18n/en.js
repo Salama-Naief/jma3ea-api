@@ -1,4 +1,4 @@
-module.exports = {
+const locals = {
 	address_name_exists: 'Address name is already exists',
 	can_not_delete_default_address: 'You cannot delete the primary address',
 	cart_coupon_added: 'Coupon has been added',
@@ -114,4 +114,65 @@ module.exports = {
 	}) => {
 		return `The order should be more then ${value} ${currency}`
 	},
+	fields: {
+		address_name: 'Address Name',
+		address: 'Address',
+		city_id: 'City',
+		delivery_time: 'Delivery Time',
+		driver: 'Driver',
+		email: 'Email',
+		fullname: 'Full Name',
+		gada: 'Gada',
+		hash: 'Hash',
+		house: 'House',
+		latitude: 'Location',
+		longitude: 'Location',
+		mobile: 'Mobile',
+		name: 'Name',
+		new_password: 'New Password',
+		notes: 'Notes',
+		old_password: 'Old Password',
+		password: 'Password',
+		payment_method: 'Payment Method',
+		product_id: 'Product',
+		quantity: 'Quantity',
+		re_new_password: 'Re-type new password',
+		reset_hash: 'Reset hash',
+		street: 'Street',
+		token: 'Device token',
+		type: 'Device type',
+		username: 'Username',
+		widget: 'Block',
+	},
+	errors: {
+		required: (key) => {
+			return `${locals.fields[key]} is required`
+		},
+		required_or: (key, key_or) => {
+			return `${locals.fields[key]} or ${locals.fields[key_or]} is required`
+		},
+		should_be_equal: (key, value) => {
+			return `${locals.fields[key]} should be equal ${value}`
+		},
+		length_should_be_equal: (key, value) => {
+			return `${locals.fields[key]} should be equal ${value} numbers or letters`
+		},
+		should_be_more_then: (key, value) => {
+			return `${locals.fields[key]} should be more then ${value}`
+		},
+		should_be_less_then: (key, value) => {
+			return `${locals.fields[key]} should be less then ${value}`
+		},
+		is_not_valid: (key) => {
+			return `${locals.fields[key]} is not valid`
+		},
+		should_be_unique: (key) => {
+			return `${locals.fields[key]} is exists`
+		},
+		is_not_exists: (key) => {
+			return `${locals.fields[key]} is not exists`
+		},
+	}
 };
+
+module.exports = locals;

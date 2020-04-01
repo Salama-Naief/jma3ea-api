@@ -1,6 +1,7 @@
 // Categories Controller
 
 // Load required modules
+const common = require('./common');
 const enums = require('./enums');
 const ObjectID = require('mongodb').ObjectID;
 
@@ -166,8 +167,8 @@ module.exports.list = async function (req, res, collectionName, projection, call
 							i.picture = `${req.custom.config.media_url}${i.picture}`;
 						}
 						if (req.custom.isProducts == true) {
-							i.price = i.price.toFixed(3);
-							i.old_price = (i.old_price || 0).toFixed(3);
+							i.price = common.getRoundedPrice(i.price);
+							i.old_price = common.getRoundedPrice(i.old_price || 0);
 							const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id.toString()) > -1;
 							i.cart_status = {
 								is_exists: prod_exists_in_cart,
