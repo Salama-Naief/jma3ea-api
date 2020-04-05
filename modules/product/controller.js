@@ -2,6 +2,7 @@
 
 // Load required modules
 const mainController = require("../../libraries/mainController");
+const common = require('../../libraries/common');
 const enums = require('../../libraries/enums');
 const ObjectID = require('mongodb').ObjectID;
 const collectionName = 'product';
@@ -181,8 +182,8 @@ module.exports.featured = async function (req, res) {
 					if (i.picture) {
 						i.picture = `${req.custom.config.media_url}${i.picture}`;
 					}
-					i.price = i.price.toFixed(3);
-					i.old_price = (i.old_price || 0).toFixed(3);
+					i.price = common.getRoundedPrice(i.price);
+					i.old_price = common.getRoundedPrice(i.old_price || 0);
 					const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id.toString()) > -1;
 					i.cart_status = {
 						is_exists: prod_exists_in_cart,
@@ -311,8 +312,8 @@ module.exports.read = async function (req, res) {
 			results.gallery_pictures = [];
 		}
 
-		results.price = results.price.toFixed(3);
-		results.old_price = (results.old_price || 0).toFixed(3);
+		results.price = common.getRoundedPrice(results.price);
+		results.old_price = common.getRoundedPrice(results.old_price || 0);
 
 		if (cache_key && Object.keys(results).length > 0) {
 			cache.set(cache_key, results, req.custom.config.cache.life_time).catch(() => null);
