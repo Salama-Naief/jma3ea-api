@@ -257,6 +257,7 @@ module.exports.read = async function (req, res) {
 		"availability": `$prod_n_storeArr`,
 		"old_price": 1,
 		"price": 1,
+		"barcode": 1,
 		"soft_code": 1,
 		"weight": 1,
 		"max_quantity_cart": {
