@@ -114,7 +114,7 @@ module.exports.logout = async function (req, res) {
 		token: token
 	};
 
-	collection.deleteOne(where, function (err, result) {});
+	collection.deleteOne(where, function (err, result) { });
 
 	return res.out({
 		'message': req.custom.local.logout_done
@@ -141,7 +141,7 @@ module.exports.register = async function (req, res) {
 		return res.out(error, enums.status_message.VALIDATION_ERROR);
 	}
 
-	if(!await common.valid_gmap_address(req, res, req.body.address)){
+	if (!await common.valid_gmap_address(req, res, req.body.address)) {
 		return false;
 	}
 
@@ -180,7 +180,7 @@ module.exports.update = async function (req, res) {
 		return res.out(error, enums.status_message.VALIDATION_ERROR);
 	}
 
-	const user = await getInfo(req).catch(() => {});
+	const user = await getInfo(req).catch(() => { });
 
 	if (!user) {
 		return res.out({
@@ -189,10 +189,10 @@ module.exports.update = async function (req, res) {
 	}
 
 	collection.updateOne({
-			_id: ObjectID(user._id)
-		}, {
-			$set: data
-		})
+		_id: ObjectID(user._id)
+	}, {
+		$set: data
+	})
 		.then((response) => res.out({
 			message: req.custom.local.saved_done
 		}))
@@ -218,7 +218,7 @@ module.exports.updatepassword = async function (req, res) {
 	} = await req.custom.getValidData(req);
 	let userdecode = {};
 	if (!error || (error && !error.old_password)) {
-		userdecode = await getInfo(req).catch(() => {});
+		userdecode = await getInfo(req).catch(() => { });
 		userdecode = userdecode || {};
 		const user = await collection.findOne({
 			_id: ObjectID(userdecode._id.toString()),
@@ -235,12 +235,12 @@ module.exports.updatepassword = async function (req, res) {
 
 	data.password = sha1(md5(data.new_password));
 	collection.updateOne({
-			_id: ObjectID(userdecode._id.toString())
-		}, {
-			$set: {
-				password: data.password
-			}
-		})
+		_id: ObjectID(userdecode._id.toString())
+	}, {
+		$set: {
+			password: data.password
+		}
+	})
 		.then((response) => res.out({
 			message: req.custom.local.saved_done
 		}))
@@ -271,7 +271,7 @@ module.exports.forgotpassword = async function (req, res) {
 	const userCollection = req.custom.db.client().collection('member');
 	const userObj = await userCollection.findOne({
 		email: data.email
-	}).then((c) => c).catch(() => {});
+	}).then((c) => c).catch(() => { });
 
 	const reset_hash = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
@@ -282,12 +282,12 @@ module.exports.forgotpassword = async function (req, res) {
 
 	const collection = req.custom.db.client().collection(collectionName);
 	collection.updateOne({
-			_id: userObj._id
-		}, {
-			$set: {
-				reset_hash: reset_hash
-			}
-		})
+		_id: userObj._id
+	}, {
+		$set: {
+			reset_hash: reset_hash
+		}
+	})
 		.then((response) => {
 
 			mail.send_mail(req.custom.settings.site_name[req.custom.lang], data.email,
@@ -338,15 +338,15 @@ module.exports.resetpassword = async function (req, res) {
 
 	const password = sha1(md5(data.new_password));
 	collection.updateOne({
-			_id: ObjectID(user._id.toString())
-		}, {
-			$set: {
-				password: password,
-			},
-			$unset: {
-				reset_hash: 1
-			},
-		})
+		_id: ObjectID(user._id.toString())
+	}, {
+		$set: {
+			password: password,
+		},
+		$unset: {
+			reset_hash: 1
+		},
+	})
 		.then((response) => res.out({
 			message: req.custom.local.password_has_been_updated
 		}))
@@ -390,19 +390,54 @@ module.exports.updatecity = async function (req, res) {
 		_id: cityObj.country_id
 	}).then((c) => c).catch(() => null);
 
+	const cart = req.custom.authorizationObject.cart;
+	if (req.custom.authorizationObject.store_id && cityObj && cityObj.store_id && req.custom.authorizationObject.store_id.toString() !== cityObj.store_id.toString()) {
+
+		let prod_ids = [];
+		if (Object.keys(cart).length > 0) {
+			for (const i of Object.keys(cart)) {
+				prod_ids.push(ObjectID(i));
+			}
+		}
+
+		const prod_collection = req.custom.db.client().collection('product');
+		const prods = await prod_collection.find({ "_id": { $in: prod_ids } }, { projection: { _id: 1, prod_n_storeArr: 1 } }).toArray();
+
+		for (const p of Object.keys(cart)) {
+			const product = prods.find((i) => i._id.toString() === p.toString());
+			if (!product) {
+				delete cart[p];
+				continue;
+			}
+
+			const product_qty = product.prod_n_storeArr.find((i) => i.store_id.toString() === cityObj.store_id.toString());
+			if (!product_qty) {
+				delete cart[p];
+				continue;
+			}
+
+			if (cart[p] > product_qty.quantity) {
+				cart[p] = product_qty.quantity;
+			}
+
+		}
+
+	}
+
 	const row = {
 		city_id: data.city_id,
 		country_id: cityObj.country_id,
 		store_id: cityObj.store_id,
 		currency: countryObj.currency,
-		language: req.custom.lang
+		language: req.custom.lang,
+		cart: cart
 	};
 
 	if (req.custom.authorizationObject.member_id) {
 		const userCollection = req.custom.db.client().collection('member');
 		const userObj = await userCollection.findOne({
 			_id: ObjectID(req.custom.authorizationObject.member_id.toString())
-		}).then((c) => c).catch(() => {});
+		}).then((c) => c).catch(() => { });
 
 		fix_user_data(req, userObj, data.city_id);
 	}
@@ -432,7 +467,7 @@ module.exports.points2wallet = async function (req, res) {
 	}
 	const collection = req.custom.db.client().collection(collectionName);
 
-	const user = await getInfo(req).catch(() => {});
+	const user = await getInfo(req).catch(() => { });
 
 	if (!user) {
 		return res.out({
@@ -460,13 +495,13 @@ module.exports.points2wallet = async function (req, res) {
 	}
 
 	collection.updateOne({
-			_id: ObjectID(user._id)
-		}, {
-			$set: {
-				points: points,
-				wallet: wallet,
-			}
-		})
+		_id: ObjectID(user._id)
+	}, {
+		$set: {
+			points: points,
+			wallet: wallet,
+		}
+	})
 		.then((response) => res.out({
 			message: req.custom.local.points2wallet_saved_done,
 			points: points,
@@ -491,14 +526,14 @@ function fix_user_data(req, userObj, city_id) {
 	address.longitude = userObj.address.longitude || 0;
 
 	userCollection.updateOne({
-			_id: userObj._id
-		}, {
-			$set: {
-				address: address,
-				points: points,
-				wallet: wallet,
-			}
-		})
+		_id: userObj._id
+	}, {
+		$set: {
+			address: address,
+			points: points,
+			wallet: wallet,
+		}
+	})
 		.catch(() => null);
 }
 
@@ -510,8 +545,8 @@ function getInfo(req, projection = {}) {
 				if (row_token.member_id) {
 					const collection = req.custom.db.client().collection('member');
 					collection.findOne({
-							_id: ObjectID(row_token.member_id)
-						}, projection)
+						_id: ObjectID(row_token.member_id)
+					}, projection)
 						.then((theuser) => {
 							resolve(theuser);
 						})

@@ -171,7 +171,6 @@ module.exports.list = async function (req, res) {
 		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
 	}
 	const mainController = require("../../libraries/mainController");
-	const ObjectID = require('mongodb').ObjectID;
 	let user = req.custom.authorizationObject;
 	let prods = [];
 	if (user && user.cart) {
