@@ -120,6 +120,7 @@ const locals = {
 		address_name: 'إسم العنوان',
 		address: 'العنوان',
 		city_id: 'المدينة',
+		coupon: 'كود الخصم',
 		delivery_time: 'وقت التوصيل',
 		driver: 'السائق',
 		email: 'البريد الإلكتروني',

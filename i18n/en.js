@@ -118,6 +118,7 @@ const locals = {
 		address_name: 'Address Name',
 		address: 'Address',
 		city_id: 'City',
+		coupon: 'Promo Code',
 		delivery_time: 'Delivery Time',
 		driver: 'Driver',
 		email: 'Email',

@@ -23,6 +23,7 @@ module.exports.add = async function (req, res) {
 	}
 	let user = req.custom.authorizationObject;
 	user.cart = user.cart || {};
+	user.hash = null;
 
 
 	const prod_collection = req.custom.db.client().collection('product');
@@ -117,6 +118,7 @@ module.exports.remove = async function (req, res) {
 	}
 	let user = req.custom.authorizationObject;
 	user.cart = user.cart || {};
+	user.hash = null;
 	const keys = Object.keys(user.cart);
 	if (keys.indexOf(data.product_id.toString()) === -1) {
 		return res.out({

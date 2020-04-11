@@ -542,6 +542,7 @@ function update_quantities(req, the_products, cart) {
 		for (const i of p.prod_n_storeArr) {
 			if (i.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
 				i.quantity -= quantity;
+				i.quantity = i.quantity >= 0 ? i.quantity : 0
 			}
 			i.store_id = ObjectID(i.store_id.toString());
 			prod_n_storeArr.push(i);
