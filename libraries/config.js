@@ -20,6 +20,9 @@ module.exports = {
 		life_time: parseInt(process.env.CACHE_LIFE_TIME),
     	prefix: process.env.CACHE_PREFIX,
 	},
+	date: {
+		format: process.env.DATE_FORMAT,
+	},
     local: process.env.APP_LOCAL,
     base_url_level: process.env.APP_BASE_URL_LEVEL,
     media_url: process.env.MEDIA_URL,

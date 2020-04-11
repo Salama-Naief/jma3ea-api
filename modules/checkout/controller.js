@@ -6,6 +6,7 @@ const enums = require('../../libraries/enums');
 const mainController = require("../../libraries/mainController");
 const mail = require("../../libraries/mail");
 const mail_view = require("./view/mail");
+const moment = require('moment');
 const shortid = require('shortid');
 shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-');
 
@@ -371,17 +372,16 @@ module.exports.list = async function (req, res) {
 
 		let delivery_times = [];
 
-		let min_delivery_time_setting = new Date();
-		if (Date.parse(req.custom.settings.orders.min_delivery_time) > 0 &&
-			Date.parse(req.custom.settings.orders.min_delivery_time.toLocaleString()) > Date.parse(new Date().toLocaleString())) {
-			min_delivery_time_setting = new Date(req.custom.settings.orders.min_delivery_time.toLocaleString());
+		let min_delivery_time_setting = 30;
+		if (parseInt(req.custom.settings.orders.min_delivery_time) > 0) {
+			min_delivery_time_setting = parseInt(req.custom.settings.orders.min_delivery_time);
 		}
-		const min_delivery_time = getRoundedDate(30, addMinutes(min_delivery_time_setting, 30));
+		const min_delivery_time = getRoundedDate(30, new Date(moment().add(min_delivery_time_setting, 'minutes').format(req.custom.config.date.format).toString()));
 
 		let new_date = min_delivery_time;
 		for (let idx = 0; idx < 96; idx++) {
 			new_date = addMinutes(new_date, 30);
-			delivery_times.push(new_date.toLocaleString());
+			delivery_times.push(moment(new_date).format(req.custom.config.date.format));
 		}
 
 		const purchase_possibility = req.custom.settings.orders && req.custom.settings.orders.min_value && parseInt(req.custom.settings.orders.min_value) > 0 && total_prods < parseInt(req.custom.settings.orders.min_value) ? false : true;
