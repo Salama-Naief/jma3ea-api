@@ -1,9 +1,9 @@
 // Categories Controller
 
 // Load required modules
-const common = require('./common');
-const enums = require('./enums');
-const ObjectID = require('mongodb').ObjectID;
+const common = require('@big_store_core/base/libraries/common');
+const status_message = require('@big_store_core/base/enums/status_message');
+const ObjectID = require("@big_store_core/base/types/object_id");
 
 /**
  * List all categories
@@ -12,7 +12,7 @@ const ObjectID = require('mongodb').ObjectID;
  */
 module.exports.list = async function (req, res, collectionName, projection, callback) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	const cache = req.custom.cache;
 
@@ -52,7 +52,7 @@ module.exports.list = async function (req, res, collectionName, projection, call
 		if (!city_id) {
 			return res.out({
 				'message': req.custom.local.choose_city_first
-			}, enums.status_message.CITY_REQUIRED);
+			}, status_message.CITY_REQUIRED);
 		}
 
 	}
@@ -155,7 +155,7 @@ module.exports.list = async function (req, res, collectionName, projection, call
 				if (err) {
 					return res.out({
 						'message': err.message
-					}, enums.status_message.UNEXPECTED_ERROR);
+					}, status_message.UNEXPECTED_ERROR);
 				}
 				const out = {
 					total: total,
@@ -188,7 +188,7 @@ module.exports.list = async function (req, res, collectionName, projection, call
 					if (req.custom.cache_key && results.length > 0) {
 						cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time).catch(() => null);
 					}
-					const message = results.length > 0 ? enums.status_message.DATA_LOADED : enums.status_message.NO_DATA;
+					const message = results.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
 					res.out(out, message);
 				}
 			});
@@ -204,7 +204,7 @@ module.exports.list = async function (req, res, collectionName, projection, call
  */
 module.exports.list_all = async function (req, res, collectionName, projection, callback) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	const cache = req.custom.cache;
 	if (req.custom.cache_key) {
@@ -245,7 +245,7 @@ module.exports.list_all = async function (req, res, collectionName, projection, 
 		if (err) {
 			return res.out({
 				'message': err.message
-			}, enums.status_message.UNEXPECTED_ERROR);
+			}, status_message.UNEXPECTED_ERROR);
 		}
 		const out = {
 			count: results.length,
@@ -256,7 +256,7 @@ module.exports.list_all = async function (req, res, collectionName, projection, 
 				return i;
 			}) : []
 		};
-		const message = results.length > 0 ? enums.status_message.DATA_LOADED : enums.status_message.NO_DATA;
+		const message = results.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
 
 		if (callback) {
 			callback(out);
@@ -279,12 +279,12 @@ module.exports.list_all = async function (req, res, collectionName, projection, 
  */
 module.exports.read = async function (req, res, collectionName, projection, callback) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	if (!ObjectID.isValid(req.params.Id)) {
 		return res.out({
 			'message': req.custom.local.id_not_valid
-		}, enums.status_message.INVALID_URL_PARAMETER);
+		}, status_message.INVALID_URL_PARAMETER);
 	}
 
 	const cache = req.custom.cache;
@@ -299,7 +299,7 @@ module.exports.read = async function (req, res, collectionName, projection, call
 	if (!city_id) {
 		return res.out({
 			'message': req.custom.local.choose_city_first
-		}, enums.status_message.CITY_REQUIRED);
+		}, status_message.CITY_REQUIRED);
 	}
 
 	const collection = req.custom.db.client().collection(collectionName);
@@ -328,7 +328,7 @@ module.exports.read = async function (req, res, collectionName, projection, call
 		if (err) {
 			return res.out({
 				'error': err.message
-			}, enums.status_message.UNEXPECTED_ERROR);
+			}, status_message.UNEXPECTED_ERROR);
 		}
 		const row = results[0] || {};
 		if (row.picture) {
@@ -343,7 +343,7 @@ module.exports.read = async function (req, res, collectionName, projection, call
 				cache.set(req.custom.cache_key, row, req.custom.config.cache.life_time).catch(() => null);
 			}
 
-			const message = Object.keys(row) > 0 ? enums.status_message.DATA_LOADED : enums.status_message.NO_DATA;
+			const message = Object.keys(row) > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
 			res.out(row, message);
 		}
 	});

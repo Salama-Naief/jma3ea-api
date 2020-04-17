@@ -1,11 +1,11 @@
 // Slides Controller
 
 // Load required modules
-const ObjectID = require('mongodb').ObjectID;
-const enums = require('../../libraries/enums');
+const google = require('@big_store_core/base/libraries/external/google');
+const ObjectID = require("@big_store_core/base/types/object_id");
+const status_message = require('@big_store_core/base/enums/status_message');
 const profile = require('../profile/controller');
 const collectionName = 'member';
-const common = require('../../libraries/common');
 
 
 /**
@@ -15,7 +15,7 @@ const common = require('../../libraries/common');
  */
 module.exports.get = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
 	const user = await profile.getInfo(req).catch(() => null);
@@ -23,7 +23,7 @@ module.exports.get = async function (req, res) {
 	if (!user) {
 		return res.out({
 			"message": req.custom.local.no_user_found
-		}, enums.status_message.VALIDATION_ERROR);
+		}, status_message.VALIDATION_ERROR);
 	}
 
 	const cityCollection = req.custom.db.client().collection('city');
@@ -74,7 +74,7 @@ module.exports.remove = async function (req, res) {
 
 async function update_user(req, res, action = 'insert') {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	const collection = req.custom.db.client().collection(collectionName);
 	req.custom.model = require('./model/address');
@@ -86,7 +86,7 @@ async function update_user(req, res, action = 'insert') {
 		error
 	} = action != 'remove' ? await req.custom.getValidData(req) : {};
 	if (error && Object.keys(error).length > 0) {
-		return res.out(error, enums.status_message.VALIDATION_ERROR);
+		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
 	const user = await profile.getInfo(req).catch(() => { });
@@ -94,13 +94,13 @@ async function update_user(req, res, action = 'insert') {
 	if (!user) {
 		return res.out({
 			"message": req.custom.local.no_user_found
-		}, enums.status_message.VALIDATION_ERROR);
+		}, status_message.VALIDATION_ERROR);
 	}
 
 	if (action == 'remove' && req.params.Id == req.custom.local.default_address) {
 		return res.out({
 			"message": req.custom.local.can_not_delete_default_address
-		}, enums.status_message.VALIDATION_ERROR);
+		}, status_message.VALIDATION_ERROR);
 	}
 
 	let address = user.address;
@@ -108,7 +108,7 @@ async function update_user(req, res, action = 'insert') {
 	let updated_data = {};
 
 	if (action == 'insert' || action == 'update') {
-		if (!await common.valid_gmap_address(req, res, req.body)) {
+		if (!await google.valid_gmap_address(req, res, req.body)) {
 			return false;
 		}
 	}
@@ -118,7 +118,7 @@ async function update_user(req, res, action = 'insert') {
 		if (exists || data.name == req.custom.local.default_address) {
 			return res.out({
 				"name": req.custom.local.address_name_exists
-			}, enums.status_message.VALIDATION_ERROR);
+			}, status_message.VALIDATION_ERROR);
 		}
 		addresses.push(data);
 		updated_data = {
@@ -161,5 +161,5 @@ async function update_user(req, res, action = 'insert') {
 		}))
 		.catch((error) => res.out({
 			'message': error.message
-		}, enums.status_message.UNEXPECTED_ERROR));
+		}, status_message.UNEXPECTED_ERROR));
 }

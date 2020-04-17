@@ -1,10 +1,11 @@
 // Slides Controller
 
 // Load required modules
-const ObjectID = require('mongodb').ObjectID;
-const enums = require('../../libraries/enums');
-const mail = require('../../libraries/mail');
-const common = require('../../libraries/common');
+const ObjectID = require("@big_store_core/base/types/object_id");
+const status_message = require('@big_store_core/base/enums/status_message');
+const mail = require('@big_store_core/base/libraries/mail');
+const google = require('@big_store_core/base/libraries/external/google');
+const common = require('@big_store_core/base/libraries/common');
 const sha1 = require('sha1');
 const md5 = require('md5');
 const auth = require('../auth/controller');
@@ -19,13 +20,13 @@ const collectionName = 'member';
  */
 module.exports.me = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	getInfo(req).then((decoded) => {
 		if (!decoded) {
 			return res.out({
 				message: req.custom.local.no_data_found
-			}, enums.status_message.NO_DATA);
+			}, status_message.NO_DATA);
 		}
 		if (decoded.password) {
 			delete decoded.password;
@@ -34,7 +35,7 @@ module.exports.me = async function (req, res) {
 	}).catch((e) => {
 		res.out({
 			message: e.message
-		}, enums.status_message.UNEXPECTED_ERROR);
+		}, status_message.UNEXPECTED_ERROR);
 	});
 
 };
@@ -46,7 +47,7 @@ module.exports.me = async function (req, res) {
  */
 module.exports.login = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	const usercollection = req.custom.db.client().collection(collectionName);
 	const local = req.custom.local;
@@ -54,7 +55,7 @@ module.exports.login = async function (req, res) {
 	if (!req.body.username || !req.body.password) {
 		return res.out({
 			message: local.failed_auth_user
-		}, enums.status_message.INVALID_USER_AUTHENTICATION);
+		}, status_message.INVALID_USER_AUTHENTICATION);
 	}
 
 	usercollection.findOne({
@@ -64,7 +65,7 @@ module.exports.login = async function (req, res) {
 		if (!theuser) {
 			return res.out({
 				message: local.failed_auth_user
-			}, enums.status_message.INVALID_USER_AUTHENTICATION);
+			}, status_message.INVALID_USER_AUTHENTICATION);
 		}
 		// create a token
 		const cityid = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
@@ -73,7 +74,7 @@ module.exports.login = async function (req, res) {
 		if (!ObjectID.isValid(cityid)) {
 			return res.out({
 				'message': req.custom.local.choose_city_first
-			}, enums.status_message.CITY_REQUIRED);
+			}, status_message.CITY_REQUIRED);
 		}
 
 		fix_user_data(req, theuser, cityid);
@@ -91,11 +92,11 @@ module.exports.login = async function (req, res) {
 			})
 			.catch(() => res.out({
 				message: local.failed_create_auth_app
-			}, enums.status_message.UNEXPECTED_ERROR));
+			}, status_message.UNEXPECTED_ERROR));
 
 	}).catch(() => res.out({
 		error: local.failed_auth_user
-	}, enums.status_message.UNEXPECTED_ERROR));
+	}, status_message.UNEXPECTED_ERROR));
 };
 
 /**
@@ -105,7 +106,7 @@ module.exports.login = async function (req, res) {
  */
 module.exports.logout = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
 	const token = req.headers['authorization'] ? req.headers['authorization'].replace('Bearer ', '') : null;
@@ -129,7 +130,7 @@ module.exports.logout = async function (req, res) {
  */
 module.exports.register = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	const collection = req.custom.db.client().collection(collectionName);
 	req.custom.model = require('./model/register');
@@ -138,10 +139,10 @@ module.exports.register = async function (req, res) {
 		error
 	} = await req.custom.getValidData(req);
 	if (error && Object.keys(error).length > 0) {
-		return res.out(error, enums.status_message.VALIDATION_ERROR);
+		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
-	if (!await common.valid_gmap_address(req, res, req.body.address)) {
+	if (!await google.valid_gmap_address(req, res, req.body.address)) {
 		return false;
 	}
 
@@ -158,7 +159,7 @@ module.exports.register = async function (req, res) {
 		})
 		.catch((error) => res.out({
 			'message': error.message
-		}, enums.status_message.UNEXPECTED_ERROR));
+		}, status_message.UNEXPECTED_ERROR));
 };
 
 /**
@@ -168,7 +169,7 @@ module.exports.register = async function (req, res) {
  */
 module.exports.update = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	const collection = req.custom.db.client().collection(collectionName);
 	req.custom.model = require('./model/update');
@@ -177,7 +178,7 @@ module.exports.update = async function (req, res) {
 		error
 	} = await req.custom.getValidData(req);
 	if (error) {
-		return res.out(error, enums.status_message.VALIDATION_ERROR);
+		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
 	const user = await getInfo(req).catch(() => { });
@@ -185,7 +186,7 @@ module.exports.update = async function (req, res) {
 	if (!user) {
 		return res.out({
 			"message": req.custom.local.no_user_found
-		}, enums.status_message.VALIDATION_ERROR);
+		}, status_message.VALIDATION_ERROR);
 	}
 
 	collection.updateOne({
@@ -198,7 +199,7 @@ module.exports.update = async function (req, res) {
 		}))
 		.catch((error) => res.out({
 			'message': error.message
-		}, enums.status_message.UNEXPECTED_ERROR));
+		}, status_message.UNEXPECTED_ERROR));
 };
 
 /**
@@ -208,7 +209,7 @@ module.exports.update = async function (req, res) {
  */
 module.exports.updatepassword = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	const collection = req.custom.db.client().collection(collectionName);
 	req.custom.model = require('./model/updatepassword');
@@ -230,7 +231,7 @@ module.exports.updatepassword = async function (req, res) {
 		}
 	}
 	if (error) {
-		return res.out(error, enums.status_message.VALIDATION_ERROR);
+		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
 	data.password = sha1(md5(data.new_password));
@@ -246,7 +247,7 @@ module.exports.updatepassword = async function (req, res) {
 		}))
 		.catch((error) => res.out({
 			'message': error.message
-		}, enums.status_message.UNEXPECTED_ERROR));
+		}, status_message.UNEXPECTED_ERROR));
 };
 
 /**
@@ -256,7 +257,7 @@ module.exports.updatepassword = async function (req, res) {
  */
 module.exports.forgotpassword = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
 	req.custom.model = require('./model/forgotpassword');
@@ -265,7 +266,7 @@ module.exports.forgotpassword = async function (req, res) {
 		error
 	} = await req.custom.getValidData(req);
 	if (error) {
-		return res.out(error, enums.status_message.VALIDATION_ERROR);
+		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
 	const userCollection = req.custom.db.client().collection('member');
@@ -301,7 +302,7 @@ module.exports.forgotpassword = async function (req, res) {
 		})
 		.catch((error) => res.out({
 			'message': error.message
-		}, enums.status_message.UNEXPECTED_ERROR));
+		}, status_message.UNEXPECTED_ERROR));
 };
 
 /**
@@ -311,7 +312,7 @@ module.exports.forgotpassword = async function (req, res) {
  */
 module.exports.resetpassword = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	const collection = req.custom.db.client().collection(collectionName);
 	req.custom.model = require('./model/resetpassword');
@@ -322,7 +323,7 @@ module.exports.resetpassword = async function (req, res) {
 	} = await req.custom.getValidData(req);
 
 	if (error) {
-		return res.out(error, enums.status_message.VALIDATION_ERROR);
+		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
 	const userCollection = req.custom.db.client().collection('member');
@@ -333,7 +334,7 @@ module.exports.resetpassword = async function (req, res) {
 	if (!user) {
 		res.out({
 			'message': error.message
-		}, enums.status_message.UNEXPECTED_ERROR);
+		}, status_message.UNEXPECTED_ERROR);
 	}
 
 	const password = sha1(md5(data.new_password));
@@ -352,7 +353,7 @@ module.exports.resetpassword = async function (req, res) {
 		}))
 		.catch((error) => res.out({
 			'message': error.message
-		}, enums.status_message.UNEXPECTED_ERROR));
+		}, status_message.UNEXPECTED_ERROR));
 };
 
 /**
@@ -362,7 +363,7 @@ module.exports.resetpassword = async function (req, res) {
  */
 module.exports.updatecity = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
 	req.custom.model = require('./model/updatecity');
@@ -371,18 +372,21 @@ module.exports.updatecity = async function (req, res) {
 		error
 	} = await req.custom.getValidData(req);
 	if (error) {
-		return res.out(error, enums.status_message.VALIDATION_ERROR);
+		// TODO: Remove this after making sure it handled in apps
+		error.message = req.custom.local.city_is_not_exists;
+		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
 	const cityCollection = req.custom.db.client().collection('city');
 	const cityObj = await cityCollection.findOne({
-		_id: data.city_id
+		_id: ObjectID(data.city_id.toString())
 	}).then((c) => c).catch(() => null);
 
+	// TODO: Update 'meesage' to 'city_id' this after making sure it handled in apps
 	if (!cityObj) {
 		return res.out({
 			'message': req.custom.local.city_is_not_exists
-		}, enums.status_message.CITY_REQUIRED)
+		}, status_message.CITY_REQUIRED)
 	}
 
 	const countryCollection = req.custom.db.client().collection('country');
@@ -390,7 +394,7 @@ module.exports.updatecity = async function (req, res) {
 		_id: cityObj.country_id
 	}).then((c) => c).catch(() => null);
 
-	const cart = req.custom.authorizationObject.cart;
+	const cart = req.custom.authorizationObject.cart || {};
 	if (req.custom.authorizationObject.store_id && cityObj && cityObj.store_id && req.custom.authorizationObject.store_id.toString() !== cityObj.store_id.toString()) {
 
 		let prod_ids = [];
@@ -453,7 +457,7 @@ module.exports.updatecity = async function (req, res) {
 		}))
 		.catch((error) => res.out({
 			'message': error.message
-		}, enums.status_message.UNEXPECTED_ERROR));
+		}, status_message.UNEXPECTED_ERROR));
 };
 
 /**
@@ -463,7 +467,7 @@ module.exports.updatecity = async function (req, res) {
  */
 module.exports.points2wallet = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	const collection = req.custom.db.client().collection(collectionName);
 
@@ -472,13 +476,13 @@ module.exports.points2wallet = async function (req, res) {
 	if (!user) {
 		return res.out({
 			"message": req.custom.local.no_user_found
-		}, enums.status_message.VALIDATION_ERROR);
+		}, status_message.VALIDATION_ERROR);
 	}
 
 	if (!req.custom.settings.wallet.user_can_convert_points_to_wallet) {
 		return res.out({
 			"message": req.custom.local.convert2wallet_closed
-		}, enums.status_message.VALIDATION_ERROR);
+		}, status_message.VALIDATION_ERROR);
 	}
 
 	let points = user.points;
@@ -491,7 +495,7 @@ module.exports.points2wallet = async function (req, res) {
 	} else {
 		return res.out({
 			"message": req.custom.local.no_enough_points
-		}, enums.status_message.VALIDATION_ERROR);
+		}, status_message.VALIDATION_ERROR);
 	}
 
 	collection.updateOne({
@@ -509,7 +513,7 @@ module.exports.points2wallet = async function (req, res) {
 		}))
 		.catch((error) => res.out({
 			'message': error.message
-		}, enums.status_message.UNEXPECTED_ERROR));
+		}, status_message.UNEXPECTED_ERROR));
 };
 
 function fix_user_data(req, userObj, city_id) {

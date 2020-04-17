@@ -2,9 +2,9 @@
 
 // Load required modules
 const mainController = require("../../libraries/mainController");
-const common = require('../../libraries/common');
-const enums = require('../../libraries/enums');
-const ObjectID = require('mongodb').ObjectID;
+const common = require('@big_store_core/base/libraries/common');
+const status_message = require('@big_store_core/base/enums/status_message');
+const ObjectID = require("@big_store_core/base/types/object_id");
 const collectionName = 'product';
 
 /**
@@ -265,7 +265,7 @@ module.exports.read = async function (req, res) {
 		}
 	}, async (results) => {
 		if (!results || !results._id) {
-			res.out(results, enums.status_message.NO_DATA);
+			res.out(results, status_message.NO_DATA);
 		}
 		const prod_n_storeArr = results.availability;
 		let quantity = 0;

@@ -9,12 +9,31 @@ const config = require('./libraries/config');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
-process.env.TZ = 'Asia/Kuwait';
-
 const app = express();
 
-const middleware = require('./libraries/middleware');
-app.use(middleware);
+const authorization = require('./libraries/middlewares/authorization');
+const cache = require('@big_store_core/base/middlewares/cache');
+const database = require('@big_store_core/base/middlewares/database');
+const filter = require('@big_store_core/base/middlewares/filter');
+const i18n = require('@big_store_core/base/middlewares/i18n');
+const initialize = require('@big_store_core/base/middlewares/initialize');
+const pagination = require('@big_store_core/base/middlewares/pagination');
+const response = require('@big_store_core/base/middlewares/response');
+const settings = require('@big_store_core/base/middlewares/settings');
+const sorting = require('@big_store_core/base/middlewares/sorting');
+const validation = require('@big_store_core/base/middlewares/validation');
+
+app.use(initialize);
+app.use(response);
+app.use(i18n(path.resolve('i18n')));
+app.use(database);
+app.use(cache);
+app.use(authorization);
+app.use(settings);
+app.use(filter);
+app.use(sorting);
+app.use(pagination);
+app.use(validation);
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -49,27 +68,27 @@ app.use(function (err, req, res, next) {
 	// set locals, only providing error in development
 	res.locals.message = err.message;
 	res.locals.error = req.app.get('env') === 'development' ? err : {};
-	console.log('=====================Start of Error====================');
-	console.log('=========================================');
-	console.log('--------[Protocol]------', '::', req.protocol);
-	console.log('--------[Hostname]------', '::', req.hostname);
-	console.log('--------[OriginalUrl]---', '::', req.originalUrl);
-	console.log('--------[IP]------------', '::', req.ip);
-	console.log('--------[Method]--------', '::', req.method);
-	console.log('--------[Params]--------', '::', req.params);
-	console.log('--------[User-Agent]----', '::', req.get('User-Agent'));
-	console.log('--------[User-IP]-------', '::', req.headers['x-forwarded-for'] || req.connection.remoteAddress);
-	console.log('--------[Query]---------', '::', req.query);
-	console.log('--------[Body]----------', '::', req.body);
-	console.log('--------[Error]---------', '::', err.message);
-	console.log('=========================================');
-	console.log('=====================End of Error====================');
+	// console.log('=====================Start of Error====================');
+	// console.log('=========================================');
+	// console.log('--------[Protocol]------', '::', req.protocol);
+	// console.log('--------[Hostname]------', '::', req.hostname);
+	// console.log('--------[OriginalUrl]---', '::', req.originalUrl);
+	// console.log('--------[IP]------------', '::', req.ip);
+	// console.log('--------[Method]--------', '::', req.method);
+	// console.log('--------[Params]--------', '::', req.params);
+	// console.log('--------[User-Agent]----', '::', req.get('User-Agent'));
+	// console.log('--------[User-IP]-------', '::', req.headers['x-forwarded-for'] || req.connection.remoteAddress);
+	// console.log('--------[Query]---------', '::', req.query);
+	// console.log('--------[Body]----------', '::', req.body);
+	// console.log('--------[Error]---------', '::', err.message);
+	// console.log('=========================================');
+	// console.log('=====================End of Error====================');
+
+	console.log(err);
+	
 	// render the error page
-	res.json({
-		success: false,
-		code: err.status,
+	res.out({
 		errors: 'Error!',
-		results: null,
 	});
 });
 

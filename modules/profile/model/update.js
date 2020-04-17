@@ -1,46 +1,47 @@
-// Brand model
-const ObjectID = require("mongodb").ObjectID;
+// Update Profile model
+const Field = require("@big_store_core/base/libraries/field");
+
 module.exports = {
-    "fullname": {
+    "fullname": new Field({
         "required": true
-    },
-    "username": {
+    }),
+    "username": new Field({
         "required": true,
         "unique": true,
         "collection": 'member'
-    },
-    "email": {
+    }),
+    "email": new Field({
         "required": true,
         "unique": true,
         "collection": 'member'
-    },
-    "mobile": {
+    }),
+    "mobile": new Field({
         "required": true,
-		"length": 8,
+        "length": 8,
         "unique": true,
         "collection": 'member'
-    },
-    "address": {
+    }),
+    "address": new Field({
         "type": Object,
         "model": {
-            "widget": {
-            },
-            "street": {
-            },
-            "gada": {
-            },
-            "house": {
-            },
-            "latitude": {
-            },
-            "longitude": {
-            }
+            "widget": new Field({
+            }),
+            "street": new Field({
+            }),
+            "gada": new Field({
+            }),
+            "house": new Field({
+            }),
+            "latitude": new Field({
+            }),
+            "longitude": new Field({
+            }),
         }
-    },
-    "modified": {
+    }),
+    "modified": new Field({
         "type": Date,
         "default": new Date(),
         "updateOnly": true,
         "auto": true
-    }
+    })
 };

@@ -2,7 +2,7 @@
 
 // Load required modules
 const mainController = require("../../libraries/mainController");
-const ObjectID = require('mongodb').ObjectID;
+const ObjectID = require("@big_store_core/base/types/object_id");
 const collectionName = 'banner';
 
 /**

@@ -1,7 +1,7 @@
 // Carts Controller
-const enums = require('../../libraries/enums');
+const ObjectID = require("@big_store_core/base/types/object_id");
+const status_message = require('@big_store_core/base/enums/status_message');
 const profile = require('../profile/controller');
-const ObjectID = require('mongodb').ObjectID;
 const collectionName = 'member';
 
 /**
@@ -11,7 +11,7 @@ const collectionName = 'member';
  */
 module.exports.add = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	req.custom.model = require('./model/add');
 	let {
@@ -19,7 +19,7 @@ module.exports.add = async function (req, res) {
 		error
 	} = await req.custom.getValidData(req);
 	if (error) {
-		return res.out(error, enums.status_message.VALIDATION_ERROR);
+		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 	let user = req.custom.authorizationObject;
 
@@ -34,7 +34,7 @@ module.exports.add = async function (req, res) {
 	if (!prod) {
 		return res.out({
 			'message': req.custom.local.wishlist_product_unavailable
-		}, enums.status_message.VALIDATION_ERROR);
+		}, status_message.VALIDATION_ERROR);
 	}
 
 	user.wishlist = user.wishlist || [];
@@ -45,10 +45,10 @@ module.exports.add = async function (req, res) {
 	req.custom.cache.set(req.custom.token, user)
 		.then((response) => res.out({
 			message: req.custom.local.wishlist_product_added
-		}, enums.status_message.CREATED))
+		}, status_message.CREATED))
 		.catch((error) => res.out({
 			'message': error.message
-		}, enums.status_message.UNEXPECTED_ERROR));
+		}, status_message.UNEXPECTED_ERROR));
 
 	updateWishlist(req, user);
 
@@ -61,7 +61,7 @@ module.exports.add = async function (req, res) {
  */
 module.exports.remove = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	req.custom.model = require('./model/remove');
 	req.body.product_id = req.params.Id;
@@ -70,24 +70,24 @@ module.exports.remove = async function (req, res) {
 		error
 	} = await req.custom.getValidData(req);
 	if (error) {
-		return res.out(error, enums.status_message.VALIDATION_ERROR);
+		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 	let user = req.custom.authorizationObject;
 	user.wishlist = user.wishlist || [];
 	if (user.wishlist.indexOf(data.product_id.toString()) === -1) {
 		return res.out({
 			'message': req.custom.local.wishlist_product_not
-		}, enums.status_message.NO_DATA)
+		}, status_message.NO_DATA)
 	} else {
 		user.wishlist = user.wishlist.filter((elm) => elm != data.product_id.toString());
 
 		req.custom.cache.set(req.custom.token, user)
 			.then((response) => res.out({
 				message: req.custom.local.wishlist_product_removed
-			}, enums.status_message.DELETED))
+			}, status_message.DELETED))
 			.catch((error) => res.out({
 				'message': error.message
-			}, enums.status_message.UNEXPECTED_ERROR));
+			}, status_message.UNEXPECTED_ERROR));
 	}
 
 	updateWishlist(req, user);
@@ -100,10 +100,10 @@ module.exports.remove = async function (req, res) {
  */
 module.exports.list = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	const mainController = require("../../libraries/mainController");
-	const ObjectID = require('mongodb').ObjectID;
+	const ObjectID = require("@big_store_core/base/types/object_id");
 	let user = await profile.getInfo(req);
 	let prods = [];
 	if (user && user.wishlist) {

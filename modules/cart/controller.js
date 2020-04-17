@@ -1,8 +1,8 @@
 // Carts Controller
-const common = require('../../libraries/common');
-const enums = require('../../libraries/enums');
+const common = require('@big_store_core/base/libraries/common');
+const status_message = require('@big_store_core/base/enums/status_message');
 const mainController = require("../../libraries/mainController");
-const ObjectID = require('mongodb').ObjectID;
+const ObjectID = require("@big_store_core/base/types/object_id");
 
 /**
  * Add new product to Cart
@@ -11,7 +11,7 @@ const ObjectID = require('mongodb').ObjectID;
  */
 module.exports.add = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	req.custom.model = require('./model/add');
 	let {
@@ -19,7 +19,7 @@ module.exports.add = async function (req, res) {
 		error
 	} = await req.custom.getValidData(req);
 	if (error) {
-		return res.out(error, enums.status_message.VALIDATION_ERROR);
+		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 	let user = req.custom.authorizationObject;
 	user.cart = user.cart || {};
@@ -37,20 +37,21 @@ module.exports.add = async function (req, res) {
 	if (!prod) {
 		return res.out({
 			'message': req.custom.local.cart_product_unavailable
-		}, enums.status_message.VALIDATION_ERROR);
+		}, status_message.VALIDATION_ERROR);
 	}
 
 	for (const store of prod.prod_n_storeArr) {
+		console.log(store.quantity, data.quantity, prod.max_quantity_cart);
 		if (store.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
 			if (store.quantity < data.quantity || (prod.max_quantity_cart && prod.max_quantity_cart < data.quantity)) {
 				return res.out({
 					'message': req.custom.local.cart_product_exceeded_allowed
-				}, enums.status_message.VALIDATION_ERROR);
+				}, status_message.VALIDATION_ERROR);
 			}
 			if (store.status == false) {
 				return res.out({
 					'message': req.custom.local.cart_product_unavailable
-				}, enums.status_message.VALIDATION_ERROR);
+				}, status_message.VALIDATION_ERROR);
 			}
 			break;
 		}
@@ -90,10 +91,10 @@ module.exports.add = async function (req, res) {
 				total_products: total_products,
 				total_quantities: total_quantities,
 				total_prices: common.getRoundedPrice(total_prices),
-			}, enums.status_message.CREATED))
+			}, status_message.CREATED))
 			.catch((error) => res.out({
 				'message': error.message
-			}, enums.status_message.UNEXPECTED_ERROR));
+			}, status_message.UNEXPECTED_ERROR));
 	});
 
 };
@@ -105,7 +106,7 @@ module.exports.add = async function (req, res) {
  */
 module.exports.remove = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	req.custom.model = require('./model/remove');
 	req.body.product_id = req.params.Id;
@@ -114,7 +115,7 @@ module.exports.remove = async function (req, res) {
 		error
 	} = await req.custom.getValidData(req);
 	if (error) {
-		return res.out(error, enums.status_message.VALIDATION_ERROR);
+		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 	let user = req.custom.authorizationObject;
 	user.cart = user.cart || {};
@@ -123,7 +124,7 @@ module.exports.remove = async function (req, res) {
 	if (keys.indexOf(data.product_id.toString()) === -1) {
 		return res.out({
 			'message': req.custom.local.cart_product_not
-		}, enums.status_message.NO_DATA)
+		}, status_message.NO_DATA)
 	}
 	delete user.cart[data.product_id];
 
@@ -155,10 +156,10 @@ module.exports.remove = async function (req, res) {
 				total_products: total_products,
 				total_quantities: total_quantities,
 				total_prices: common.getRoundedPrice(total_prices),
-			}, enums.status_message.CREATED))
+			}, status_message.CREATED))
 			.catch((error) => res.out({
 				'message': error.message
-			}, enums.status_message.UNEXPECTED_ERROR));
+			}, status_message.UNEXPECTED_ERROR));
 	});
 
 };
@@ -170,7 +171,7 @@ module.exports.remove = async function (req, res) {
  */
 module.exports.list = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	const mainController = require("../../libraries/mainController");
 	let user = req.custom.authorizationObject;
@@ -199,7 +200,7 @@ module.exports.list = async function (req, res) {
 		if (!cityid) {
 			return res.out({
 				'message': req.custom.local.choose_city_first
-			}, enums.status_message.CITY_REQUIRED);
+			}, status_message.CITY_REQUIRED);
 		}
 		const city_collection = req.custom.db.client().collection('city');
 		const cityObj = await city_collection
@@ -212,7 +213,7 @@ module.exports.list = async function (req, res) {
 		if (!cityObj) {
 			return res.out({
 				'message': req.custom.local.choose_city_first
-			}, enums.status_message.CITY_REQUIRED);
+			}, status_message.CITY_REQUIRED);
 		}
 
 		out.shipping_cost = parseInt(cityObj.shipping_cost);
@@ -266,7 +267,7 @@ module.exports.list = async function (req, res) {
  */
 module.exports.coupon = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
 	let user = req.custom.authorizationObject;
@@ -285,13 +286,13 @@ module.exports.coupon = async function (req, res) {
 		if (!coupon) {
 			return res.out({
 				"code": req.custom.local.cart_coupon_unavailable
-			}, enums.status_message.VALIDATION_ERROR);
+			}, status_message.VALIDATION_ERROR);
 		}
 
 		if (coupon.member_id && (!user.member_id || (user.member_id && coupon.member_id.toString() !== user.member_id.toString()))) {
 			return res.out({
 				"code": req.custom.local.cart_coupon_unavailable
-			}, enums.status_message.VALIDATION_ERROR);
+			}, status_message.VALIDATION_ERROR);
 		}
 	}
 
@@ -304,8 +305,8 @@ module.exports.coupon = async function (req, res) {
 	req.custom.cache.set(req.custom.token, user)
 		.then((response) => res.out({
 			message: req.custom.local.cart_coupon_added
-		}, enums.status_message.CREATED))
+		}, status_message.CREATED))
 		.catch((error) => res.out({
 			'message': error.message
-		}, enums.status_message.UNEXPECTED_ERROR));
+		}, status_message.UNEXPECTED_ERROR));
 };

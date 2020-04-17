@@ -1,12 +1,13 @@
 // Add cart model
-const ObjectID = require("mongodb").ObjectID;
+const ObjectID = require("@big_store_core/base/types/object_id");
+const Field = require("@big_store_core/base/libraries/field");
 module.exports = {
-    "product_id": {
+    "product_id": new Field({
         "required": true,
         "type": ObjectID
-    },
-    "quantity": {
+    }),
+    "quantity": new Field({
         "required": true,
         "type": Number
-    }
+    })
 };

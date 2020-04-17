@@ -2,7 +2,7 @@
 
 // Load required modules
 const bcrypt = require('bcryptjs');
-const enums = require('../../libraries/enums');
+const status_message = require('@big_store_core/base/enums/status_message');
 const uuid = require('uuid');
 
 
@@ -20,7 +20,7 @@ module.exports.check = async function (req, res) {
 
 		return res.out({
 			message: local.failed_create_auth_app
-		}, enums.status_message.INVALID_APP_AUTHENTICATION);
+		}, status_message.INVALID_APP_AUTHENTICATION);
 
 	}
 
@@ -36,14 +36,14 @@ module.exports.check = async function (req, res) {
 	if (!theapp) {
 		return res.out({
 			message: local.failed_auth_user
-		}, enums.status_message.UNEXPECTED_ERROR);
+		}, status_message.UNEXPECTED_ERROR);
 	}
 
 	bcrypt.compare(appSecret, theapp.appSecret, function (err, valid) {
 		if (err || !valid) {
 			return res.out({
 				message: local.failed_auth_app
-			}, enums.status_message.INVALID_APP_AUTHENTICATION);
+			}, status_message.INVALID_APP_AUTHENTICATION);
 		}
 		// create a token
 		const userAgent = req.get('User-Agent');
@@ -59,7 +59,7 @@ module.exports.check = async function (req, res) {
 			}))
 			.catch(() => res.out({
 				message: local.failed_create_auth_app
-			}, enums.status_message.UNEXPECTED_ERROR));
+			}, status_message.UNEXPECTED_ERROR));
 	});
 };
 

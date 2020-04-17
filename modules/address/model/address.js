@@ -1,43 +1,45 @@
 // Brand model
-const ObjectID = require("mongodb").ObjectID;
+const ObjectID = require("@big_store_core/base/types/object_id");
+const Field = require("@big_store_core/base/libraries/field");
+
 module.exports = {
-	"name": {
+	"name": new Field({
 		"required": true,
 		"insertOnly": true
-	},
-	"city_id": {
+	}),
+	"city_id": new Field({
 		"type": ObjectID,
 		"collection": "city",
 		"required": true
-	},
-	"widget": {
+	}),
+	"widget": new Field({
 		"default": ""
-	},
-	"street": {
+	}),
+	"street": new Field({
 		"default": ""
-	},
-	"gada": {
+	}),
+	"gada": new Field({
 		"default": ""
-	},
-	"house": {
+	}),
+	"house": new Field({
 		"default": ""
-	},
-	"latitude": {
+	}),
+	"latitude": new Field({
 		"required": false
-	},
-	"longitude": {
+	}),
+	"longitude": new Field({
 		"required": false
-	},
-	"created": {
+	}),
+	"created": new Field({
 		"type": Date,
 		"default": new Date(),
 		"insertOnly": true,
 		"auto": true
-	},
-	"modified": {
+	}),
+	"modified": new Field({
 		"type": Date,
 		"default": new Date(),
 		"updateOnly": true,
 		"auto": true
-	}
+	})
 };

@@ -1,12 +1,12 @@
 // Checkout Controller
-const ObjectID = require("mongodb").ObjectID;
+const ObjectID = require("@big_store_core/base/types/object_id");
 const uuid = require('uuid');
-const common = require('../../libraries/common');
-const enums = require('../../libraries/enums');
+const common = require('@big_store_core/base/libraries/common');
 const mainController = require("../../libraries/mainController");
-const mail = require("../../libraries/mail");
+const mail = require('@big_store_core/base/libraries/mail');
 const mail_view = require("./view/mail");
 const moment = require('moment');
+const enums_payment_methods = require('@big_store_core/base/enums/payment_methods');
 const shortid = require('shortid');
 shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-');
 
@@ -20,7 +20,7 @@ let total_prods = 0;
  */
 module.exports.buy = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
 	const only_validation = req.query.validation !== undefined;
@@ -58,7 +58,7 @@ module.exports.buy = async function (req, res) {
 	} = await req.custom.getValidData(req);
 
 	if (error) {
-		return res.out(error, enums.status_message.VALIDATION_ERROR);
+		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
 	if (only_validation) {
@@ -82,14 +82,14 @@ module.exports.buy = async function (req, res) {
 		save_failed_payment(req);
 		return res.out({
 			message: req.custom.local.hash_error
-		}, enums.status_message.VALIDATION_ERROR);
+		}, status_message.VALIDATION_ERROR);
 	}
 
 	if (req.body.payment_method == 'knet' && req.body.payment_details && req.body.hash != req.body.payment_details.trackid) {
 		save_failed_payment(req);
 		return res.out({
 			message: req.custom.local.hash_error
-		}, enums.status_message.VALIDATION_ERROR);
+		}, status_message.VALIDATION_ERROR);
 	}
 
 	let user = req.custom.authorizationObject;
@@ -120,7 +120,7 @@ module.exports.buy = async function (req, res) {
 			save_failed_payment(req);
 			return res.out({
 				products: req.custom.local.cart_has_not_products
-			}, enums.status_message.NO_DATA);
+			}, status_message.NO_DATA);
 		}
 
 		const up_products = JSON.parse(JSON.stringify(out.data));
@@ -129,7 +129,7 @@ module.exports.buy = async function (req, res) {
 
 		const products = common.group_products_by_suppliers(products2save, req);
 
-		const payment_method = require('../../libraries/enums').payment_methods(req).find((pm) => pm.id == data.payment_method);
+		const payment_method = enums_payment_methods(req).find((pm) => pm.id == data.payment_method);
 
 		if (user_info) {
 			data.user_data._id = user_info._id;
@@ -166,7 +166,7 @@ module.exports.buy = async function (req, res) {
 			save_failed_payment(req);
 			return res.out({
 				message: req.custom.local.no_enough_wallet
-			}, enums.status_message.VALIDATION_ERROR);
+			}, status_message.VALIDATION_ERROR);
 		}
 
 		let discount_by_wallet_value = 0;
@@ -258,7 +258,7 @@ module.exports.buy = async function (req, res) {
  */
 module.exports.error = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
 	save_failed_payment(req);
@@ -276,10 +276,10 @@ module.exports.error = async function (req, res) {
  */
 module.exports.list = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	const mainController = require("../../libraries/mainController");
-	const ObjectID = require('mongodb').ObjectID;
+	const ObjectID = require("@big_store_core/base/types/object_id");
 	let user = req.custom.authorizationObject;
 	let prods = [];
 	if (user && user.cart) {
@@ -308,7 +308,7 @@ module.exports.list = async function (req, res) {
 		if (out.data.length === 0) {
 			return res.out({
 				products: req.custom.local.cart_has_not_products
-			}, enums.status_message.NO_DATA);
+			}, status_message.NO_DATA);
 		}
 
 		const products2save = await products_to_save(out.data, user, req, true);
@@ -358,7 +358,7 @@ module.exports.list = async function (req, res) {
 		const user_wallet = userObj ? parseInt(total > userObj.wallet ? userObj.wallet : Math.round(total)) : 0;
 		const can_pay_by_wallet = user_wallet >= parseInt(total) ? true : false;
 
-		let payment_methods = enums.payment_methods(req).
+		let payment_methods = enums_payment_methods(req).
 			filter(payment_method => {
 				if (payment_method.valid == true && total > 0) {
 					return true;

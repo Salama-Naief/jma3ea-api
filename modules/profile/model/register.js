@@ -1,68 +1,70 @@
 // Brand model
-const ObjectID = require("mongodb").ObjectID;
+const ObjectID = require("@big_store_core/base/types/object_id");
+const Field = require("@big_store_core/base/libraries/field");
+
 module.exports = {
-	"fullname": {
+	"fullname": new Field({
 		"required": true
-	},
-	"username": {
+	}),
+	"username": new Field({
 		"required": true,
 		"unique": true,
 		"collection": 'member'
-	},
-	"password": {
+	}),
+	"password": new Field({
 		"required": true
-	},
-	"email": {
+	}),
+	"email": new Field({
 		"type": "email",
 		"required": true,
 		"unique": true,
 		"collection": 'member'
-	},
-	"mobile": {
+	}),
+	"mobile": new Field({
 		"required": true,
 		"length": 8,
 		"unique": true,
 		"collection": 'member'
-	},
-	"address": {
+	}),
+	"address": new Field({
 		"type": Object,
 		"required": true,
-		"model": {
-			"city_id": {
+		"model": new Field({
+			"city_id": new Field({
 				"type": ObjectID,
 				"collection": "city",
 				"required": true
-			},
-			"widget": {
+			}),
+			"widget": new Field({
 				"default": ""
-			},
-			"street": {
+			}),
+			"street": new Field({
 				"default": ""
-			},
-			"gada": {
+			}),
+			"gada": new Field({
 				"default": ""
-			},
-			"house": {
+			}),
+			"house": new Field({
 				"default": ""
-			},
-			"latitude": {},
-			"longitude": {}
-		}
-	},
-	"created": {
+			}),
+			"latitude": new Field({}),
+			"longitude": new Field({})
+		})
+	}),
+	"created": new Field({
 		"type": Date,
 		"default": new Date(),
 		"insertOnly": true,
 		"auto": true
-	},
-	"modified": {
+	}),
+	"modified": new Field({
 		"type": Date,
 		"default": new Date(),
 		"updateOnly": true,
 		"auto": true
-	},
-	"status": {
+	}),
+	"status": new Field({
 		"type": Boolean,
 		"default": true
-	}
+	})
 };

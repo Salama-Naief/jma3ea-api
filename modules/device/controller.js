@@ -1,6 +1,6 @@
 // Device Controller
 const collectionName = 'device';
-const enums = require("../../libraries/enums");
+const status_message = require('@big_store_core/base/enums/status_message');
 
 /**
  * List all devices
@@ -10,15 +10,15 @@ const enums = require("../../libraries/enums");
 module.exports.list = function (req, res) {
     req.custom.clean_sort = { "_id": 1 };
     if (req.custom.isAuthorized === false) {
-        return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+        return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
     }
     const collection = req.custom.db.client().collection(collectionName);
     collection.count(req.custom.clean_filter, (err, total) => {
         if (err) {
-            return res.out({ message: err.message }, enums.status_message.UNEXPECTED_ERROR);
+            return res.out({ message: err.message }, status_message.UNEXPECTED_ERROR);
         }
         if (total === 0) {
-            return res.out({ count: 0, total: 0, links: [], data: [] }, enums.status_message.NO_DATA);
+            return res.out({ count: 0, total: 0, links: [], data: [] }, status_message.NO_DATA);
         }
         collection
             .find(req.custom.clean_filter)
@@ -27,7 +27,7 @@ module.exports.list = function (req, res) {
             .skip(req.custom.skip)
             .toArray(function (err, docs) {
                 if (err) {
-                    return res.out({ message: err.message }, enums.status_message.UNEXPECTED_ERROR);
+                    return res.out({ message: err.message }, status_message.UNEXPECTED_ERROR);
                 }
                 res.out({
                     total: total,
@@ -47,12 +47,12 @@ module.exports.list = function (req, res) {
  */
 module.exports.add = async function (req, res) {
     if (req.custom.isAuthorized === false) {
-        return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+        return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
     }
     req.custom.model = require('./model/add');
     let { data, error } = await req.custom.getValidData(req);
     if (error) {
-        return res.out(error, enums.status_message.VALIDATION_ERROR);
+        return res.out(error, status_message.VALIDATION_ERROR);
     }
     const collection = req.custom.db.client().collection(collectionName);
     collection.createIndex({ token: 1 }, { unique: true });
@@ -60,7 +60,7 @@ module.exports.add = async function (req, res) {
         .then((response) => {
             res.out({ message: req.custom.local.device_added, insertedId: response.insertedId });
         })
-        .catch((error) => res.out({ 'message': error.message }, enums.status_message.UNEXPECTED_ERROR));
+        .catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
 };
 
 /**
@@ -70,13 +70,13 @@ module.exports.add = async function (req, res) {
  */
 module.exports.remove = async function (req, res) {
     if (req.custom.isAuthorized === false) {
-        return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+        return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
     }
     req.custom.model = require('./model/remove');
     req.body.token = req.params.Id;
     let { data, error } = await req.custom.getValidData(req);
     if (error) {
-        return res.out(error, enums.status_message.VALIDATION_ERROR);
+        return res.out(error, status_message.VALIDATION_ERROR);
     }
     const collection = req.custom.db.client().collection(collectionName);
 
@@ -84,5 +84,5 @@ module.exports.remove = async function (req, res) {
         .then((response) => {
             res.out({ message: req.custom.local.device_removed });
         })
-        .catch((error) => res.out({ 'message': error.message }, enums.status_message.UNEXPECTED_ERROR));
+        .catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
 };

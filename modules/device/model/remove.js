@@ -1,6 +1,9 @@
-// Add cart model
+
+const Field = require("@big_store_core/base/libraries/field");
+
+// remove device model
 module.exports = {
-    "token": {
+    "token": new Field({
         "required": true
-    }
+    })
 };

@@ -1,8 +1,8 @@
 // Categories Controller
 
 // Load required modules
-const ObjectID = require('mongodb').ObjectID;
-const enums = require('../../libraries/enums');
+const ObjectID = require("@big_store_core/base/types/object_id");
+const status_message = require('@big_store_core/base/enums/status_message');
 const mainController = require("../../libraries/mainController");
 const collectionName = 'category';
 
@@ -41,7 +41,7 @@ module.exports.list = function (req, res) {
 		rows.map((i) => {
 			i.children = childs.filter((c) => c.parent_id.toString() === i._id.toString());
 		});
-		const message = out.data.length > 0 ? enums.status_message.DATA_LOADED : enums.status_message.NO_DATA;
+		const message = out.data.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
 
 		if (req.custom.cache_key && rows.length > 0) {
 			req.custom.cache.set(req.custom.cache_key, {
@@ -82,13 +82,13 @@ module.exports.read = function (req, res) {
  */
 module.exports.ranks = function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	req.custom.cache_key = `${collectionName}_${req.custom.lang}_ranks_${req.params.Id}`;
 	if (!ObjectID.isValid(req.params.Id)) {
 		return res.out({
 			'message': req.custom.local.id_not_valid
-		}, enums.status_message.INVALID_URL_PARAMETER);
+		}, status_message.INVALID_URL_PARAMETER);
 	}
 	req.custom.clean_filter = {
 		category_id: ObjectID(req.params.Id)

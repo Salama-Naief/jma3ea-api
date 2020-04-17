@@ -8,29 +8,27 @@
     "test": "mocha -c --sort --reporter list --recursive \"modules/**/test.js\""
   },
   "dependencies": {
-    "@google/maps": "^1.0.2",
+    "@big_store_core/base": "git+git@gitlab.com:big_store_core/big_store_core_base.git",
     "bcryptjs": "^2.4.3",
-    "compression": "^1.7.2",
-    "cookie-parser": "~1.4.3",
+    "big_store_core_base": "git+ssh://git@gitlab.com/big_store_core/big_store_core_base.git",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "debug": "~2.6.9",
-    "dotenv": "^8.0.0",
+    "dotenv": "^8.2.0",
     "express": "~4.16.0",
     "http-errors": "~1.6.2",
     "md5": "^2.2.1",
     "moment": "^2.24.0",
-    "mongodb": "^3.0.10",
     "morgan": "~1.9.0",
-    "nodemailer": "^5.1.1",
-    "qs": "^6.5.2",
-    "redis": "^2.8.0",
+    "qs": "^6.9.3",
     "sha1": "^1.1.1",
     "shortid": "^2.2.15",
-    "uuid": "^3.3.3"
+    "uuid": "^3.4.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
     "mocha": "^5.2.0",
-    "supertest": "^3.1.0"
+    "supertest": "^3.4.2"
   }
 }

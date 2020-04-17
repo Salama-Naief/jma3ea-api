@@ -2,9 +2,9 @@
 
 // Load required modules
 const mainController = require("../../libraries/mainController");
-const common = require('../../libraries/common');
-const enums = require('../../libraries/enums');
-const ObjectID = require('mongodb').ObjectID;
+const common = require('@big_store_core/base/libraries/common');
+const status_message = require('@big_store_core/base/enums/status_message');
+const ObjectID = require("@big_store_core/base/types/object_id");
 const collectionName = 'order';
 
 /**
@@ -14,7 +14,7 @@ const collectionName = 'order';
  */
 module.exports.list = function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	req.custom.clean_filter = req.custom.clean_filter || {};
 	req.custom.clean_filter['user_data._id'] = ObjectID(req.custom.authorizationObject.member_id);
@@ -43,13 +43,13 @@ module.exports.list = function (req, res) {
  */
 module.exports.read = function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
 	if (!ObjectID.isValid(req.params.Id)) {
 		return res.out({
 			'message': req.custom.local.id_not_valid
-		}, enums.status_message.INVALID_URL_PARAMETER);
+		}, status_message.INVALID_URL_PARAMETER);
 	}
 
 	const collection = req.custom.db.client().collection('order');
@@ -70,7 +70,7 @@ module.exports.read = function (req, res) {
 		})
 		.catch((err) => res.out({
 			'message': err.message
-		}, enums.status_message.UNEXPECTED_ERROR));
+		}, status_message.UNEXPECTED_ERROR));
 };
 
 /**
@@ -81,7 +81,7 @@ module.exports.read = function (req, res) {
 module.exports.evaluate = async function (req, res) {
 
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	req.custom.model = require('./model/evaluate');
 	let {
@@ -90,7 +90,7 @@ module.exports.evaluate = async function (req, res) {
 	} = await req.custom.getValidData(req);
 
 	if (error) {
-		return res.out(error, enums.status_message.VALIDATION_ERROR);
+		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
 	const collection = req.custom.db.client().collection(collectionName);
@@ -103,13 +103,13 @@ module.exports.evaluate = async function (req, res) {
 	if (!row) {
 		return res.out({
 			"message": req.custom.local.no_data_found
-		}, enums.status_message.VALIDATION_ERROR);
+		}, status_message.VALIDATION_ERROR);
 	}
 
 	if (row.evaluation) {
 		return res.out({
 			"message": req.custom.local.evaluated_before
-		}, enums.status_message.VALIDATION_ERROR);
+		}, status_message.VALIDATION_ERROR);
 	}
 
 	collection.updateOne({
@@ -126,7 +126,7 @@ module.exports.evaluate = async function (req, res) {
 		}))
 		.catch((error) => res.out({
 			'message': error.message
-		}, enums.status_message.UNEXPECTED_ERROR));
+		}, status_message.UNEXPECTED_ERROR));
 };
 /**
  * Read order by id
@@ -135,13 +135,13 @@ module.exports.evaluate = async function (req, res) {
  */
 module.exports.repeat = function (req, res) {
 	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, enums.status_message.UNAUTHENTICATED);
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
 	if (!ObjectID.isValid(req.params.Id)) {
 		return res.out({
 			'message': req.custom.local.id_not_valid
-		}, enums.status_message.INVALID_URL_PARAMETER);
+		}, status_message.INVALID_URL_PARAMETER);
 	}
 
 	const collection = req.custom.db.client().collection('order');
@@ -161,14 +161,14 @@ module.exports.repeat = function (req, res) {
 			req.custom.cache.set(req.custom.token, user)
 				.then((response) => res.out({
 					message: req.custom.local.cart_repeated
-				}, enums.status_message.CREATED))
+				}, status_message.CREATED))
 				.catch((error) => res.out({
 					'message': error.message
-				}, enums.status_message.UNEXPECTED_ERROR));
+				}, status_message.UNEXPECTED_ERROR));
 
 
 		})
 		.catch((err) => res.out({
 			'message': err.message
-		}, enums.status_message.UNEXPECTED_ERROR));
+		}, status_message.UNEXPECTED_ERROR));
 };

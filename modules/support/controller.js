@@ -2,7 +2,7 @@
 
 // Load required modules
 const mainController = require("../../libraries/mainController");
-const enums = require('../../libraries/enums');
+const status_message = require('@big_store_core/base/enums/status_message');
 const collectionName = 'support';
 
 /**
@@ -35,7 +35,7 @@ module.exports.list = function (req, res) {
 		rows.map((i) => {
 			i.children = childs.filter((c) => c.parent_id.toString() === i._id.toString());
 		});
-		const message = out.data.length > 0 ? enums.status_message.DATA_LOADED : enums.status_message.NO_DATA;
+		const message = out.data.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
 
 		if (req.custom.cache_key && rows.length > 0) {
 			req.custom.cache.set(req.custom.cache_key, {
