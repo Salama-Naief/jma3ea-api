@@ -1,8 +1,7 @@
 // Countries Controller
 
 // Load required modules
-const mainController = require("../../libraries/mainController");
-const collectionName = 'country';
+const Controller = require('@big_store_core/api/modules/country/controller');
 
 /**
  * List all countries
@@ -10,12 +9,7 @@ const collectionName = 'country';
  * @param {Object} res
  */
 module.exports.list = function (req, res) {
-	req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
-    mainController.list_all(req, res, collectionName, {
-        "_id": 1,
-        "name": { $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`] },
-        "code": 1
-    });
+	Controller.list(req, res);
 };
 /**
  * Read country by id
@@ -23,9 +17,5 @@ module.exports.list = function (req, res) {
  * @param {Object} res
  */
 module.exports.read = function (req, res) {
-    mainController.read(req, res, collectionName, {
-        "_id": 1,
-        "name": { $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`] },
-        "code": 1
-    });
+    Controller.read(req, res);
 };

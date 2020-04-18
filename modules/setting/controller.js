@@ -1,4 +1,5 @@
 // Settings Controller
+const Controller = require('@big_store_core/api/modules/setting/controller');
 
 /**
  * List all settings
@@ -6,5 +7,5 @@
  * @param {Object} res
  */
 module.exports.list = function (req, res) {
-	res.out(req.custom.settings);
+	Controller.list(req, res);
 };

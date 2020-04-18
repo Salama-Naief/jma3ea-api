@@ -11,7 +11,7 @@ const logger = require('morgan');
 
 const app = express();
 
-const authorization = require('./libraries/middlewares/authorization');
+const authorization = require('@big_store_core/api/libraries/middlewares/authorization');
 const cache = require('@big_store_core/base/middlewares/cache');
 const database = require('@big_store_core/base/middlewares/database');
 const filter = require('@big_store_core/base/middlewares/filter');
