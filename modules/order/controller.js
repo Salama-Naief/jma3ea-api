@@ -54,16 +54,16 @@ module.exports.read = function (req, res) {
 
 	const collection = req.custom.db.client().collection('order');
 	collection.findOne({
-			_id: ObjectID(req.params.Id),
-		})
+		_id: ObjectID(req.params.Id),
+	})
 		.then((order) => {
 			order.products = common.group_products_by_suppliers(order.products, req);
 			let products = [];
 			for (const supplier_key of Object.keys(order.products)) {
-				products[supplier_key] = order.products[supplier_key].map((p)=>{
+				products[supplier_key] = order.products[supplier_key].map((p) => {
 					p.name = p.name[req.custom.lang] || p.name[req.custom.config.local];
 					return p;
-				});  
+				});
 			}
 			order.status = req.custom.local.order_status_list[order.status];
 			res.out(order);
@@ -95,8 +95,8 @@ module.exports.evaluate = async function (req, res) {
 
 	const collection = req.custom.db.client().collection(collectionName);
 	const row = await collection.findOne({
-			_id: ObjectID(req.params.Id)
-		})
+		_id: ObjectID(req.params.Id)
+	})
 		.then((order_row) => order_row)
 		.catch((e) => null);
 
@@ -113,14 +113,14 @@ module.exports.evaluate = async function (req, res) {
 	}
 
 	collection.updateOne({
-			_id: ObjectID(req.params.Id)
-		}, {
-			$set: {
-				evaluation: {
-					driver: data.driver
-				}
+		_id: ObjectID(req.params.Id)
+	}, {
+		$set: {
+			evaluation: {
+				driver: data.driver
 			}
-		})
+		}
+	})
 		.then((response) => res.out({
 			message: req.custom.local.thanks_for_evaluation
 		}))
@@ -146,15 +146,13 @@ module.exports.repeat = function (req, res) {
 
 	const collection = req.custom.db.client().collection('order');
 	collection.findOne({
-			_id: ObjectID(req.params.Id),
-		})
+		_id: ObjectID(req.params.Id),
+	})
 		.then((order) => {
 			const products = {};
-			Object.keys(order.products).forEach((key) => {
-				for (const prod of order.products[key]) {
-					products[prod._id.toString()]= prod.quantity;
-				}
-			});
+			for (const prod of order.products) {
+				products[prod._id.toString()] = prod.quantity;
+			}
 
 			let user = req.custom.authorizationObject;
 			user.cart = products;
