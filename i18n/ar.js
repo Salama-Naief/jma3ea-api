@@ -18,6 +18,7 @@ const locals = {
 	dear: 'عزيزي',
 	default_address: 'العنوان الأساسي',
 	deleted_done: 'تم الحذف بنجاح',
+	delivery_time_available: 'متاح',
 	device_added: 'تم إضافة الجهاز بنجاح',
 	device_removed: 'تم حذف الجهاز بنجاح',
 	direction: 'rtl',

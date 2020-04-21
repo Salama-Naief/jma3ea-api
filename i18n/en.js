@@ -18,6 +18,7 @@ const locals = {
 	dear: 'Dear',
 	default_address: 'Primary Address',
 	deleted_done: 'Item has been deleted successfully.',
+	delivery_time_available: 'Available',
 	device_added: 'Device has been added successfully',
 	device_removed: 'Device has been removed successfully',
 	direction: 'ltr',
