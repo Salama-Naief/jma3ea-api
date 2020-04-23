@@ -22,6 +22,7 @@ module.exports = {
 	},
 	date: {
 		format: process.env.DATE_FORMAT,
+		timezone: process.env.TZ,
 	},
     local: process.env.APP_LOCAL,
     base_url_level: process.env.APP_BASE_URL_LEVEL,

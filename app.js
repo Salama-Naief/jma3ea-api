@@ -9,6 +9,8 @@ const config = require('./libraries/config');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
+process.env.TZ = config.date.timezone || process.env.TZ;
+
 const app = express();
 
 const authorization = require('@big_store_core/api/libraries/middlewares/authorization');
