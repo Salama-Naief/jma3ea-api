@@ -1,5 +1,6 @@
 // Update Profile model
 const Field = require("@big_store_core/base/libraries/field");
+const common = require('@big_store_core/base/libraries/common');
 
 module.exports = {
     "fullname": new Field({
@@ -40,7 +41,7 @@ module.exports = {
     }),
     "modified": new Field({
         "type": Date,
-        "default": new Date(),
+        "default": common.getDate(),
         "updateOnly": true,
         "auto": true
     })

@@ -1,6 +1,7 @@
 // Brand model
 const ObjectID = require("@big_store_core/base/types/object_id");
 const Field = require("@big_store_core/base/libraries/field");
+const common = require('@big_store_core/base/libraries/common');
 
 module.exports = {
 	"name": new Field({
@@ -32,13 +33,13 @@ module.exports = {
 	}),
 	"created": new Field({
 		"type": Date,
-		"default": new Date(),
+		"default": common.getDate(),
 		"insertOnly": true,
 		"auto": true
 	}),
 	"modified": new Field({
 		"type": Date,
-		"default": new Date(),
+		"default": common.getDate(),
 		"updateOnly": true,
 		"auto": true
 	})
