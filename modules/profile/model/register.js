@@ -30,7 +30,7 @@ module.exports = {
 	"address": new Field({
 		"type": Object,
 		"required": true,
-		"model": new Field({
+		"model": {
 			"city_id": new Field({
 				"type": ObjectID,
 				"collection": "city",
@@ -50,7 +50,7 @@ module.exports = {
 			}),
 			"latitude": new Field({}),
 			"longitude": new Field({})
-		})
+		}
 	}),
 	"created": new Field({
 		"type": Date,
