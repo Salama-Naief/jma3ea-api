@@ -25,18 +25,29 @@ module.exports = {
     "address": new Field({
         "type": Object,
         "model": {
+            "city_id": new Field({
+                "type": ObjectID,
+                "collection": "city",
+                "required": true
+            }),
             "widget": new Field({
+                "default": "",
+                "required": true
             }),
             "street": new Field({
+                "default": "",
+                "required": true
             }),
             "gada": new Field({
+                "default": "",
+                "required": true
             }),
             "house": new Field({
+                "default": "",
+                "required": true
             }),
-            "latitude": new Field({
-            }),
-            "longitude": new Field({
-            }),
+            "latitude": new Field({}),
+            "longitude": new Field({})
         }
     }),
     "modified": new Field({
