@@ -17,12 +17,12 @@ router.post('/', controller.insert);
 /**
  * PUT /address
  */
-router.put('/:Id', controller.update);
+router.put('/', controller.update);
 
 /**
  * DELETE /address
  */
-router.delete('/:Id', controller.remove);
+router.delete('/', controller.remove);
 
 
 module.exports = router;
