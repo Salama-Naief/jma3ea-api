@@ -116,6 +116,7 @@ const locals = {
 		return `The order should be more then ${value} ${currency}`
 	},
 	fields: {
+		address_id: 'Address',
 		address_name: 'Address Name',
 		address: 'Address',
 		city_id: 'City',
