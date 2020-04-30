@@ -21,7 +21,7 @@ module.exports = {
 		"unique": true,
 		"collection": 'order'
 	}),
-	"address_name": new Field({
+	"address_id": new Field({
 		"required": true,
 	}),
 };
