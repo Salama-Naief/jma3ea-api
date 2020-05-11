@@ -24,6 +24,9 @@ module.exports = {
 		format: process.env.DATE_FORMAT,
 		timezone: process.env.DATE_TIMEZONE || process.env.TZ,
 	},
+	order: {
+		disabled_payment_methods: process.env.ORDER_DISABLED_PAYMENT_METHODS ? process.env.ORDER_DISABLED_PAYMENT_METHODS.split(',') : [],
+	},
     local: process.env.APP_LOCAL,
     base_url_level: process.env.APP_BASE_URL_LEVEL,
     media_url: process.env.MEDIA_URL,
