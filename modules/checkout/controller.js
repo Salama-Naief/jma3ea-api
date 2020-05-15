@@ -7,7 +7,7 @@ const Controller = require('@big_store_core/api/modules/checkout/controller');
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.buy = async function (req, res) {
+module.exports.buy = function (req, res) {
 	Controller.buy(req, res);
 };
 
@@ -16,7 +16,7 @@ module.exports.buy = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.error = async function (req, res) {
+module.exports.error = function (req, res) {
 	Controller.error(req, res);
 };
 
@@ -25,6 +25,6 @@ module.exports.error = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.list = async function (req, res) {
+module.exports.list = function (req, res) {
 	Controller.list(req, res);
 };

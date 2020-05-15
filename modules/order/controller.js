@@ -25,7 +25,7 @@ module.exports.read = function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.evaluate = async function (req, res) {
+module.exports.evaluate = function (req, res) {
 	req.custom.model = require('./model/evaluate');
 	Controller.evaluate(req, res);
 };

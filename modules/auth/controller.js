@@ -9,6 +9,6 @@ const Controller = require('@big_store_core/api/modules/auth/controller');
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.check = async function (req, res) {
+module.exports.check = function (req, res) {
 	Controller.check(req, res);
 };

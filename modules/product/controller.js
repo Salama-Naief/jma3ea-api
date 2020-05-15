@@ -26,7 +26,7 @@ module.exports.listByCategory = function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.featured = async function (req, res) {
+module.exports.featured = function (req, res) {
 	Controller.featured(req, res);
 };
 
@@ -35,6 +35,6 @@ module.exports.featured = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.read = async function (req, res) {
+module.exports.read = function (req, res) {
 	Controller.read(req, res);
 };

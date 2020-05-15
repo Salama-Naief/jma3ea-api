@@ -8,7 +8,7 @@ const Controller = require('@big_store_core/api/modules/profile/controller');
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.me = async function (req, res) {
+module.exports.me = function (req, res) {
 	Controller.me(req, res);
 };
 
@@ -17,7 +17,7 @@ module.exports.me = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.login = async function (req, res) {
+module.exports.login = function (req, res) {
 	Controller.login(req, res);
 };
 
@@ -26,7 +26,7 @@ module.exports.login = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.logout = async function (req, res) {
+module.exports.logout = function (req, res) {
 	Controller.logout(req, res);
 };
 
@@ -36,7 +36,7 @@ module.exports.logout = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.register = async function (req, res) {
+module.exports.register = function (req, res) {
 	Controller.register(req, res);
 };
 
@@ -45,7 +45,7 @@ module.exports.register = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.update = async function (req, res) {
+module.exports.update = function (req, res) {
 	Controller.update(req, res);
 };
 
@@ -54,7 +54,7 @@ module.exports.update = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.updatepassword = async function (req, res) {
+module.exports.updatepassword = function (req, res) {
 	Controller.updatepassword(req, res);
 };
 
@@ -63,7 +63,7 @@ module.exports.updatepassword = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.forgotpassword = async function (req, res) {
+module.exports.forgotpassword = function (req, res) {
 	Controller.forgotpassword(req, res);
 };
 
@@ -72,7 +72,7 @@ module.exports.forgotpassword = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.resetpassword = async function (req, res) {
+module.exports.resetpassword = function (req, res) {
 	Controller.resetpassword(req, res);
 };
 
@@ -81,7 +81,7 @@ module.exports.resetpassword = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.updatecity = async function (req, res) {
+module.exports.updatecity = function (req, res) {
 	Controller.updatecity(req, res);
 };
 
@@ -90,7 +90,7 @@ module.exports.updatecity = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.points2wallet = async function (req, res) {
+module.exports.points2wallet = function (req, res) {
 	Controller.points2wallet(req, res);
 };
 
