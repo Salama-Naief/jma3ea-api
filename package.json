@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node bin/www",
     "start_dev": "nodemon bin/www",
-    "update": "git pull && rm -r node_modules && npm i --force && pm2 restart jme_api",
+    "update": "git pull && rm -r node_modules && npm i --force && pm2 restart api",
     "test": "mocha -c --sort --reporter list --recursive \"modules/**/test.js\""
   },
   "dependencies": {
