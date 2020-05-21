@@ -1,5 +1,12 @@
 // Load required modules
 require('dotenv').config();
+
+const http = require('http');
+const https = require('https');
+
+http.globalAgent.maxSockets = Infinity;
+https.globalAgent.maxSockets = Infinity;
+
 const createError = require('http-errors');
 const express = require('express');
 const compression = require('compression');
