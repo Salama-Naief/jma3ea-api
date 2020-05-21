@@ -5,11 +5,8 @@ const express = require('express');
 const compression = require('compression');
 const fs = require('fs');
 const path = require('path');
-const config = require('./libraries/config');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-
-process.env.TZ = config.date.timezone || process.env.TZ;
 
 const app = express();
 
@@ -47,7 +44,8 @@ app.use(cookieParser());
 
 const cors = require('cors')
 const corsOptions = {
-	origin: config.origin,
+	// TODO: Update to read from config
+	origin: '*',
 	optionsSuccessStatus: 200
 }
 
