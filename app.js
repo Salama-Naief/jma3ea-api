@@ -21,6 +21,7 @@ process.env.TZ = config.date.timezone || process.env.TZ;
 const app = express();
 
 const authorization = require('@big_store_core/api/libraries/middlewares/authorization');
+const app_version = require('@big_store_core/api/libraries/middlewares/app_version');
 const cache = require('@big_store_core/base/middlewares/cache');
 const database = require('@big_store_core/base/middlewares/database');
 const filter = require('@big_store_core/base/middlewares/filter');
@@ -35,6 +36,7 @@ const validation = require('@big_store_core/base/middlewares/validation');
 app.use(initialize(__dirname));
 app.use(response);
 app.use(i18n(path.resolve('i18n')));
+app.use(app_version);
 app.use(database);
 app.use(cache);
 app.use(authorization);
