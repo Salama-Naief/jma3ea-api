@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node bin/www",
     "start_dev": "nodemon bin/www",
-    "update": "git pull && rm -r node_modules && npm i --force && NODE_ENV=production TZ=\"Asia/Kuwait\" pm2 restart api --update-env",
+    "update": "git pull && rm -r node_modules && npm i --force && NODE_ENV=production TZ=\"Asia/Kuwait\" pm2 reload api --update-env",
     "test": "mocha -c --sort --reporter list --recursive \"modules/**/test.js\""
   },
   "dependencies": {
