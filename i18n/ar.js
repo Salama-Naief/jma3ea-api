@@ -143,6 +143,7 @@ const locals = {
 		quantity: 'الكمية',
 		re_new_password: 'إعادة كلمة المرور الجديدة',
 		reset_hash: 'شفرة إعادة كلمة المرور',
+		sku: 'كود المنتج',
 		street: 'الشارع',
 		token: 'رقم الجهاز',
 		type: 'نوع الجهاز',

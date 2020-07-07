@@ -2,8 +2,7 @@
 const ObjectID = require("@big_store_core/base/types/object_id");
 const Field = require("@big_store_core/base/libraries/field");
 module.exports = {
-    "product_id": new Field({
+    "sku": new Field({
         "required": true,
-        "type": ObjectID
     })
 };

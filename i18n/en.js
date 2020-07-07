@@ -141,6 +141,7 @@ const locals = {
 		quantity: 'Quantity',
 		re_new_password: 'Re-type new password',
 		reset_hash: 'Reset hash',
+		sku: 'Sku',
 		street: 'Street',
 		token: 'Device token',
 		type: 'Device type',
