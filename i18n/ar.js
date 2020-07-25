@@ -115,7 +115,7 @@ const locals = {
 		value,
 		currency
 	}) => {
-		return `الطلب يجب أن يكون أكبر من ${value} ${currency}`
+		return `يجب ان يكون الطلب اكثر من ${value} ${currency}`
 	},
 	fields: {
 		address_id: 'العنوان',
