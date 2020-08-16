@@ -1,7 +1,7 @@
 // Slides Controller
 
 // Load required modules
-const Controller = require('@big_store_core/api/modules/store_slide/controller');
+const Controller = require('@big_store_core/api/modules/store_category/controller');
 
 /**
  * List all slides
