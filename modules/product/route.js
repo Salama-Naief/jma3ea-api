@@ -24,8 +24,23 @@ router.get('/:Id', controller.read);
 router.get('/:Id/category', controller.listByCategory);
 
 /**
+ * GET /product/:supplierId/supplierId
+ */
+router.get('/:supplierId/store', controller.featured);
+
+/**
+ * GET /product/:supplierId/supplierId
+ */
+router.get('/:supplierId/store/:Id/category', controller.listByCategory);
+
+/**
  * GET /product/:Id/category/:rankId/rank
  */
 router.get('/:Id/category/:rankId/rank', controller.listByCategory);
+
+/**
+ * GET /product/:supplierId/store/:Id/category/:rankId/rank
+ */
+router.get('/:supplierId/store/:Id/category/:rankId/rank', controller.listByCategory);
 
 module.exports = router;
