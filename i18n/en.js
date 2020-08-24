@@ -10,6 +10,7 @@ const locals = {
 	cart_product_exists: 'Product is already exists in cart',
 	cart_product_not: 'Product is not in cart',
 	cart_product_removed: 'Product has been removed',
+	cart_should_empty_first: 'You should empty cart before adding product from another store',
 	cart_product_unavailable: 'Product is unavailable',
 	cart_repeated: 'Order has been repeated',
 	choose_city_first: 'Choose city first',
