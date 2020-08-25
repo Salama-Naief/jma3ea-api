@@ -6,6 +6,11 @@ const controller = require('./controller');
 /**
  * GET /store_slide/:Id
  */
-router.get('/:Id', controller.list);
+router.get('/:Id/category', controller.category);
+
+/**
+ * GET /store_slide/:Id
+ */
+router.get('/:Id/store', controller.store);
 
 module.exports = router;
