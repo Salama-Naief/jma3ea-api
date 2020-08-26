@@ -4,6 +4,15 @@
 const Controller = require('@big_store_core/api/modules/store/controller');
 
 /**
+ * List stores 
+ * @param {Object} req
+ * @param {Object} res
+ */
+module.exports.list = function (req, res) {
+    Controller.list(req, res);
+};
+
+/**
  * List stores by category
  * @param {Object} req
  * @param {Object} res

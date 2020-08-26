@@ -4,7 +4,12 @@ const router = express.Router();
 const controller = require('./controller');
 
 /**
- * GET /store_category
+ * GET /store
+ */
+router.get('/', controller.list);
+
+/**
+ * GET /store/:Id/category
  */
 router.get('/:Id/category', controller.category);
 
