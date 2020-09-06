@@ -8,4 +8,9 @@ const controller = require('./controller');
  */
 router.get('/', controller.list);
 
+/**
+ * GET /slide/:Id/store
+ */
+router.get('/slide/:Id/store', controller.list);
+
 module.exports = router;
