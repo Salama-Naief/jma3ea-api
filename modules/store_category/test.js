@@ -40,7 +40,7 @@ describe('Store Categories', () => {
      */
     it("Responds Store Categories List", function (done) {
         request
-                .get("/v1/store_slide")
+                .get("/v1/store_category_slide")
                 .set('token', token)
                 .expect(200)
                 .end(function (err, res) {
