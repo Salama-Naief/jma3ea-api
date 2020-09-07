@@ -11,6 +11,6 @@ router.get('/', controller.list);
 /**
  * GET /slide/:supplierId/store
  */
-router.get('/slide/:supplierId/store', controller.list);
+router.get('/:supplierId/store', controller.list);
 
 module.exports = router;
