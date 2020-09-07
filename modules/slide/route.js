@@ -9,8 +9,8 @@ const controller = require('./controller');
 router.get('/', controller.list);
 
 /**
- * GET /slide/:Id/store
+ * GET /slide/:supplierId/store
  */
-router.get('/slide/:Id/store', controller.list);
+router.get('/slide/:supplierId/store', controller.list);
 
 module.exports = router;
