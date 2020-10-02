@@ -63,6 +63,7 @@ const locals = {
 		cod: 'Cash on delivery (Cash / Knet)',
 		knet: 'KNET Online Payment (Online)',
 		wallet: 'Pay by Jm3eia Wallet',
+		mastercard: 'Payment with Master Card / Visa'
 	},
 	order_status_list: {
 		"0": 'Not confirmed',
