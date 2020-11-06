@@ -29,12 +29,3 @@ module.exports.read = function (req, res) {
 module.exports.ranks = function (req, res) {
 	Controller.ranks(req, res);
 };
-
-/**
- * List all categories for store
- * @param {Object} req
- * @param {Object} res
- */
-module.exports.store = function (req, res) {
-	Controller.store(req, res);
-};

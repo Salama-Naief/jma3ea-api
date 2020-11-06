@@ -18,9 +18,4 @@ router.get('/:Id', controller.read);
  */
 router.get('/:Id/ranks', controller.ranks);
 
-/**
- * GET /category/:Id/store
- */
-router.get('/:Id/store', controller.store);
-
 module.exports = router;

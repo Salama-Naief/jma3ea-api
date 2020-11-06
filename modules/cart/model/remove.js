@@ -1,2 +1,9 @@
 // Add cart model
-module.exports = require("@big_store_core/api/modules/cart/model/remove");
+const ObjectID = require("@big_store_core/base/types/object_id");
+const Field = require("@big_store_core/base/libraries/field");
+module.exports = {
+    "product_id": new Field({
+        "required": true,
+        "type": ObjectID
+    })
+};

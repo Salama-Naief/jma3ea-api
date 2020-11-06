@@ -12,7 +12,6 @@ const locals = {
 	cart_product_removed: 'تم حذف المنتج',
 	cart_product_unavailable: 'المنتج غير متاح',
 	cart_repeated: 'تم إضافة منتجات الطلب إلى السلة بنجاح',
-	cart_should_empty_first: 'يجب إفراغ السلة أولاً قبل الإضافة من متجر آخر',
 	choose_city_first: 'إختر المدينة أولاً',
 	city_is_not_exists: 'المدينة غير موجودة',
 	convert2wallet_closed: 'تحويل النقاط إلى رصيد غير متاح حالياً',
@@ -65,7 +64,6 @@ const locals = {
 		cod: 'الدفع عند الاستلام (كاش / كي نت)',
 		knet: 'الدفع ببطاقة الكي نت (أون لاين)',
 		wallet: 'الدفع من رصيد الجمعية',
-		mastercard: 'الدفع بماسترد كارد / فيزا'
 	},
 	order_status_list: {
 		"0": 'لم يتم التأكيد',
@@ -145,7 +143,6 @@ const locals = {
 		quantity: 'الكمية',
 		re_new_password: 'إعادة كلمة المرور الجديدة',
 		reset_hash: 'شفرة إعادة كلمة المرور',
-		sku: 'كود المنتج',
 		street: 'الشارع',
 		token: 'رقم الجهاز',
 		type: 'نوع الجهاز',

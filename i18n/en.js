@@ -10,7 +10,6 @@ const locals = {
 	cart_product_exists: 'Product is already exists in cart',
 	cart_product_not: 'Product is not in cart',
 	cart_product_removed: 'Product has been removed',
-	cart_should_empty_first: 'You should empty cart before adding product from another store',
 	cart_product_unavailable: 'Product is unavailable',
 	cart_repeated: 'Order has been repeated',
 	choose_city_first: 'Choose city first',
@@ -63,7 +62,6 @@ const locals = {
 		cod: 'Cash on delivery (Cash / Knet)',
 		knet: 'KNET Online Payment (Online)',
 		wallet: 'Pay by Jm3eia Wallet',
-		mastercard: 'Payment with Master Card / Visa'
 	},
 	order_status_list: {
 		"0": 'Not confirmed',
@@ -143,7 +141,6 @@ const locals = {
 		quantity: 'Quantity',
 		re_new_password: 'Re-type new password',
 		reset_hash: 'Reset hash',
-		sku: 'Sku',
 		street: 'Street',
 		token: 'Device token',
 		type: 'Device type',
