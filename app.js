@@ -13,6 +13,7 @@ const compression = require('compression');
 const fs = require('fs');
 const path = require('path');
 const config = require('@big_store_core/base/config');
+const status_message = require('@big_store_core/base/enums/status_message');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
@@ -98,7 +99,7 @@ app.use(function (err, req, res, next) {
 	// render the error page
 	res.out({
 		errors: 'Error!',
-	});
+	}, status_message.NOT_FOUND);
 });
 
 module.exports = app;
