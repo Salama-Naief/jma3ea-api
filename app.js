@@ -70,11 +70,6 @@ for (const moduleName of all_modules) {
 	app.use(`/v1/${moduleName}`, moduleRouter);
 }
 
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-	next(createError(404));
-});
-
 // error handler
 app.use(function (err, req, res, next) {
 	// set locals, only providing error in development
@@ -82,6 +77,7 @@ app.use(function (err, req, res, next) {
 	res.locals.error = req.app.get('env') === 'development' ? err : {};
 	console.log('=====================Start of Error====================');
 	console.log('=========================================');
+	console.log('--------[DateTime]------', '::', new Date());
 	console.log('--------[Protocol]------', '::', req.protocol);
 	console.log('--------[Hostname]------', '::', req.hostname);
 	console.log('--------[OriginalUrl]---', '::', req.originalUrl);
@@ -92,14 +88,16 @@ app.use(function (err, req, res, next) {
 	console.log('--------[User-IP]-------', '::', req.headers['x-forwarded-for'] || req.connection.remoteAddress);
 	console.log('--------[Query]---------', '::', req.query);
 	console.log('--------[Body]----------', '::', req.body);
-	console.log('--------[Error]---------', '::', err.message);
+	console.log('--------------[Error Details]--------------');
+	console.log(err);
+	console.log('--------------[End Error Details]--------------');
 	console.log('=========================================');
 	console.log('=====================End of Error====================');
 
 	// render the error page
 	res.out({
 		errors: 'Error!',
-	}, status_message.NOT_FOUND);
+	}, status_message.UNEXPECTED_ERROR);
 });
 
 module.exports = app;
