@@ -4,18 +4,18 @@ const router = express.Router();
 const controller = require('./controller');
 
 /**
- * GET /cart
+ * GET /device
  */
 router.get('/', controller.list);
 
 /**
- * POST /cart
+ * POST /device
  */
 router.post('/', controller.add);
 
 /**
- * DELETE /cart
+ * DELETE /device
  */
-router.delete('/:Id', controller.remove);
+router.delete('/', controller.remove);
 
 module.exports = router;
