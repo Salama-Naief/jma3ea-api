@@ -30,7 +30,7 @@ module.exports = {
 			}),
 			"email": new Field({
 				"type": "email",
-				"required": true,
+				"required": false,
 			}),
 			"mobile": new Field({
 				"required": true,
@@ -52,7 +52,8 @@ module.exports = {
 						"default": ""
 					}),
 					"gada": new Field({
-						"default": ""
+						"default": "",
+						"required": false
 					}),
 					"house": new Field({
 						"default": ""
