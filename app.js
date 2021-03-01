@@ -38,7 +38,7 @@ const validation = require('@big_store_core/base/middlewares/validation');
 app.use(initialize(__dirname));
 app.use(response);
 app.use(i18n(path.resolve('i18n')));
-// app.use(app_version);
+app.use(app_version);
 app.use(database);
 app.use(cache);
 app.use(authorization);
