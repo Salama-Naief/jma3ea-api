@@ -9,8 +9,8 @@
 		"test": "mocha -c --sort --reporter list --recursive \"modules/**/test.js\""
 	},
 	"dependencies": {
-		"@big_store_core/api": "git+git@gitlab.com:big_store_core/big_store_core_api.git#basic",
-		"@big_store_core/base": "git+git@gitlab.com:big_store_core/big_store_core_base.git#basic",
+		"@big_store_core/api": "git+git@gitlab.com:big_store_core/big_store_core_api.git#jm3eia_basic",
+		"@big_store_core/base": "git+git@gitlab.com:big_store_core/big_store_core_base.git#jm3eia_basic",
 		"compression": "^1.7.4",
 		"cookie-parser": "^1.4.5",
 		"cors": "^2.8.5",
