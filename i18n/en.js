@@ -71,7 +71,7 @@ const locals = {
 		"4": 'Delivered',
 		"5": 'Canceled',
 		"6": 'Disapproved',
-		"7": 'Reverse Request Revocation',
+		"7": 'Confirmed',
 		"8": 'Returned',
 		"9": 'Request reversed',
 		"10": 'Return part of the amount',
