@@ -61,6 +61,6 @@ router.put('/wallet', controller.points2wallet);
 /**
  * GET /profile/wallet_history
  */
-router.put('/wallet_history', controller.wallet_history);
+router.get('/wallet_history', controller.wallet_history);
 
 module.exports = router;
