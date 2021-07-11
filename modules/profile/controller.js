@@ -94,4 +94,13 @@ module.exports.points2wallet = function (req, res) {
 	Controller.points2wallet(req, res);
 };
 
+/**
+ * Get wallet history
+ * @param {Object} req
+ * @param {Object} res
+ */
+module.exports.wallet_history = function (req, res) {
+	Controller.wallet_history(req, res);
+};
+
 module.exports.getInfo = Controller.getInfo;
