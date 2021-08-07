@@ -92,6 +92,9 @@ const locals = {
 		registerion_easy_shopping: `Shopping with us easier!`,
 		registerion_footer1: 'Please note that the page to which you will be redirected via any email from Jm3eia.com is your account page. Also, we would like to draw your attention that Jm3eia will not redirect you to a page that is not on the Jm3eia website. ',
 		registerion_footer2: 'Your cooperation with us is the most important way to maintain the integrity of your transactions through Jm3eia.com and the confidentiality of your information and privacy.',
+		registerion_gift: (wallet) => {
+			return `Congratulations, ${wallet} Kuwaiti Dinar has been added to your wallet`;
+		},
 		registerion_login: `Login`,
 		registerion_need_help_send_to: 'If you need any queries or support send an email to',
 		registerion_note1: 'When you log into your account, you will be able to do the following:',
