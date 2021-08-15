@@ -1,12 +1,11 @@
 // Brand model
-const ObjectID = require("@big_store_core/base/types/object_id");
-const Field = require("@big_store_core/base/libraries/field");
-const common = require('@big_store_core/base/libraries/common');
+const ObjectID = require("../../types/object_id");
+const Field = require("../../libraries/field");
+const common = require('../../libraries/common');
 
 module.exports = {
 	"name": new Field({
 		"required": true,
-		"insertOnly": true
 	}),
 	"city_id": new Field({
 		"type": ObjectID,
@@ -14,16 +13,20 @@ module.exports = {
 		"required": true
 	}),
 	"widget": new Field({
-		"default": ""
+		"default": "",
+		"required": true
 	}),
 	"street": new Field({
-		"default": ""
+		"default": "",
+		"required": true
 	}),
 	"gada": new Field({
-		"default": ""
+		"default": "",
+		"required": true
 	}),
 	"house": new Field({
-		"default": ""
+		"default": "",
+		"required": true
 	}),
 	"latitude": new Field({
 		"required": false

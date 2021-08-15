@@ -1,7 +1,11 @@
 // Slides Controller
 
 // Load required modules
-const Controller = require('@big_store_core/api/modules/address/controller');
+const google = require('../../libraries/external/google');
+const ObjectID = require("../../types/object_id");
+const status_message = require('../../enums/status_message');
+const profile = require('../profile/controller');
+const collectionName = 'member';
 
 
 /**
@@ -10,7 +14,41 @@ const Controller = require('@big_store_core/api/modules/address/controller');
  * @param {Object} res
  */
 module.exports.get = function (req, res) {
-	Controller.get(req, res);
+	if (req.custom.isAuthorized === false) {
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+	}
+
+	profile.getInfo(req).
+		then((user) => {
+
+			if (!user) {
+				return res.out({
+					"message": req.custom.local.no_user_found
+				}, status_message.VALIDATION_ERROR);
+			}
+
+			const cityCollection = req.custom.db.client().collection('city');
+			cityCollection.find({}).toArray().
+				then((cities) => {
+
+					user.addresses = user.addresses || [];
+					user.address.id = 'primary';
+					user.address.name = req.custom.local.default_address;
+					user.addresses = [user.address, ...user.addresses];
+					user.addresses = user.addresses.map((i) => {
+						const parent_city = cities.find((c) => c._id.toString() == i.city_id.toString());
+
+						i.country_id = parent_city ? parent_city.country_id : null;
+						i.parent_city_id = parent_city ? parent_city.parent_id : null;
+
+						return i;
+					});
+
+					res.out(user.addresses);
+
+				});
+		}).
+		catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
 };
 
 /**
@@ -18,8 +56,8 @@ module.exports.get = function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.insert = function (req, res) {
-	Controller.insert(req, res);
+module.exports.insert = async function (req, res) {
+	update_user(req, res, 'insert');
 };
 
 /**
@@ -27,8 +65,8 @@ module.exports.insert = function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.update = function (req, res) {
-	Controller.update(req, res);
+module.exports.update = async function (req, res) {
+	update_user(req, res, 'update');
 };
 
 /**
@@ -36,6 +74,94 @@ module.exports.update = function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.remove = function (req, res) {
-	Controller.remove(req, res);
+module.exports.remove = async function (req, res) {
+	update_user(req, res, 'remove');
 };
+
+
+async function update_user(req, res, action = 'insert') {
+	if (req.custom.isAuthorized === false) {
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+	}
+	const collection = req.custom.db.client().collection(collectionName);
+	req.custom.model = req.custom.model || require('./model/address');
+	const {
+		data,
+		error
+	} = action != 'remove' ? await req.custom.getValidData(req) : {};
+	if (error && Object.keys(error).length > 0) {
+		return res.out(error, status_message.VALIDATION_ERROR);
+	}
+
+	const user = await profile.getInfo(req).catch(() => { });
+
+	if (!user) {
+		return res.out({
+			"message": req.custom.local.no_user_found
+		}, status_message.VALIDATION_ERROR);
+	}
+
+	if (action == 'remove' && req.params.Id === 'primary') {
+		return res.out({
+			"message": req.custom.local.can_not_delete_default_address
+		}, status_message.VALIDATION_ERROR);
+	}
+
+	let address = user.address;
+	let addresses = user.addresses || [];
+	let updated_data = {};
+
+	if (action == 'insert' || action == 'update') {
+		if (!await google.valid_gmap_address(req, res, req.body)) {
+			return false;
+		}
+	}
+
+	if (action == 'insert') {
+		const exists = addresses.find((a) => a.name == data.name);
+		if (exists || data.name == req.custom.local.default_address) {
+			return res.out({
+				"name": req.custom.local.address_name_exists
+			}, status_message.VALIDATION_ERROR);
+		}
+		data.id = new ObjectID();
+		addresses.push(data);
+		updated_data = {
+			addresses: addresses
+		};
+	} else if (action == 'update') {
+		if (req.params.Id != 'primary') {
+			addresses = addresses.map((a) => {
+				if (a.id.toString() == req.params.Id.toString()) {
+					return { ...a, ...data };
+				}
+				return a;
+			});
+			updated_data = {
+				addresses: addresses
+			};
+		} else {
+			address = data;
+			updated_data = {
+				address: address
+			};
+		}
+	} else if (action == 'remove') {
+		addresses = addresses.filter((a) => {
+			return a.id && a.id.toString() != req.params.Id.toString();
+		});
+		updated_data = {
+			addresses: addresses
+		};
+	}
+
+	collection.updateOne({
+		_id: ObjectID(user._id)
+	}, {
+		$set: updated_data
+	})
+		.then((response) => res.out({
+			message: req.custom.local.saved_done
+		})).
+		catch((err) => res.out({ 'message': err.message }, status_message.UNEXPECTED_ERROR));
+}

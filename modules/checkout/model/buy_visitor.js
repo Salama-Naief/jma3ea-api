@@ -1,7 +1,8 @@
 // Checkout/Buy model
-const ObjectID = require("@big_store_core/base/types/object_id");
-const Field = require("@big_store_core/base/libraries/field");
-const payment_methods = require("@big_store_core/base/enums/payment_methods");
+const ObjectID = require("../../types/object_id");
+const Field = require("../../libraries/field");
+const config = require("../../config");
+const payment_methods = require("../../enums/payment_methods");
 
 module.exports = {
 	"payment_method": new Field({
@@ -15,7 +16,7 @@ module.exports = {
 		"type": String,
 	}),
 	"delivery_time": new Field({
-		"required": true,
+		"required": config.order.delivery_time_is_required,
 	}),
 	"hash": new Field({
 		"unique": true,
@@ -46,17 +47,20 @@ module.exports = {
 						"required": true
 					}),
 					"widget": new Field({
-						"default": ""
+						"default": "",
+						"required": true
 					}),
 					"street": new Field({
-						"default": ""
+						"default": "",
+						"required": true
 					}),
 					"gada": new Field({
 						"default": "",
 						"required": false
 					}),
 					"house": new Field({
-						"default": ""
+						"default": "",
+						"required": true
 					}),
 					"latitude": new Field({
 						"default": 0

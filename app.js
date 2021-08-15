@@ -12,8 +12,8 @@ const express = require('express');
 const compression = require('compression');
 const fs = require('fs');
 const path = require('path');
-const config = require('@big_store_core/base/config');
-const status_message = require('@big_store_core/base/enums/status_message');
+const config = require('./config');
+const status_message = require('./enums/status_message');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
@@ -21,19 +21,19 @@ process.env.TZ = config.date.timezone || process.env.TZ;
 
 const app = express();
 
-const authorization = require('@big_store_core/api/libraries/middlewares/authorization');
-const analytics = require('@big_store_core/base/middlewares/analytics');
-const app_version = require('@big_store_core/api/libraries/middlewares/app_version');
-const cache = require('@big_store_core/base/middlewares/cache');
-const database = require('@big_store_core/base/middlewares/database');
-const filter = require('@big_store_core/base/middlewares/filter');
-const i18n = require('@big_store_core/base/middlewares/i18n');
-const initialize = require('@big_store_core/base/middlewares/initialize');
-const pagination = require('@big_store_core/base/middlewares/pagination');
-const response = require('@big_store_core/base/middlewares/response');
-const settings = require('@big_store_core/base/middlewares/settings');
-const sorting = require('@big_store_core/base/middlewares/sorting');
-const validation = require('@big_store_core/base/middlewares/validation');
+const authorization = require('./libraries/middlewares/authorization');
+const analytics = require('./libraries/middlewares/analytics');
+const app_version = require('./libraries/middlewares/app_version');
+const cache = require('./libraries/middlewares/cache');
+const database = require('./libraries/middlewares/database');
+const filter = require('./libraries/middlewares/filter');
+const i18n = require('./libraries/middlewares/i18n');
+const initialize = require('./libraries/middlewares/initialize');
+const pagination = require('./libraries/middlewares/pagination');
+const response = require('./libraries/middlewares/response');
+const settings = require('./libraries/middlewares/settings');
+const sorting = require('./libraries/middlewares/sorting');
+const validation = require('./libraries/middlewares/validation');
 
 app.use(initialize(__dirname));
 app.use(response);

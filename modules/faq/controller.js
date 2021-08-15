@@ -1,7 +1,8 @@
 // Faqs Controller
 
 // Load required modules
-const Controller = require('@big_store_core/api/modules/faq/controller');
+const mainController = require("../../libraries/mainController");
+const collectionName = 'faq';
 
 /**
  * List all faqs
@@ -9,5 +10,14 @@ const Controller = require('@big_store_core/api/modules/faq/controller');
  * @param {Object} res
  */
 module.exports.list = function (req, res) {
-	Controller.list(req, res);
+	req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
+	mainController.list_all(req, res, collectionName, {
+		"_id": 1,
+		"question": {
+			$ifNull: [`$question.${req.custom.lang}`, `$question.${req.custom.config.local}`]
+		},
+		"answer": {
+			$ifNull: [`$answer.${req.custom.lang}`, `$answer.${req.custom.config.local}`]
+		},
+	});
 };

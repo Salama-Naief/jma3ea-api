@@ -1,6 +1,5 @@
-
-const Field = require("@big_store_core/base/libraries/field");
-const common = require('@big_store_core/base/libraries/common');
+const common = require('../../libraries/common');
+const Field = require("../../libraries/field");
 
 // Add device model
 module.exports = {

@@ -1,7 +1,10 @@
 // Auth Controller
 
 // Load required modules
-const Controller = require('@big_store_core/api/modules/auth/controller');
+const bcrypt = require('bcryptjs');
+const common = require('../../libraries/common');
+const status_message = require('../../enums/status_message');
+const { v4: uuid } = require('uuid');
 
 
 /**
@@ -10,5 +13,70 @@ const Controller = require('@big_store_core/api/modules/auth/controller');
  * @param {Object} res
  */
 module.exports.check = function (req, res) {
-	Controller.check(req, res);
+	const collection = req.custom.db.client().collection('application');
+	const cache = req.custom.cache;
+	const local = req.custom.local;
+
+	if (!req.body.appId || !req.body.appSecret) {
+
+		return res.out({
+			message: local.failed_create_auth_app
+		}, status_message.INVALID_APP_AUTHENTICATION);
+
+	}
+
+	let appId = req.body.appId;
+	let appSecret = req.body.appSecret;
+
+	let where = {
+		appId: appId
+	};
+
+	collection.findOne(where).catch(() => res.out({ message: local.failed_create_auth_app }, status_message.UNEXPECTED_ERROR)).
+		then((theapp) => {
+
+
+			if (!theapp) {
+				return res.out({
+					message: local.failed_auth_user
+				}, status_message.UNEXPECTED_ERROR);
+			}
+
+			bcrypt.compare(appSecret, theapp.appSecret, function (err, valid) {
+				if (err || !valid) {
+					return res.out({
+						message: local.failed_auth_app
+					}, status_message.INVALID_APP_AUTHENTICATION);
+				}
+				// create a token
+				const userAgent = req.get('User-Agent');
+				const token = 'v_' + generateToken();
+
+				const data = {
+					userAgent: userAgent,
+					created: common.getDate()
+				};
+				cache.set(token, data, req.custom.config.cache.life_time.token)
+					.then(() => res.out({
+						token: token
+					}))
+					.catch(() => res.out({
+						message: local.failed_create_auth_app
+					}, status_message.UNEXPECTED_ERROR));
+			});
+
+
+		});
+
 };
+
+/**
+ * Generate token
+ * @param {Number} min
+ * @param {Number} max
+ * @returns {string}
+ */
+function generateToken() {
+	return uuid().replace(/-/g, '_');
+}
+module.exports.generateToken = generateToken;

@@ -1,7 +1,8 @@
 // Slides Controller
 
 // Load required modules
-const Controller = require('@big_store_core/api/modules/slide/controller');
+const mainController = require("../../libraries/mainController");
+const collectionName = 'slide';
 
 /**
  * List all slides
@@ -9,5 +10,17 @@ const Controller = require('@big_store_core/api/modules/slide/controller');
  * @param {Object} res
  */
 module.exports.list = function (req, res) {
-    Controller.list(req, res);
+	req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
+
+	req.custom.clean_sort = {
+		"sorting": 1
+	};
+
+    mainController.list_all(req, res, collectionName, {
+        "_id": 1,
+        "title": { $ifNull: [`$title.${req.custom.lang}`, `$title.${req.custom.config.local}`] },
+        "description": { $ifNull: [`$description.${req.custom.lang}`, `$description.${req.custom.config.local}`] },
+        "url": 1,
+        "picture": 1
+    });
 };

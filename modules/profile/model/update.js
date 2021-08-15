@@ -1,6 +1,7 @@
 // Update Profile model
-const Field = require("@big_store_core/base/libraries/field");
-const common = require('@big_store_core/base/libraries/common');
+const common = require('../../libraries/common');
+const ObjectID = require("../../types/object_id");
+const Field = require("../../libraries/field");
 
 module.exports = {
     "fullname": new Field({

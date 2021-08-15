@@ -3,6 +3,7 @@ module.exports.mail_register = function (user, custom) {
 	const local = custom.local;
 	const base_link = `${custom.config.site_base_url}`;
 	const setting = custom.settings;
+	const registration_wallet = parseFloat(user.wallet);
 	let mail_register = `
 	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 	<html xmlns="http://www.w3.org/1999/xhtml">
@@ -37,6 +38,10 @@ module.exports.mail_register = function (user, custom) {
 				#mailbody{
 					display: block;
 					margin: auto;
+				}
+				#registration_gift{
+					color: #00ff00;
+					font-size: x-large;
 				}
 				@media only screen and (max-width:480px) {
 					#mailbody, table {
@@ -79,7 +84,11 @@ module.exports.mail_register = function (user, custom) {
 							<p>${local.mail.registerion_your_name} ${user.username}<br />
 								${local.mail.registerion_your_username_description}
 							</p>
-				
+							
+							<p id="registration_gift">
+								${registration_wallet > 0 ? local.mail.registerion_gift(registration_wallet) : ''} 	
+							</p>
+
 							<ul>
 								<li>${local.mail.registerion_note1}</li>
 								<li>${local.mail.registerion_note2}</li>

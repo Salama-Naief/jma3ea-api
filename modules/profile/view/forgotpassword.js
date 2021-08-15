@@ -1,6 +1,6 @@
 module.exports.mail_forgotpassword = function (forgotpassword, custom) {
 	const lang = custom.lang;
-	const link = `${custom.config.site_base_url}/profile/resetpassword/${forgotpassword.reset_hash}`;
+	const link = `${process.env.ALT_BASE_URL || custom.config.site_base_url}/profile/resetpassword/${forgotpassword.reset_hash}`;
 	const local = custom.local;
 	const setting = custom.settings;
 	const user = forgotpassword.user;
@@ -75,6 +75,8 @@ module.exports.mail_forgotpassword = function (forgotpassword, custom) {
 								</table>
 								<div>
 									${local.dear} ${user.fullname}
+									<br /><br />
+									${local.fields.username}:- ${user.username}
 									<br /><br />
 									${local.mail.forgotpassword_q}
 									<br /><br />

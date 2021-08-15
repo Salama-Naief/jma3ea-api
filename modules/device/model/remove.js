@@ -1,5 +1,5 @@
 
-const Field = require("@big_store_core/base/libraries/field");
+const Field = require("../../libraries/field");
 
 // remove device model
 module.exports = {

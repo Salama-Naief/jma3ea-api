@@ -1,5 +1,5 @@
 // Order/evaluate model
-const Field = require("@big_store_core/base/libraries/field");
+const Field = require("../../libraries/field");
 
 module.exports = {
 	"driver": new Field({
