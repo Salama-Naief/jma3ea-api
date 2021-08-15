@@ -1,6 +1,6 @@
 // Load required modules
 const ObjectID = require('mongodb').ObjectID;
-const common = require('./common');
+const common = require('@big_store_core/base/libraries/common');
 
 module.exports = (req) => {
 	return validateData(req);
