@@ -1,7 +1,7 @@
 // Update Profile model
-const common = require('../../libraries/common');
-const ObjectID = require("../../types/object_id");
-const Field = require("../../libraries/field");
+const common = require('../../../libraries/common');
+const ObjectID = require("../../../types/object_id");
+const Field = require("../../../libraries/field");
 
 module.exports = {
     "fullname": new Field({

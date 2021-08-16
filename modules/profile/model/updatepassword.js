@@ -1,5 +1,5 @@
 // Update Password model
-const Field = require("../../libraries/field");
+const Field = require("../../../libraries/field");
 
 module.exports = {
     "old_password": new Field({

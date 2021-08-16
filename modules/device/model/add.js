@@ -1,5 +1,5 @@
 const common = require('../../libraries/common');
-const Field = require("../../libraries/field");
+const Field = require("../../../libraries/field");
 
 // Add device model
 module.exports = {

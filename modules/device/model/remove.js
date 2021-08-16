@@ -1,5 +1,5 @@
 
-const Field = require("../../libraries/field");
+const Field = require("../../../libraries/field");
 
 // remove device model
 module.exports = {
