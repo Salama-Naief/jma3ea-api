@@ -1,5 +1,5 @@
 // Load required modules
-const ObjectID = require('mongodb').ObjectID;
+const ObjectID = require('../types/object_id');
 const common = require('../libraries/common');
 
 module.exports = (req) => {

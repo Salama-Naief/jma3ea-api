@@ -1,7 +1,7 @@
 // Load required modules
 const qs = require('qs');
 const common = require('../common');
-const ObjectID = require('mongodb').ObjectID;
+const ObjectID = require('../../types/object_id');
 
 /**
  * Middleware for filter

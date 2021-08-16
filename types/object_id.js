@@ -1,2 +1,2 @@
 // ObjectID type
-module.exports = require('mongodb').ObjectID;
+module.exports = require('mongodb').ObjectId;
