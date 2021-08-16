@@ -180,8 +180,8 @@ module.exports.buy = async function (req, res) {
 		}
 
 		let discount_by_wallet_value = 0;
-		if (req.body.discount_by_wallet == true && wallet2money > 0 && wallet2money < total) {
-			total -= wallet2money;
+		if ((req.body.discount_by_wallet == 'true' || req.body.discount_by_wallet == true) && wallet2money > 0 && wallet2money < total) {
+			total -= parseFloat(wallet2money);
 			discount_by_wallet_value = parseFloat(common.getFixedPrice(wallet2money));
 		}
 
