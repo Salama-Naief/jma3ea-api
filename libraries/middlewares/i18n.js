@@ -12,7 +12,7 @@ module.exports = (i18n_folder = null) => {
 
 			req.custom.available_languages = files.map((lng) => lng.replace('.js', ''));
 			req.custom.lang = req.custom.available_languages.indexOf(req.headers.language) > -1 ? req.headers.language : req.custom.config.local;
-			req.custom.local = require((`../i18n/${req.custom.lang}`));
+			req.custom.local = require((`../../i18n/${req.custom.lang}`));
 
 			if (i18n_folder) {
 				req.custom.local = { ...req.custom.local, ...require(`${i18n_folder}/${req.custom.lang}`) };
