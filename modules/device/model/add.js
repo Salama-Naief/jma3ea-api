@@ -1,4 +1,4 @@
-const common = require('../../libraries/common');
+const common = require('../../../libraries/common');
 const Field = require("../../../libraries/field");
 
 // Add device model

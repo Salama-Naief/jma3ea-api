@@ -1,7 +1,7 @@
 // Brand model
 const ObjectID = require("../../../types/object_id");
 const Field = require("../../../libraries/field");
-const common = require('../../libraries/common');
+const common = require('../../../libraries/common');
 
 module.exports = {
 	"name": new Field({
