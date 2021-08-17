@@ -16,6 +16,7 @@ module.exports = {
 	}),
 	"discount_by_wallet": new Field({
 		"type": Boolean,
+		"required": false,
 	}),
 	"delivery_time": new Field({
 		"required": true,
