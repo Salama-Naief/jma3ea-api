@@ -14,6 +14,9 @@ module.exports = {
 	"notes": new Field({
 		"type": String,
 	}),
+	"discount_by_wallet": new Field({
+		"type": Boolean,
+	}),
 	"delivery_time": new Field({
 		"required": true,
 	}),
