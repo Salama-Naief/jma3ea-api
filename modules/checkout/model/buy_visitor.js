@@ -2,7 +2,7 @@
 const ObjectID = require("../../../types/object_id");
 const Field = require("../../../libraries/field");
 const config = require("../../config");
-const payment_methods = require("../../enums/payment_methods");
+const payment_methods = require("../../../enums/payment_methods");
 
 module.exports = {
 	"payment_method": new Field({

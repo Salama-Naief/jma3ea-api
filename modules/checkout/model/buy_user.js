@@ -1,7 +1,7 @@
 // Checkout/Buy model
 const ObjectID = require("../../../types/object_id");
 const Field = require("../../../libraries/field");
-const payment_methods = require("../../enums/payment_methods");
+const payment_methods = require("../../../enums/payment_methods");
 
 module.exports = {
 	"payment_method": new Field({
