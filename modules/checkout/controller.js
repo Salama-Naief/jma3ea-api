@@ -228,7 +228,7 @@ module.exports.buy = async function (req, res) {
 			products: products2save,
 			hash: req.body.hash,
 			delivery_time: common.getDate(req.body.delivery_time),
-			discount_by_wallet: req.body.discount_by_wallet,
+			discount_by_wallet: ['TRUE', 'true', true].indexOf(req.body.discount_by_wallet) > -1 ? true : false,
 			discount_by_wallet_value: discount_by_wallet_value,
 			store_id: ObjectID(req.custom.authorizationObject.store_id),
 			notes: req.body.notes,
