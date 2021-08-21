@@ -150,7 +150,7 @@ module.exports.buy = async function (req, res) {
 			})
 			.then((c) => c)
 			.catch(() => null);
-		const shipping_cost = parseInt(cityObj.shipping_cost);
+		const shipping_cost = parseFloat(cityObj.shipping_cost);
 		data.user_data.address.city_name = cityObj.name[req.custom.lang];
 
 		const coupon_collection = req.custom.db.client().collection('coupon');
@@ -253,7 +253,7 @@ module.exports.buy = async function (req, res) {
 			});
 
 		if (data.user_data && data.user_data._id && (parseFloat(discount_by_wallet_value) > 0 || req.body.payment_method == 'wallet')) {
-			const paid_wallet_value = parseFloat0(req.body.payment_method == 'wallet' ? total : discount_by_wallet_value);
+			const paid_wallet_value = parseFloat(req.body.payment_method == 'wallet' ? total : discount_by_wallet_value);
 			const new_wallet = parseFloat(user_info.wallet) - parseFloat(paid_wallet_value);
 			const wallet_data = {
 				"member_id": ObjectID(data.user_data._id.toString()),
