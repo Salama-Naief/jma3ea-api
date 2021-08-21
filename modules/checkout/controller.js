@@ -170,7 +170,7 @@ module.exports.buy = async function (req, res) {
 		total = parseFloat(common.getRoundedPrice(total));
 
 		const user_wallet = user_info ? user_info.wallet : 0;
-		const wallet2money = user_wallet <= parseFloat(total) ? user_wallet : (user_info ? Math.round(total) : 0);
+		const wallet2money = user_wallet <= parseFloat(total) ? user_wallet : (user_info ? parseFloat(total) : 0);
 
 		if (req.body.payment_method == 'wallet' && wallet2money < parseFloat(total)) {
 			save_failed_payment(req, 'WALLET_NOT_ENOUGH');
@@ -407,9 +407,9 @@ module.exports.list = async function (req, res) {
 			.then((c) => c)
 			.catch(() => null) : null;
 
-		const user_wallet = userObj ? parseFloat(total > userObj.wallet ? userObj.wallet : Math.round(total)) : 0;
+		const user_wallet = userObj ? parseFloat(total > userObj.wallet ? userObj.wallet : parseFloat(total)) : 0;
 
-		const wallet2money = user_wallet <= parseFloat(total) ? user_wallet : (user_wallet ? Math.round(total) : 0);
+		const wallet2money = user_wallet <= parseFloat(total) ? user_wallet : (user_wallet ? parseFloat(total) : 0);
 
 		const can_pay_by_wallet = user_wallet >= parseFloat(total) ? true : false;
 
