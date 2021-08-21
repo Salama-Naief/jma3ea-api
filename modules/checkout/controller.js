@@ -180,7 +180,8 @@ module.exports.buy = async function (req, res) {
 		}
 
 		let discount_by_wallet_value = 0;
-		if ((req.body.discount_by_wallet == 'true' || req.body.discount_by_wallet == true) && wallet2money > 0 && wallet2money < total) {
+		req.body.discount_by_wallet = ['TRUE', 'true', true].indexOf(req.body.discount_by_wallet) > -1 ? true : false;
+		if (req.body.discount_by_wallet == true && wallet2money > 0 && wallet2money < total) {
 			total -= parseFloat(wallet2money);
 			discount_by_wallet_value = parseFloat(common.getFixedPrice(wallet2money));
 		}
@@ -212,8 +213,6 @@ module.exports.buy = async function (req, res) {
 			});
 		}
 
-		req.body.discount_by_wallet = req.body.discount_by_wallet == true ? true : false;
-
 		const order_data = {
 			order_id: (user_info ? 'u' : 'v') + '_' + shortid.generate(),
 			payment_method: payment_method,
@@ -228,7 +227,7 @@ module.exports.buy = async function (req, res) {
 			products: products2save,
 			hash: req.body.hash,
 			delivery_time: common.getDate(req.body.delivery_time),
-			discount_by_wallet: ['TRUE', 'true', true].indexOf(req.body.discount_by_wallet) > -1 ? true : false,
+			discount_by_wallet: req.body.discount_by_wallet,
 			discount_by_wallet_value: discount_by_wallet_value,
 			store_id: ObjectID(req.custom.authorizationObject.store_id),
 			notes: req.body.notes,
