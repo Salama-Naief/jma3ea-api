@@ -87,7 +87,7 @@ module.exports.buy = async function (req, res) {
 		}, status_message.VALIDATION_ERROR);
 	}
 
-	// TODO: Fix checking track id	 && req.body.hash != req.body.payment_details.trackid
+	// TODO: Fix checking track id && req.body.hash != req.body.payment_details.trackid
 	if (req.body.payment_method == 'knet' && req.body.payment_details && !req.body.payment_details.trackid) {
 		save_failed_payment(req, 'TRACK_ID_NOT_VALID');
 		return res.out({
@@ -252,8 +252,9 @@ module.exports.buy = async function (req, res) {
 				}
 			});
 
-		if (data.user_data && data.user_data._id && parseFloat(discount_by_wallet_value) > 0) {
-			const new_wallet = parseFloat(user_info.wallet) - parseFloat(discount_by_wallet_value);
+		if (data.user_data && data.user_data._id && (parseFloat(discount_by_wallet_value) > 0 || req.body.payment_method == 'wallet')) {
+			const paid_wallet_value = parseFloat0(req.body.payment_method == 'wallet' ? total : discount_by_wallet_value);
+			const new_wallet = parseFloat(user_info.wallet) - parseFloat(paid_wallet_value);
 			const wallet_data = {
 				"member_id": ObjectID(data.user_data._id.toString()),
 				"old_wallet": parseFloat(user_info.wallet),
