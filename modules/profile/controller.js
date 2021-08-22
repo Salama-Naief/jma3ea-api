@@ -95,7 +95,7 @@ module.exports.login = function (req, res) {
 		const data = req.custom.authorizationObject;
 		data.member_id = theuser._id;
 		delete theuser.password;
-		theuser.wallet = theuser.wallet && parseInt(theuser.wallet) > 0 ? parseInt(theuser.wallet) : 0;
+		theuser.wallet = theuser.wallet && parseFloat(theuser.wallet) > 0 ? parseFloat(theuser.wallet) : 0;
 		req.custom.cache.set(token, data, req.custom.config.cache.life_time.token)
 			.then(() => {
 				res.out({
@@ -695,7 +695,7 @@ function getInfo(req, projection = {}) {
 						_id: ObjectID(row_token.member_id)
 					}, projection)
 						.then((theuser) => {
-							theuser.wallet = theuser && theuser.wallet && parseInt(theuser.wallet) > 0 ? parseInt(theuser.wallet) : 0;
+							theuser.wallet = theuser && theuser.wallet && parseFloat(theuser.wallet) > 0 ? parseFloat(theuser.wallet) : 0;
 							resolve(theuser);
 						})
 						.catch((err) => reject(err));
