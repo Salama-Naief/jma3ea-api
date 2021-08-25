@@ -257,8 +257,8 @@ module.exports.buy = async function (req, res) {
 			const new_wallet = parseFloat(user_info.wallet) - parseFloat(paid_wallet_value);
 			const wallet_data = {
 				"member_id": ObjectID(data.user_data._id.toString()),
-				"old_wallet": parseFloat(user_info.wallet),
-				"new_wallet": new_wallet,
+				"old_wallet": common.getFixedPrice(user_info.wallet),
+				"new_wallet": common.getFixedPrice(new_wallet),
 				"notes": `Buying by wallet from ${user_info.wallet} to ${new_wallet}`,
 				"created": new Date(),
 			};
