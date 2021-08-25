@@ -254,11 +254,12 @@ module.exports.buy = async function (req, res) {
 
 		if (data.user_data && data.user_data._id && (parseFloat(discount_by_wallet_value) > 0 || req.body.payment_method == 'wallet')) {
 			const paid_wallet_value = parseFloat(req.body.payment_method == 'wallet' ? total : discount_by_wallet_value);
-			const new_wallet = parseFloat(user_info.wallet) - parseFloat(paid_wallet_value);
+			const new_wallet = common.getFixedPrice(parseFloat(user_info.wallet) - parseFloat(paid_wallet_value));
+			user_info.wallet = common.getFixedPrice(user_info.wallet);
 			const wallet_data = {
 				"member_id": ObjectID(data.user_data._id.toString()),
-				"old_wallet": common.getFixedPrice(user_info.wallet),
-				"new_wallet": common.getFixedPrice(new_wallet),
+				"old_wallet": user_info.wallet,
+				"new_wallet": new_wallet,
 				"notes": `Buying by wallet from ${user_info.wallet} to ${new_wallet}`,
 				"created": new Date(),
 			};
