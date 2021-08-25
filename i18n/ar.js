@@ -35,7 +35,7 @@ const locals = {
 	logout_done: 'تم تسجيل الخروج بنجاح',
 	new_order: 'طلب شراء',
 	no_data_found: 'لا يوجد بيانات',
-	no_enough_points: 'لا يوجد نقاط كافية',
+	no_enough_points: 'يجب ان تكون النقاط ١٠٠ أو أكثر لتحويلها الى رصيد بالمحفظه',
 	no_enough_wallet: 'لا يوجد رصيد كافي',
 	no_user_found: 'هذا المستخدم غير مسجل',
 	no_settings: 'لا يوجد إعدادات',

@@ -604,6 +604,7 @@ module.exports.points2wallet = async function (req, res) {
 
 		points = common.getRoundedPrice(points);
 		wallet = common.getFixedPrice(wallet);
+		user.wallet = common.getFixedPrice(user.wallet);
 
 		collection.updateOne({
 			_id: ObjectID(user._id)
