@@ -266,7 +266,7 @@ module.exports.updatepassword = async function (req, res) {
 	req.custom.getValidData(req)
 		.then(({ data, error }) => {
 
-			let userdecode = {};
+			let userdecode = { };
 			if (error || (error && error.old_password)) {
 				return res.out(error, status_message.VALIDATION_ERROR);
 			}
@@ -274,7 +274,7 @@ module.exports.updatepassword = async function (req, res) {
 			const user_info = getInfo(req).catch(() => { });
 			user_info.then((userdecode) => {
 
-				userdecode = userdecode || {};
+				userdecode = userdecode || { };
 
 				collection.findOne({
 					_id: ObjectID(userdecode._id.toString()),
@@ -282,7 +282,7 @@ module.exports.updatepassword = async function (req, res) {
 				}).then((user) => {
 
 					if (!user) {
-						error = error || {};
+						error = error || { };
 						error.old_password = 'old password is not correct';
 						return res.out(error, status_message.VALIDATION_ERROR);
 					}
@@ -480,7 +480,7 @@ module.exports.updatecity = function (req, res) {
 
 					};
 
-					const cart = req.custom.authorizationObject.cart || {};
+					const cart = req.custom.authorizationObject.cart || { };
 					if (req.custom.authorizationObject.store_id && cityObj && cityObj.store_id && req.custom.authorizationObject.store_id.toString() !== cityObj.store_id.toString()) {
 
 						let prod_ids = [];
@@ -574,68 +574,94 @@ module.exports.points2wallet = async function (req, res) {
 	}
 	const collection = req.custom.db.client().collection(collectionName);
 
-	getInfo(req).then((user) => {
+	req.custom.model = req.custom.model || require('./model/points2wallet');
 
-		if (!user) {
-			return res.out({
-				"message": req.custom.local.no_user_found
-			}, status_message.VALIDATION_ERROR);
-		}
+	req.custom.getValidData(req)
+		.then(({ data, error }) => {
 
-		if (!req.custom.settings.wallet.user_can_convert_points_to_wallet) {
-			return res.out({
-				"message": req.custom.local.convert2wallet_closed
-			}, status_message.VALIDATION_ERROR);
-		}
-
-		let points = user.points;
-		let wallet = user.wallet;
-
-		const points_to_wallet = parseFloat(req.custom.settings.wallet.points_to_wallet);
-		if (points > points_to_wallet) {
-			const tmp_wallet = parseFloat(points / points_to_wallet);
-			wallet += tmp_wallet;
-			points -= tmp_wallet * points_to_wallet;
-		} else {
-			return res.out({
-				"message": req.custom.local.no_enough_points
-			}, status_message.VALIDATION_ERROR);
-		}
-
-		points = common.getRoundedPrice(points);
-		wallet = common.getFixedPrice(wallet);
-		user.wallet = common.getFixedPrice(user.wallet);
-
-		collection.updateOne({
-			_id: ObjectID(user._id.toString())
-		}, {
-			$set: {
-				points: points,
-				wallet: wallet,
+			if (error && Object.keys(error).length > 0) {
+				return res.out(error, status_message.VALIDATION_ERROR);
 			}
-		})
-			.then((response) => {
-				const wallet_data = {
-					"member_id": ObjectID(user._id.toString()),
-					"old_wallet": user.wallet,
-					"new_wallet": wallet,
-					"notes": `Converted points to wallet and Update wallet from ${user.wallet} to ${wallet}`,
-					"created": new Date(),
+
+			getInfo(req).then((user) => {
+
+				if (!user) {
+					return res.out({
+						"message": req.custom.local.no_user_found
+					}, status_message.VALIDATION_ERROR);
+				}
+
+				if (!req.custom.settings.wallet.user_can_convert_points_to_wallet) {
+					return res.out({
+						"message": req.custom.local.convert2wallet_closed
+					}, status_message.VALIDATION_ERROR);
+				}
+
+				const points_2_wallet_values = {
+					"50": common.getFixedPrice(0.500),
+					"100": common.getFixedPrice(2),
+					"200": common.getFixedPrice(5),
+					"300": common.getFixedPrice(8),
+					"400": common.getFixedPrice(12),
+					"500": common.getFixedPrice(20),
 				};
-				wallet_history_collection.insertOne(wallet_data).then((inserted) => res.out({
-					message: req.custom.local.points2wallet_saved_done,
-					points: points,
-					wallet: wallet,
-				}, status_message.UPDATED));
-			})
-			.catch((error) => res.out({
+
+				if (Object.keys(points_2_wallet_values).indexOf(req.body.points.toString()) < 0) {
+					return res.out({
+						"message": req.custom.local.point_not_valid
+					}, status_message.VALIDATION_ERROR);
+				}
+
+				let points = user.points;
+				let wallet = user.wallet;
+
+				const points_to_wallet = points_2_wallet_values[req.body.points.toString()];
+				if (points > points_to_wallet) {
+					const tmp_wallet = parseFloat(points / points_to_wallet);
+					wallet += tmp_wallet;
+					points -= tmp_wallet * points_to_wallet;
+				} else {
+					return res.out({
+						"message": req.custom.local.no_enough_points
+					}, status_message.VALIDATION_ERROR);
+				}
+
+				points = common.getRoundedPrice(points);
+				wallet = common.getFixedPrice(wallet);
+				user.wallet = common.getFixedPrice(user.wallet);
+
+				collection.updateOne({
+					_id: ObjectID(user._id.toString())
+				}, {
+					$set: {
+						points: points,
+						wallet: wallet,
+					}
+				})
+					.then((response) => {
+						const wallet_data = {
+							"member_id": ObjectID(user._id.toString()),
+							"old_wallet": user.wallet,
+							"new_wallet": wallet,
+							"notes": `Converted points to wallet and Update wallet from ${user.wallet} to ${wallet}`,
+							"created": new Date(),
+						};
+						wallet_history_collection.insertOne(wallet_data).then((inserted) => res.out({
+							message: req.custom.local.points2wallet_saved_done,
+							points: points,
+							wallet: wallet,
+						}, status_message.UPDATED));
+					})
+					.catch((error) => res.out({
+						'message': error.message
+					}, status_message.UNEXPECTED_ERROR));
+
+
+			}).catch(() => res.out({
 				'message': error.message
 			}, status_message.UNEXPECTED_ERROR));
 
-
-	}).catch(() => res.out({
-		'message': error.message
-	}, status_message.UNEXPECTED_ERROR));
+		});
 };
 
 /**
@@ -647,7 +673,7 @@ module.exports.wallet_history = function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
-	req.custom.clean_filter = req.custom.clean_filter || {};
+	req.custom.clean_filter = req.custom.clean_filter || { };
 	req.custom.clean_filter['member_id'] = ObjectID(req.custom.authorizationObject.member_id);
 	req.custom.all_status = true;
 	req.custom.clean_sort = { "_id": -1 };
@@ -685,7 +711,7 @@ function fix_user_data(req, userObj, city_id) {
 		.catch(() => null);
 }
 
-function getInfo(req, projection = {}) {
+function getInfo(req, projection = { }) {
 	return new Promise((resolve, reject) => {
 		const token = req.headers['authorization'] ? req.headers['authorization'].replace('Bearer ', '') : null;
 		req.custom.cache.get(token)

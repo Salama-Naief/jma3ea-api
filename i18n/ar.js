@@ -45,6 +45,7 @@ const locals = {
 	order_id: 'رقم الطلب',
 	password_has_been_updated: 'تم تحديث كلمة المرور بنجاح',
 	points2wallet_saved_done: 'تم تحويل النقاط إلى رصيد بنجاح',
+	point_not_valid: "إختيارك غير صالح",
 	price: 'السعر',
 	quantity: 'الكمية',
 	registered_successfully: 'تم تسجيل حسابك بنجاح, مرحباً بك يا ',

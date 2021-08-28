@@ -40,6 +40,7 @@ const locals = {
 	order_id: 'Order Number',
 	password_has_been_updated: 'Password has been updated',
 	points2wallet_saved_done: 'Point has been converted to wallet successfully',
+	point_not_valid: "Your choice is not a valid",
 	price: 'Price',
 	quantity: 'Quantity',
 	registered_successfully: 'Your account has been registered successfully, Welcome ',
