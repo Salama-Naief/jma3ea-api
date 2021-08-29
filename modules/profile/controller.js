@@ -639,6 +639,7 @@ module.exports.points2wallet = async function (req, res) {
 					}
 				})
 					.then((response) => {
+						const wallet_history_collection = req.custom.db.client().collection('wallet_history');
 						const wallet_data = {
 							"member_id": ObjectID(user._id.toString()),
 							"old_wallet": user.wallet,
