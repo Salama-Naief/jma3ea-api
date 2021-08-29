@@ -616,10 +616,9 @@ module.exports.points2wallet = async function (req, res) {
 				let wallet = user.wallet;
 
 				const points_to_wallet = points_2_wallet_values[req.body.points.toString()];
-				if (points > points_to_wallet) {
-					const tmp_wallet = parseFloat(points / points_to_wallet);
-					wallet += tmp_wallet;
-					points -= tmp_wallet * points_to_wallet;
+				if (points > parseFloat(req.body.points)) {
+					wallet += points_to_wallet;
+					points -= parseFloat(req.body.points);
 				} else {
 					return res.out({
 						"message": req.custom.local.no_enough_points
