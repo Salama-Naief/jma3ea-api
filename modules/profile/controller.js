@@ -615,7 +615,7 @@ module.exports.points2wallet = async function (req, res) {
 				let points = user.points;
 				let wallet = user.wallet;
 
-				const points_to_wallet = points_2_wallet_values[req.body.points.toString()];
+				const points_to_wallet = parseFloat(points_2_wallet_values[req.body.points.toString()]);
 				if (points > parseFloat(req.body.points)) {
 					wallet += points_to_wallet;
 					points -= parseFloat(req.body.points);
