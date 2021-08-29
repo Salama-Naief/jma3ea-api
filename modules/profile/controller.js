@@ -612,8 +612,8 @@ module.exports.points2wallet = async function (req, res) {
 					}, status_message.VALIDATION_ERROR);
 				}
 
-				let points = user.points;
-				let wallet = user.wallet;
+				let points = parseFloat(user.points);
+				let wallet = parseFloat(user.wallet);
 
 				const points_to_wallet = parseFloat(points_2_wallet_values[req.body.points.toString()]);
 				if (points > parseFloat(req.body.points)) {
