@@ -33,7 +33,7 @@ const locals = {
 	invalid_location: 'You selected invalid location, Please select another location that we cover it',
 	new_order: 'New Order',
 	no_data_found: 'No data found',
-	no_enough_points: 'Points must be 100 or more to convert it into wallet',
+	no_enough_points: 'You don\'t have enough points to convert it into wallet',
 	no_enough_wallet: 'There is no enough money in your wallet',
 	no_settings: 'No settings provided.',
 	no_token: 'No token provided.',
