@@ -625,7 +625,7 @@ module.exports.points2wallet = async function (req, res) {
 					}, status_message.VALIDATION_ERROR);
 				}
 
-				points = common.getRoundedPrice(points);
+				points = parseFloat(points);
 				wallet = common.getFixedPrice(wallet);
 				user.wallet = common.getFixedPrice(user.wallet);
 
@@ -688,7 +688,7 @@ module.exports.wallet_history = function (req, res) {
 
 function fix_user_data(req, userObj, city_id) {
 	const userCollection = req.custom.db.client().collection('member');
-	let points = userObj.points || 0;
+	let points = parseFloat(userObj.points || 0);
 	let wallet = userObj.wallet || 0;
 	let address = userObj.address;
 	address.city_id = ObjectID(city_id.toString());
