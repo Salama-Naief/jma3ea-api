@@ -643,6 +643,8 @@ module.exports.points2wallet = async function (req, res) {
 							"member_id": ObjectID(user._id.toString()),
 							"old_points": user.points,
 							"new_points": points,
+							"old_wallet": user.wallet,
+							"new_wallet": wallet,
 							"created": new Date(),
 						};
 						return point_history_collection.insertOne(point_data);
