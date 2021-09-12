@@ -28,11 +28,11 @@ module.exports.add = function (req, res) {
 			let prods = [];
 			if (user && user.cart) {
 				for (const i of Object.keys(user.cart)) {
-					prods.push(i.split('-')[0]);
+					prods.push(i.split('-')[0].toString());
 				}
 			}
 			req.custom.clean_filter.sku = {
-				'$in': [... new Set(prods)]
+				'$in': prods
 			};
 
 			const prod_collection = req.custom.db.client().collection('product');
@@ -52,7 +52,7 @@ module.exports.add = function (req, res) {
 
 				let selected_product = prod;
 				if (data.sku !== sku && prod.variants && prod.variants.length > 0) {
-					const variant = prod.variants.find((i) => i.sku === data.sku);
+					const variant = prod.variants.find((i) => i.sku.toString() === data.sku.toString());
 
 					if (!variant) {
 						return res.out({
