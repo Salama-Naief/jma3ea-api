@@ -170,13 +170,13 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 							}) : null;
 
 							i.availability = quantity_store && quantity_store.status && quantity_store.quantity > 0;
-							const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id.toString()) > -1;
+							const prod_exists_in_cart = Object.keys(user.cart).indexOf(i.sku.toString()) > -1;
 							i.cart_status = {
 								is_exists: prod_exists_in_cart,
-								quantity: prod_exists_in_cart ? user.cart[i._id] : 0
+								quantity: prod_exists_in_cart ? user.cart[i.sku] : 0
 							};
 							i.wishlist_status = {
-								is_exists: user.wishlist.indexOf(i._id.toString()) > -1
+								is_exists: user.wishlist.indexOf(i.sku.toString()) > -1
 							};
 						}
 						return i;
