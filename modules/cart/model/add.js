@@ -2,12 +2,11 @@
 const ObjectID = require("../../../types/object_id");
 const Field = require("../../../libraries/field");
 module.exports = {
-    "product_id": new Field({
-        "required": true,
-        "type": ObjectID
-    }),
-    "quantity": new Field({
-        "required": true,
-        "type": Number
-    })
+	"sku": new Field({
+		"required": true,
+	}),
+	"quantity": new Field({
+		"required": true,
+		"type": Number
+	})
 };
