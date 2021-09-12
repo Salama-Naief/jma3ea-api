@@ -106,13 +106,13 @@ module.exports.featured = async function (req, res) {
 		let cached_data = await cache.get(cache_key).catch(() => null);
 		if (cached_data) {
 			cached_data = cached_data.map((i) => {
-				const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id) > -1;
+				const prod_exists_in_cart = Object.keys(user.cart).indexOf(i.sku) > -1;
 				i.cart_status = {
 					is_exists: prod_exists_in_cart,
-					quantity: prod_exists_in_cart ? user.cart[i._id] : 0
+					quantity: prod_exists_in_cart ? user.cart[i.sku] : 0
 				};
 				i.wishlist_status = {
-					is_exists: user.wishlist.indexOf(i._id.toString()) > -1
+					is_exists: user.wishlist.indexOf(i.sku.toString()) > -1
 				};
 
 				return i;
@@ -205,13 +205,13 @@ module.exports.featured = async function (req, res) {
 
 					i.availability = quantity_store && quantity_store.quantity > 0;
 
-					const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id.toString()) > -1;
+					const prod_exists_in_cart = Object.keys(user.cart).indexOf(i.sku.toString()) > -1;
 					i.cart_status = {
 						is_exists: prod_exists_in_cart,
-						quantity: prod_exists_in_cart ? user.cart[i._id] : 0
+						quantity: prod_exists_in_cart ? user.cart[i.sku] : 0
 					};
 					i.wishlist_status = {
-						is_exists: user.wishlist.indexOf(i._id.toString()) > -1
+						is_exists: user.wishlist.indexOf(i.sku.toString()) > -1
 					};
 
 					return i;
@@ -254,10 +254,10 @@ module.exports.read = async function (req, res) {
 
 				cached_data.cart_status = {
 					is_exists: prod_exists_in_cart,
-					quantity: prod_exists_in_cart ? user.cart[cached_data._id] : 0
+					quantity: prod_exists_in_cart ? user.cart[cached_data.sku] : 0
 				};
 				cached_data.wishlist_status = {
-					is_exists: user.wishlist.indexOf(cached_data._id) > -1
+					is_exists: user.wishlist.indexOf(cached_data.sku) > -1
 				};
 
 				if (cached_data.variants && cached_data.variants.length > 0) {
@@ -310,7 +310,7 @@ module.exports.read = async function (req, res) {
 				},
 				"variants": 1,
 			}, async (results) => {
-				if (!results || !results._id) {
+				if (!results || !results.sku) {
 					return res.out(results, status_message.NO_DATA);
 				}
 				const prod_n_storeArr = results.availability;
@@ -437,10 +437,10 @@ module.exports.read = async function (req, res) {
 
 				results.cart_status = {
 					is_exists: prod_exists_in_cart,
-					quantity: prod_exists_in_cart ? user.cart[results._id] : 0
+					quantity: prod_exists_in_cart ? user.cart[results.sku] : 0
 				};
 				results.wishlist_status = {
-					is_exists: user.wishlist.indexOf(results._id && results._id.toString()) > -1
+					is_exists: user.wishlist.indexOf(results.sku && results.sku.toString()) > -1
 				};
 
 				res.out(results);
