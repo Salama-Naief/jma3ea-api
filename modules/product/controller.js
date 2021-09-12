@@ -21,7 +21,7 @@ module.exports.list = function (req, res) {
 			or.push({
 				[`name.${l}`]: {
 					$regex: name,
-					'$options' : 'i'
+					'$options': 'i'
 				}
 			});
 		}
@@ -30,7 +30,8 @@ module.exports.list = function (req, res) {
 		req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
 	}
 	mainController.list(req, res, collectionName, {
-		"_id": 1,
+		"_id": 0,
+		"sku": 1,
 		"name": {
 			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 		},
@@ -38,6 +39,7 @@ module.exports.list = function (req, res) {
 		"old_price": 1,
 		"price": 1,
 		"availability": `$prod_n_storeArr`,
+		"has_variants": { $isArray: "$variants" },
 	});
 };
 
@@ -62,7 +64,8 @@ module.exports.listByCategory = function (req, res) {
 		req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_category_${req.params.Id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
 	}
 	mainController.list(req, res, collectionName, {
-		"_id": 1,
+		"_id": 0,
+		"sku": 1,
 		"name": {
 			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 		},
@@ -70,6 +73,7 @@ module.exports.listByCategory = function (req, res) {
 		"old_price": 1,
 		"price": 1,
 		"availability": `$prod_n_storeArr`,
+		"has_variants": { $isArray: "$variants" },
 	});
 };
 
@@ -132,7 +136,8 @@ module.exports.featured = async function (req, res) {
 			filter['status'] = true;
 			filter['feature_id'] = c._id;
 			const projection = {
-				"_id": 1,
+				"_id": 0,
+				"sku": 1,
 				"name": {
 					$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 				},
@@ -140,6 +145,7 @@ module.exports.featured = async function (req, res) {
 				"old_price": 1,
 				"price": 1,
 				"availability": `$prod_n_storeArr`,
+				"has_variants": { $isArray: "$variants" },
 			};
 
 			const sort = {
@@ -254,12 +260,29 @@ module.exports.read = async function (req, res) {
 					is_exists: user.wishlist.indexOf(cached_data._id) > -1
 				};
 
+				if (cached_data.variants && cached_data.variants.length > 0) {
+					cached_data.variants = cached_data.variants.map((v) => {
+
+						const prod_exists_in_cart = Object.keys(user.cart).indexOf(v.sku.toString()) > -1;
+						v.cart_status = {
+							is_exists: prod_exists_in_cart,
+							quantity: prod_exists_in_cart ? user.cart[v.sku.toString()] : 0
+						};
+						v.wishlist_status = {
+							is_exists: user.wishlist.indexOf(v.sku.toString()) > -1
+						};
+
+						return v;
+					});
+				}
+
 				return res.out(cached_data);
 			}
 
 			req.custom.isProducts = true;
 			mainController.read(req, res, collectionName, {
-				"_id": 1,
+				"_id": 0,
+				"sku": 1,
 				"name": {
 					$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 				},
@@ -284,7 +307,8 @@ module.exports.read = async function (req, res) {
 				"weight": 1,
 				"max_quantity_cart": {
 					$ifNull: ["$max_quantity_cart", 0]
-				}
+				},
+				"variants": 1,
 			}, async (results) => {
 				if (!results || !results._id) {
 					return res.out(results, status_message.NO_DATA);
@@ -300,18 +324,76 @@ module.exports.read = async function (req, res) {
 					}
 				}
 
+				if (result.variants) {
+					result.variants = result.variants.map((v) => {
+						const store = v.prod_n_storeArr && v.prod_n_storeArr.find((s) => s.store_id.toString() === store_id && parseInt(s.quantity) > 0 && s.status === true);
+						if (store) {
+							v.max_quantity_cart = store.max_quantity_cart || result.max_quantity_cart;
+							v.price = common.getFixedPrice(v.price || result.price);
+							delete v.prod_n_storeArr;
 
-				const quantity_store = prod_n_storeArr ? prod_n_storeArr.find((p_n_s) => {
-					if (!p_n_s.feed_from_store_id && p_n_s.store_id.toString() === req.custom.authorizationObject.store_id.toString()) {
-						return p_n_s;
-					} else if (p_n_s.feed_from_store_id) {
-						const temp_store = prod_n_storeArr.find((t_s) => t_s.store_id && p_n_s.feed_from_store_id && t_s.store_id.toString() == p_n_s.feed_from_store_id.toString());
-						p_n_s.quantity = temp_store ? parseInt(temp_store.quantity) : 0;
-						return p_n_s;
-					}
-				}) : null;
+							v.options = v.options ? v.options.filter((v_exists) => v_exists.label && v_exists.name && v_exists.type && v_exists.value).map((v_option) => {
+								return {
+									label: v_option.label[req.custom.lang] || v_option.label[req.custom.config.local],
+									name: v_option.name[req.custom.lang] || v_option.name[req.custom.config.local],
+									sku_code: v_option.sku_code,
+									type: v_option.type,
+									value: v_option.value,
+								};
+							}) : [];
 
-				results.availability = quantity_store && quantity_store.quantity > 0;
+							if (v.name && v.name[req.custom.lang]) {
+								v.name = v.name[req.custom.lang];
+							} else {
+								v.name = result.name;
+							}
+
+
+							if (v.description && v.description[req.custom.lang]) {
+								v.description = v.description[req.custom.lang];
+							} else {
+								v.description = result.description;
+							}
+
+							if (v.keywords && v.keywords[req.custom.lang]) {
+								v.keywords = v.keywords[req.custom.lang];
+							} else {
+								v.keywords = result.keywords;
+							}
+
+							if (v.contents && v.contents[req.custom.lang]) {
+								v.contents = v.contents[req.custom.lang];
+							} else {
+								v.contents = result.contents;
+							}
+
+
+							if (v.gallery_pictures) {
+								v.gallery_pictures = v.gallery_pictures.map((p) => {
+									return `${req.custom.config.media_url}${p}`;
+								});
+							} else {
+								v.gallery_pictures = result.gallery_pictures;
+							}
+
+							return v;
+						}
+					}).filter((v) => v && v.options && v.options.length > 0);
+					results.availability = true;
+				} else {
+					const quantity_store = prod_n_storeArr ? prod_n_storeArr.find((p_n_s) => {
+						if (!p_n_s.feed_from_store_id && p_n_s.store_id.toString() === req.custom.authorizationObject.store_id.toString()) {
+							return p_n_s;
+						} else if (p_n_s.feed_from_store_id) {
+							const temp_store = prod_n_storeArr.find((t_s) => t_s.store_id && p_n_s.feed_from_store_id && t_s.store_id.toString() == p_n_s.feed_from_store_id.toString());
+							p_n_s.quantity = temp_store ? parseInt(temp_store.quantity) : 0;
+							return p_n_s;
+						}
+					}) : null;
+
+					results.availability = quantity_store && quantity_store.quantity > 0;
+				}
+
 
 				if (results.brand) {
 					const brand_collection = req.custom.db.client().collection('brand');
