@@ -324,12 +324,12 @@ module.exports.read = async function (req, res) {
 					}
 				}
 
-				if (result.variants) {
-					result.variants = result.variants.map((v) => {
+				if (results.variants) {
+					results.variants = results.variants.map((v) => {
 						const store = v.prod_n_storeArr && v.prod_n_storeArr.find((s) => s.store_id.toString() === store_id && parseInt(s.quantity) > 0 && s.status === true);
 						if (store) {
-							v.max_quantity_cart = store.max_quantity_cart || result.max_quantity_cart;
-							v.price = common.getFixedPrice(v.price || result.price);
+							v.max_quantity_cart = store.max_quantity_cart || results.max_quantity_cart;
+							v.price = common.getFixedPrice(v.price || results.price);
 							delete v.prod_n_storeArr;
 
 							v.options = v.options ? v.options.filter((v_exists) => v_exists.label && v_exists.name && v_exists.type && v_exists.value).map((v_option) => {
@@ -345,26 +345,26 @@ module.exports.read = async function (req, res) {
 							if (v.name && v.name[req.custom.lang]) {
 								v.name = v.name[req.custom.lang];
 							} else {
-								v.name = result.name;
+								v.name = results.name;
 							}
 
 
 							if (v.description && v.description[req.custom.lang]) {
 								v.description = v.description[req.custom.lang];
 							} else {
-								v.description = result.description;
+								v.description = results.description;
 							}
 
 							if (v.keywords && v.keywords[req.custom.lang]) {
 								v.keywords = v.keywords[req.custom.lang];
 							} else {
-								v.keywords = result.keywords;
+								v.keywords = results.keywords;
 							}
 
 							if (v.contents && v.contents[req.custom.lang]) {
 								v.contents = v.contents[req.custom.lang];
 							} else {
-								v.contents = result.contents;
+								v.contents = results.contents;
 							}
 
 
@@ -373,7 +373,7 @@ module.exports.read = async function (req, res) {
 									return `${req.custom.config.media_url}${p}`;
 								});
 							} else {
-								v.gallery_pictures = result.gallery_pictures;
+								v.gallery_pictures = results.gallery_pictures;
 							}
 
 							return v;
