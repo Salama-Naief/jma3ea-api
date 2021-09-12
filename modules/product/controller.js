@@ -324,7 +324,7 @@ module.exports.read = async function (req, res) {
 					}
 				}
 
-				const store_id = req.custom.authorizationObject.store_id;
+				const store_id = req.custom.authorizationObject.store_id.toString();
 
 				if (results.variants) {
 					results.variants = results.variants.map((v) => {
@@ -334,9 +334,9 @@ module.exports.read = async function (req, res) {
 							v.price = common.getFixedPrice(v.price || results.price);
 							delete v.prod_n_storeArr;
 
-							v.options = v.options ? v.options.filter((v_exists) => v_exists.label && v_exists.name && v_exists.type && v_exists.value).map((v_option) => {
+							v.options = v.options ? v.options.filter((v_exists) => v_exists.name && v_exists.type && v_exists.value).map((v_option) => {
 								return {
-									label: v_option.label[req.custom.lang] || v_option.label[req.custom.config.local],
+									label: v_option.name[req.custom.lang] || v_option.name[req.custom.config.local],
 									name: v_option.name[req.custom.lang] || v_option.name[req.custom.config.local],
 									sku_code: v_option.sku_code,
 									type: v_option.type,
