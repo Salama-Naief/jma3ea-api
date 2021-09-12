@@ -319,7 +319,7 @@ module.exports.read = function (req, res, collectionName, projection, callback) 
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
-	if (!ObjectID.isValid(req.params.Id)) {
+	if (!ObjectID.isValid(req.params.Id) && !req.custom.isProducts) {
 		return res.out({
 			'message': req.custom.local.id_not_valid
 		}, status_message.INVALID_URL_PARAMETER);
