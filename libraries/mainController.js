@@ -359,7 +359,7 @@ module.exports.read = function (req, res, collectionName, projection, callback) 
 		}
 
 		const id_key = req.custom.isProducts ? 'sku' : '_id';
-		const id_value = req.custom.isProducts ? req.params.Id : ObjectID(req.params.Id);
+		const id_value = req.custom.isProducts ? req.params.sku : ObjectID(req.params.Id);
 		const collection = req.custom.db.client().collection(collectionName);
 		// Pipeline
 		const pipeline = [
