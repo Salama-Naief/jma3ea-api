@@ -358,13 +358,15 @@ module.exports.read = function (req, res, collectionName, projection, callback) 
 			}, status_message.CITY_REQUIRED);
 		}
 
+		const id_key = req.custom.isProducts ? 'sku' : '_id';
+		const id_value = req.custom.isProducts ? req.params.Id : ObjectID(req.params.Id);
 		const collection = req.custom.db.client().collection(collectionName);
 		// Pipeline
 		const pipeline = [
 			// Stage 1
 			{
 				$match: {
-					"_id": ObjectID(req.params.Id),
+					[id_key]: id_value,
 					"status": true
 				}
 			},
