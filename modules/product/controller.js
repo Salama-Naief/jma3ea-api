@@ -326,7 +326,7 @@ module.exports.read = async function (req, res) {
 
 				if (results.variants) {
 					results.variants = results.variants.map((v) => {
-						const store = v.prod_n_storeArr && v.prod_n_storeArr.find((s) => s.store_id.toString() === store_id && parseInt(s.quantity) > 0 && s.status === true);
+						const store = v.prod_n_storeArr && v.prod_n_storeArr.find((s) => s.store_id && s.store_id.toString() === store_id && parseInt(s.quantity) > 0 && s.status === true);
 						if (store) {
 							v.max_quantity_cart = store.max_quantity_cart || results.max_quantity_cart;
 							v.price = common.getFixedPrice(v.price || results.price);
