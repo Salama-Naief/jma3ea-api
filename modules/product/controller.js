@@ -324,6 +324,8 @@ module.exports.read = async function (req, res) {
 					}
 				}
 
+				const store_id = req.custom.authorizationObject.store_id;
+
 				if (results.variants) {
 					results.variants = results.variants.map((v) => {
 						const store = v.prod_n_storeArr && v.prod_n_storeArr.find((s) => s.store_id && s.store_id.toString() === store_id && parseInt(s.quantity) > 0 && s.status === true);
