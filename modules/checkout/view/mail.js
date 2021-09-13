@@ -118,20 +118,20 @@ module.exports.mail_checkout = function (checkout, custom) {
 										</thead>
 										<tbody>`;
 	for (const s of Object.keys(checkout.products)) {
-		for (const i of checkout.products[s]) {
+		for (const i of checkout.products) {
 			mail_checkout += `<tr>
 													<td>
 														<img src="${i.picture}?w=48&h=48" />
 													</td>
 													<td>
-														${ i.name[lang] }
+														${i.name[lang]}
 													</td>
 													<td>
-														${ i.quantity }
+														${i.quantity}
 													</td>
 													<td>
-														${ i.price }
-														${ symbol }
+														${i.price}
+														${symbol}
 													</td>
 													<td>
 													
@@ -144,47 +144,47 @@ module.exports.mail_checkout = function (checkout, custom) {
 										<tfoot>
 											<tr>
 												<td colspan="5">
-													${ local.shipping_cost }
+													${local.shipping_cost}
 													:
-													${ checkout.shipping_cost }
-													${ symbol }
+													${checkout.shipping_cost}
+													${symbol}
 												</td>
 											</tr>
 											<tr>
 												<td colspan="5">
-													${ local.discount }
+													${local.discount}
 													:
-													${ checkout.coupon.value }
-													${ symbol }
+													${checkout.coupon.value}
+													${symbol}
 												</td>
 											</tr>
 											<tr>
 												<td colspan="5">
-													${ local.order_id }
+													${local.order_id}
 													:
-													${ checkout.order_id }
+													${checkout.order_id}
 												</td>
 											</tr>
 											<tr>
 												<td colspan="5">
-													${ local.order_date }
+													${local.order_date}
 													:
-													${ checkout.created }
+													${checkout.created}
 												</td>
 											</tr>
 											<tr>
 												<td colspan="5">
-													${ local.total }
+													${local.total}
 													:
-													${ checkout.total }
-													${ symbol }
+													${checkout.total}
+													${symbol}
 												</td>
 											</tr>
 											<tr>
 												<td colspan="5">
-													${ local.the_payment_method }
+													${local.the_payment_method}
 													:
-													${ checkout.payment_method.name }
+													${checkout.payment_method.name}
 												</td>
 											</tr>
 										</tfoot>
@@ -208,7 +208,7 @@ module.exports.mail_checkout = function (checkout, custom) {
 
 	mail_checkout += `</tbody>
 									</table>
-									<br /><span class="HOEnZb"><span style="color: #888888;">${ setting.site_name[lang] }</span></span>
+									<br /><span class="HOEnZb"><span style="color: #888888;">${setting.site_name[lang]}</span></span>
 								</div>
 							</td>
 						</tr>

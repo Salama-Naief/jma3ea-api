@@ -100,16 +100,17 @@ module.exports.buy = async function (req, res) {
 	let prods = [];
 	if (user && user.cart) {
 		for (const i of Object.keys(user.cart)) {
-			prods.push(ObjectID(i));
+			prods.push(i.split('-')[0]);
 		}
 	}
-	const up_cart = user.cart;
-	req.custom.clean_filter._id = {
+	req.custom.clean_filter.sku = {
 		'$in': prods
 	};
+	const up_cart = user.cart;
 	req.custom.limit = 0;
 	mainController.list(req, res, 'product', {
 		"_id": 1,
+		"sku": 1,
 		"name": 1,
 		"categories": "$prod_n_categoryArr",
 		"picture": 1,
@@ -119,7 +120,8 @@ module.exports.buy = async function (req, res) {
 		"sku": { $ifNull: [`$sku`, `$soft_code`] }, // TODO: Change to sku
 		"weight": 1,
 		"prod_n_storeArr": 1,
-		"supplier_id": 1
+		"supplier_id": 1,
+		"variants": 1,
 	}, async (out) => {
 		if (out.data.length === 0) {
 			save_failed_payment(req, 'NO_PRODUCTS_IN_CART');
@@ -224,7 +226,12 @@ module.exports.buy = async function (req, res) {
 			total: total,
 			cart_total: cart_total,
 			user_data: data.user_data,
-			products: products2save,
+			products: products2save.map((p) => {
+				p.variant = p.variant && p.variant.find(v => Object.keys(user.cart).indexOf(v.sku) > -1);
+				p.sku = p.variant && p.variant.sku ? p.variant.sku : p.sku;
+				delete p.variants;
+				return p;
+			}),
 			hash: req.body.hash,
 			delivery_time: common.getDate(req.body.delivery_time),
 			discount_by_wallet: req.body.discount_by_wallet,
@@ -279,7 +286,7 @@ module.exports.buy = async function (req, res) {
 			return p;
 		});
 
-		order_data.products = common.group_products_by_suppliers(products2view, req);
+		order_data.products = products2view;
 		order_data.subtotal = common.getRoundedPrice(order_data.subtotal);
 		order_data.shipping_cost = common.getFixedPrice(order_data.shipping_cost);
 		order_data.coupon.value = common.getFixedPrice(order_data.coupon.value);
@@ -342,15 +349,16 @@ module.exports.list = async function (req, res) {
 	let prods = [];
 	if (user && user.cart) {
 		for (const i of Object.keys(user.cart)) {
-			prods.push(ObjectID(i));
+			prods.push(i.split('-')[0]);
 		}
 	}
-	req.custom.clean_filter._id = {
+	req.custom.clean_filter.sku = {
 		'$in': prods
 	};
 	req.custom.limit = 0;
 	mainController.list(req, res, 'product', {
 		"_id": 1,
+		"sku": 1,
 		"name": {
 			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 		},
@@ -361,7 +369,8 @@ module.exports.list = async function (req, res) {
 		"barcode": 1,
 		"weight": 1,
 		"prod_n_storeArr": 1,
-		"supplier_id": 1
+		"supplier_id": 1,
+		"variants": 1,
 	}, async (out) => {
 		if (out.data.length === 0) {
 			return res.out({
@@ -369,12 +378,9 @@ module.exports.list = async function (req, res) {
 			}, status_message.NO_DATA);
 		}
 
-		const products2save = await products_to_save(out.data, user, req, true);
+		const products = await products_to_save(out.data, user, req, true);
 
-		const total_prods = parseFloat(products2save.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
-
-		const products = common.group_products_by_suppliers(products2save, req);
-
+		const total_prods = parseFloat(products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
 
 		const city_collection = req.custom.db.client().collection('city');
 		const cityObj = await city_collection
@@ -559,12 +565,54 @@ module.exports.list = async function (req, res) {
 			addresses: addresses,
 			payment_methods: payment_methods,
 			delivery_times: delivery_times,
-			products: products
+			products: products.map((p) => {
+				p.variant = p.variant && p.variant.find(v => Object.keys(user.cart).indexOf(v.sku) > -1);
+				p.sku = p.variant && p.variant.sku ? p.variant.sku : p.sku;
+				delete p.variants;
+				return p;
+			}),
 		});
 	});
 };
 
 async function products_to_save(products, user, req, to_display = false) {
+
+	let products_arr = [];
+	for (const p of products) {
+		if (p.variants && p.variants.length > 0) {
+			for (const v of p.variants) {
+				if (Object.keys(user.cart).indexOf(v.sku) > -1) {
+					products_arr.push({
+						_id: ObjectID(p._id),
+						sku: v.sku,
+						soft_code: v.soft_code,
+						price: parseFloat(v.price || p.price),
+						name: p.name,
+						variants_options: v.options.map((v_o) => {
+							return {
+								label: v_o.name[req.custom.lang] || v_o.name[req.custom.config.local],
+								name: v_o.name[req.custom.lang] || v_o.name[req.custom.config.local],
+								sku_code: v_o.sku_code,
+								value: v_o.value,
+								type: v_o.type,
+							};
+						}),
+						categories: p.categories,
+						picture: v.gallery_pictures && v.gallery_pictures[0] ? req.custom.config.media_url + v.gallery_pictures[0] : p.picture,
+						uom: p.uom,
+						barcode: p.barcode,
+						weight: p.weight,
+						prod_n_storeArr: v.prod_n_storeArr,
+						supplier_id: p.supplier_id,
+					});
+				}
+			}
+		} else if (Object.keys(user.cart).indexOf(p.sku) > -1) {
+			p.variants_options = null;
+			products_arr.push(p);
+		}
+	}
+
 	let all_categories = [];
 	await (async () => {
 		const cache = req.custom.cache;
@@ -600,7 +648,7 @@ async function products_to_save(products, user, req, to_display = false) {
 
 	const out_data = products.map((prod) => {
 
-		prod.quantity = user.cart[prod._id.toString()];
+		prod.quantity = user.cart[prod.sku.toString()];
 		for (const store of prod.prod_n_storeArr) {
 			if (store.feed_from_store_id) {
 				const temp_store = prod.prod_n_storeArr.find((i) => i.store_id.toString() == store.feed_from_store_id.toString());
@@ -692,32 +740,69 @@ function update_quantities(req, the_products, cart) {
 	let promises = [];
 
 	for (const p of the_products) {
-		const quantity = cart[p._id];
-		let prod_n_storeArr = [];
-		for (const i of p.prod_n_storeArr) {
-			if (i.feed_from_store_id) {
-				const temp_store = p.prod_n_storeArr.find((pi) => pi.store_id.toString() == i.feed_from_store_id.toString());
-				i.quantity = temp_store.quantity;
-				p.prod_n_storeArr = p.prod_n_storeArr.map((pi) => {
-					if (pi.store_id.toString() == temp_store.store_id.toString()) {
-						pi.quantity -= quantity;
-						pi.quantity = pi.quantity >= 0 ? pi.quantity : 0;
-					}
-					return pi;
-				});
-			} else if (i.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
-				i.quantity -= quantity;
-				i.quantity = i.quantity >= 0 ? i.quantity : 0
-			}
-			i.store_id = ObjectID(i.store_id.toString());
-			prod_n_storeArr.push(i);
+		const quantity = cart[p.sku];
+		let store_id = null;
+		if (p.supplier_id) {
+
+			const store = stores.find((i) =>
+				i.supplier_id.toString() == p.supplier_id.toString() &&
+				i.cities_n_storeArr.map((ci) => ci.city_id.toString()).indexOf(req.custom.authorizationObject.city_id.toString()) > -1);
+			store_id = store && store._id ? store._id : null;
 		}
-		const update = collection.updateOne({
-			_id: ObjectID(p._id.toString())
-		}, {
-			$set: { prod_n_storeArr: prod_n_storeArr }
-		}).catch(() => null);
-		promises.push(update);
+		if (p.sku.includes('-')) {
+
+			let variant = p.variants.find((i) => i.sku == p.sku);
+			let prod_n_storeArr = [];
+			if (variant.prod_n_storeArr) {
+				for (const i of variant.prod_n_storeArr) {
+					if (i.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
+						i.quantity -= quantity;
+						i.quantity = i.quantity >= 0 ? i.quantity : 0
+					}
+					i.store_id = ObjectID(i.store_id.toString());
+					prod_n_storeArr.push(i);
+				}
+			}
+			let variants = p.variants.map((v) => {
+				if (v.sku == p.sku) {
+					return variant;
+				}
+				return v;
+			})
+			const update = collection.updateOne({
+				_id: ObjectID(p._id.toString())
+			}, {
+				$set: { variants: variants }
+			}).catch(() => null);
+			promises.push(update);
+
+		} else {
+			let prod_n_storeArr = [];
+			for (const i of p.prod_n_storeArr) {
+				if (i.feed_from_store_id) {
+					const temp_store = p.prod_n_storeArr.find((pi) => pi.store_id.toString() == i.feed_from_store_id.toString());
+					i.quantity = temp_store.quantity;
+					p.prod_n_storeArr = p.prod_n_storeArr.map((pi) => {
+						if (pi.store_id.toString() == temp_store.store_id.toString()) {
+							pi.quantity -= quantity;
+							pi.quantity = pi.quantity >= 0 ? pi.quantity : 0;
+						}
+						return pi;
+					});
+				} else if (i.store_id.toString() == store_id) {
+					i.quantity -= quantity;
+					i.quantity = i.quantity >= 0 ? i.quantity : 0
+				}
+				i.store_id = ObjectID(i.store_id.toString());
+				prod_n_storeArr.push(i);
+			}
+			const update = collection.updateOne({
+				_id: ObjectID(p._id.toString())
+			}, {
+				$set: { prod_n_storeArr: prod_n_storeArr }
+			}).catch(() => null);
+			promises.push(update);
+		}
 	}
 
 	return Promise.all(promises);
