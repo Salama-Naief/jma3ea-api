@@ -105,17 +105,24 @@ module.exports.featured = async function (req, res) {
 	if (cache_key) {
 		let cached_data = await cache.get(cache_key).catch(() => null);
 		if (cached_data) {
-			cached_data = cached_data.map((i) => {
-				const prod_exists_in_cart = Object.keys(user.cart).indexOf(i.sku) > -1;
-				i.cart_status = {
-					is_exists: prod_exists_in_cart,
-					quantity: prod_exists_in_cart ? user.cart[i.sku] : 0
-				};
-				i.wishlist_status = {
-					is_exists: user.wishlist.indexOf(i.sku.toString()) > -1
-				};
+			cached_data = cached_data.map((feature_category) => {
 
-				return i;
+				feature_category.products = feature_category.products.map((i) => {
+
+					const prod_exists_in_cart = Object.keys(user.cart).indexOf(i.sku.toString()) > -1;
+					i.cart_status = {
+						is_exists: prod_exists_in_cart,
+						quantity: prod_exists_in_cart ? user.cart[i.sku.toString()] : 0
+					};
+					i.wishlist_status = {
+						is_exists: user.wishlist.indexOf(i.sku.toString()) > -1
+					};
+
+					return i;
+
+				});
+
+				return feature_category;
 			});
 			return res.out(cached_data);
 		}
