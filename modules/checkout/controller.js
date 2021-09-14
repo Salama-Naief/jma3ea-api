@@ -227,8 +227,6 @@ module.exports.buy = async function (req, res) {
 			cart_total: cart_total,
 			user_data: data.user_data,
 			products: products2save.map((p) => {
-				p.variant = p.variant && p.variant.find(v => Object.keys(user.cart).indexOf(v.sku) > -1);
-				p.sku = p.variant && p.variant.sku ? p.variant.sku : p.sku;
 				delete p.variants;
 				return p;
 			}),
@@ -566,8 +564,6 @@ module.exports.list = async function (req, res) {
 			payment_methods: payment_methods,
 			delivery_times: delivery_times,
 			products: products.map((p) => {
-				p.variant = p.variant && p.variant.find(v => Object.keys(user.cart).indexOf(v.sku) > -1);
-				p.sku = p.variant && p.variant.sku ? p.variant.sku : p.sku;
 				delete p.variants;
 				return p;
 			}),
@@ -646,7 +642,7 @@ async function products_to_save(products, user, req, to_display = false) {
 
 	})();
 
-	const out_data = products.map((prod) => {
+	const out_data = products_arr.map((prod) => {
 
 		prod.quantity = user.cart[prod.sku.toString()];
 		for (const store of prod.prod_n_storeArr) {

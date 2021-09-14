@@ -41,6 +41,7 @@ module.exports.add = function (req, res) {
 
 			prod_collection.findOne({
 				status: true,
+				sku: sku,
 				"prod_n_storeArr.store_id": ObjectID(req.custom.authorizationObject.store_id)
 			}).then((prod) => {
 
