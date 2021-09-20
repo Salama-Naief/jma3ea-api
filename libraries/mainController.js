@@ -182,7 +182,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 
 			if (req.custom.isProducts) {
-				// results.data = results.data.filter((i) => i.availability);
+				results.data = results.data.filter((i) => i.availability);
 			}
 
 			const out = {
