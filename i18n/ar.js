@@ -144,7 +144,6 @@ const locals = {
 		password: 'كلمه السر',
 		payment_method: 'وسيلة الدفع',
 		product_id: 'المنتج',
-		sku: 'المنتج',
 		quantity: 'الكمية',
 		re_new_password: 'إعادة كلمة المرور الجديدة',
 		reset_hash: 'شفرة إعادة كلمة المرور',

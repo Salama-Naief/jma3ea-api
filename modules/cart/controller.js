@@ -25,23 +25,11 @@ module.exports.add = function (req, res) {
 			user.cart = user.cart || {};
 			user.hash = null;
 
-			let prods = [];
-			if (user && user.cart) {
-				for (const i of Object.keys(user.cart)) {
-					prods.push(i.split('-')[0].toString());
-				}
-			}
-			req.custom.clean_filter.sku = {
-				'$in': prods
-			};
-
 			const prod_collection = req.custom.db.client().collection('product');
-			const sku_arr = data.sku.split('-');
-			const sku = sku_arr[0];
 
 			prod_collection.findOne({
+				_id: data.product_id,
 				status: true,
-				sku: sku,
 				"prod_n_storeArr.store_id": ObjectID(req.custom.authorizationObject.store_id)
 			}).then((prod) => {
 
@@ -51,31 +39,14 @@ module.exports.add = function (req, res) {
 					}, status_message.VALIDATION_ERROR);
 				}
 
-				let selected_product = prod;
-				if (data.sku !== sku && prod.variants && prod.variants.length > 0) {
-					const variant = prod.variants.find((i) => i.sku.toString() === data.sku.toString());
 
-					if (!variant) {
-						return res.out({
-							'message': req.custom.local.cart_product_unavailable
-						}, status_message.VALIDATION_ERROR);
-					}
-
-					selected_product = {
-						sku: variant.sku,
-						prod_n_storeArr: variant.prod_n_storeArr,
-						max_quantity_cart: variant.max_quantity_cart || prod.max_quantity_cart,
-					};
-
-				}
-
-				for (const store of selected_product.prod_n_storeArr) {
+				for (const store of prod.prod_n_storeArr) {
 					if (store.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
 						if (store.feed_from_store_id) {
-							const temp_store = selected_product.prod_n_storeArr.find((i) => i.store_id.toString() == store.feed_from_store_id.toString());
+							const temp_store = prod.prod_n_storeArr.find((i) => i.store_id.toString() == store.feed_from_store_id.toString());
 							store.quantity = temp_store.quantity;
 						}
-						if (store.quantity < data.quantity || (selected_product.max_quantity_cart && selected_product.max_quantity_cart < data.quantity)) {
+						if (store.quantity < data.quantity || (prod.max_quantity_cart && prod.max_quantity_cart < data.quantity)) {
 							return res.out({
 								'message': req.custom.local.cart_product_exceeded_allowed
 							}, status_message.VALIDATION_ERROR);
@@ -89,53 +60,31 @@ module.exports.add = function (req, res) {
 					}
 				}
 
-				user.cart[data.sku] = data.quantity;
+				user.cart[data.product_id] = data.quantity;
 
 				if (!data.quantity) {
-					delete user.cart[data.sku];
+					delete user.cart[data.product_id];
 				}
 
 				const total_products = Object.keys(user.cart).length;
 
-				const prods_obj_skus = Object.keys(user.cart).map((i) => i.toString().split('-')[0]);
+				const prods_obj_ids = Object.keys(user.cart).map((i) => ObjectID(i));
 
 				const projection = {
-					sku: 1,
+					_id: 1,
 					price: 1,
-					variants: 1,
 				};
 
-				req.custom.clean_filter.sku = {
-					'$in': prods_obj_skus
+				req.custom.clean_filter._id = {
+					'$in': prods_obj_ids
 				};
 				mainController.list(req, res, 'product', projection, (rows) => {
-					const products = [];
-					for (const p of rows.data) {
-
-						if (p.variants && p.variants.length > 0) {
-							for (const v of p.variants) {
-								if (Object.keys(user.cart).indexOf(v.sku) > -1) {
-									products.push({
-										sku: v.sku,
-										price: parseFloat(v.price || p.price),
-										prod_n_inventoryArr: v.prod_n_inventoryArr,
-									});
-									prod.sku = v.sku;
-									prod.price = parseFloat(v.price || p.price);
-								}
-							}
-						} else if (Object.keys(user.cart).indexOf(p.sku) > -1) {
-							products.push(p);
-						}
-
-					}
-
-
+					const products = rows.data;
 					let total_quantities = 0;
 					let total_prices = 0;
 					for (const i of Object.keys(user.cart)) {
 						total_quantities += user.cart[i];
-						const product = products.find((p) => p.sku.toString() === i.toString());
+						const product = products.find((p) => p._id.toString() === i.toString());
 						if (product) {
 							total_prices += product.price * user.cart[i];
 						}
@@ -153,11 +102,11 @@ module.exports.add = function (req, res) {
 						}, status_message.UNEXPECTED_ERROR));
 				});
 
-			})
-			// .catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
+			}).
+				catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
 
-		})
-	// .catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
+		}).
+		catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
 };
 
 /**
@@ -170,7 +119,7 @@ module.exports.remove = function (req, res) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	req.custom.model = req.custom.model || require('./model/remove');
-	req.body.sku = req.params.Id;
+	req.body.product_id = req.params.Id;
 
 
 	req.custom.getValidData(req).
@@ -184,67 +133,42 @@ module.exports.remove = function (req, res) {
 			user.cart = user.cart || {};
 			user.hash = null;
 			const keys = Object.keys(user.cart);
-			if (keys.indexOf(data.sku.toString()) === -1) {
+			if (keys.indexOf(data.product_id.toString()) === -1) {
 				return res.out({
 					'message': req.custom.local.cart_product_not
 				}, status_message.NO_DATA)
 			}
-			delete user.cart[data.sku];
+			delete user.cart[data.product_id];
 
 			const total_products = Object.keys(user.cart).length;
-			const prods_obj_skus = Object.keys(user.cart).map((i) => ObjectID(i));
+			const prods_obj_ids = Object.keys(user.cart).map((i) => ObjectID(i));
 			const projection = {
-				sku: 1,
+				_id: 1,
 				price: 1,
-				prod_n_storeArr: 1,
-				variants: 1,
 			};
 
-			req.custom.clean_filter.sku = {
-				'$in': prods_obj_skus
+			req.custom.clean_filter._id = {
+				'$in': prods_obj_ids
 			};
 			mainController.list(req, res, 'product', projection, (rows) => {
-
-				let products = [];
-
-				for (const p of rows.data) {
-
-					if (p.variants && p.variants.length > 0) {
-						for (const v of p.variants) {
-							if (Object.keys(user.cart).indexOf(v.sku) > -1) {
-								const options_names = v.options ? v.options.map((v_option) => v_option.name[req.custom.lang] || v_option.name[req.custom.config.local]) : [];
-								products.push({
-									sku: v.sku,
-									quantity: user.cart[v.sku.toString()],
-									max_quantity_cart: parseFloat(v.max_quantity_cart || p.max_quantity_cart),
-									price: parseFloat(v.price || p.price),
-								});
-							}
-						}
-					} else if (Object.keys(user.cart).indexOf(p.sku) > -1) {
-						products.push(p);
-					}
-
-				}
-
-
+				const products = rows.data;
 				let total_quantities = 0;
 				let total_prices = 0;
 				for (const i of Object.keys(user.cart)) {
 					total_quantities += user.cart[i];
-					const product = products.find((p) => p.sku.toString() === i.toString());
-					if (product) {
+					const product = products.find((p) => p._id.toString() === i.toString());
+					if (product && product.price) {
 						total_prices += product.price * user.cart[i];
 					}
 				}
 
-				req.custom.cache.set(req.custom.token, user)
+				req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
 					.then((response) => res.out({
 						message: req.custom.local.cart_product_removed,
 						total_products: total_products,
 						total_quantities: total_quantities,
 						total_prices: common.getRoundedPrice(total_prices),
-					}, status_message.DELETED))
+					}, status_message.CREATED))
 					.catch((error) => res.out({
 						'message': error.message
 					}, status_message.UNEXPECTED_ERROR));
@@ -265,33 +189,27 @@ module.exports.list = function (req, res) {
 	}
 	const mainController = require("../../libraries/mainController");
 	let user = req.custom.authorizationObject;
-
 	let prods = [];
 	if (user && user.cart) {
 		for (const i of Object.keys(user.cart)) {
-			prods.push(i.split('-')[0]);
+			prods.push(ObjectID(i));
 		}
 	}
-	req.custom.clean_filter.sku = {
+	req.custom.clean_filter._id = {
 		'$in': prods
 	};
-
 	mainController.list(req, res, 'product', {
-		"_id": 0,
-		"sku": 1,
+		"_id": 1,
 		"name": {
 			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 		},
 		"picture": 1,
 		"price": 1,
-		"prod_n_storeArr": 1,
-		"variants": 1,
-	}, (products_data) => {
+		"prod_n_storeArr": 1
+	}, (data) => {
 		out = {};
 		out.success = true;
-		out.data = [];
 
-		const store_id = req.custom.authorizationObject.store_id;
 		const cityid = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 		if (!cityid) {
 			return res.out({
@@ -313,51 +231,19 @@ module.exports.list = function (req, res) {
 
 				out.shipping_cost = parseInt(cityObj.shipping_cost);
 				let total = 0;
-				let products = [];
-				for (const p of products_data.data) {
+				out.data = data.data.map((i) => {
 
-					if (p.variants && p.variants.length > 0) {
-						for (const v of p.variants) {
-							if (Object.keys(user.cart).indexOf(v.sku.toString()) > -1) {
-								const options_names = v.options ? v.options.map((v_option) => v_option.name[req.custom.lang] || v_option.name[req.custom.config.local]) : [];
-
-								let variant = {};
-								variant.sku = v.sku;
-								variant.name = v.name && v.name[req.custom.lang] ? v.name[req.custom.lang] : p.name;
-								variant.name += ' - ' + options_names.join('-');
-								variant.quantity = v.sku;
-								variant.prod_n_storeArr = v.prod_n_storeArr;
-								variant.max_quantity_cart = v.max_quantity_cart || p.max_quantity_cart;
-								variant.price = parseFloat(v.price || p.price);
-								if (v.gallery_pictures && v.gallery_pictures[0]) {
-									variant.picture = req.custom.config.media_url + v.gallery_pictures[0];
-								}
-								products.push(variant);
-							}
-						}
-					} else if (Object.keys(user.cart).indexOf(p.sku.toString()) > -1) {
-						products.push(p);
-					}
-
-				}
-
-				for (const i of products) {
-
-					if (!i || !i.sku) {
-						continue;
-					}
-
-					i.quantity = user.cart[i.sku.toString()];
+					i.quantity = user.cart[i._id.toString()];
 					for (const store of i.prod_n_storeArr) {
 						if (store.feed_from_store_id) {
-							const temp_store = i.prod_n_storeArr.find((inv) => inv.store_id.toString() == store.feed_from_store_id.toString());
+							const temp_store = prod.prod_n_storeArr.find((i) => i.store_id.toString() == store.feed_from_store_id.toString());
 							store.quantity = temp_store.quantity;
 						}
-						if (store.store_id.toString() == store_id) {
+						if (store.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
 							if (store.status == false || store.quantity <= 0) {
 								i.quantity = 0;
 								i.warning = req.custom.local.cart_product_unavailable;
-							} else if (store.quantity < i.quantity || (i.max_quantity_cart && i.max_quantity_cart < products_data.quantity)) {
+							} else if (store.quantity < i.quantity || (i.max_quantity_cart && i.max_quantity_cart < data.quantity)) {
 								i.quantity = store.quantity;
 								i.warning = req.custom.local.cart_product_exceeded_allowed_updated;
 							}
@@ -367,10 +253,8 @@ module.exports.list = function (req, res) {
 
 					total += i.price * i.quantity;
 					delete i.prod_n_storeArr;
-					delete i.variants;
-					out.data.push(i);
-
-				}
+					return i;
+				});
 
 				out.subtotal = total.toFixed(3);
 				if (!user.coupon || !user.coupon.code) {
@@ -398,11 +282,11 @@ module.exports.list = function (req, res) {
 
 					res.out(out);
 
-				})
-				// .catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
+				}).
+					catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
 
-			})
-		// .catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
+			}).
+			catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
 	});
 };
 
@@ -437,11 +321,11 @@ module.exports.coupon = function (req, res) {
 		.then(() => {
 
 			const collection = req.custom.db.client().collection('coupon');
-			collection.findOne({
+			collection.findOne({ 
 				code: data.code,
-				$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } }],
+				$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } }], 
 				status: true
-			}).
+			 }).
 				then((coupon) => {
 
 					if (!coupon) {

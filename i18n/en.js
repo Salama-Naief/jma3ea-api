@@ -142,7 +142,6 @@ const locals = {
 		password: 'Password',
 		payment_method: 'Payment Method',
 		product_id: 'Product',
-		sku: 'Product',
 		quantity: 'Quantity',
 		re_new_password: 'Re-type new password',
 		reset_hash: 'Reset hash',
