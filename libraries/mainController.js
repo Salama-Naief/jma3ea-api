@@ -76,7 +76,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 		// Pipeline
 		let pipeline = [];
 
-		if (req.custom.isProducts && ["/:Id/category", "/:Id/category/:rankId/rank", "/wishlist"].indexOf(req.route.path) > -1) {
+		if (req.custom.isProducts && ["/", "/:Id/category", "/:Id/category/:rankId/rank", "/wishlist"].indexOf(req.route.path) > -1) {
 
 			pipeline.push({
 				$addFields: {
@@ -85,7 +85,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 							"input": "$prod_n_storeArr",
 							"as": "p",
 							"cond": {
-								"$gt": ["$$p.quantity", 0],
+								"$eq": ["$$p.store_id", ObjectID(req.custom.authorizationObject.store_id.toString())],
 							}
 						}
 					}
@@ -109,6 +109,14 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 			pipeline.push({
 				$sort: { "order.sorting": 1 }
 			});
+
+			filter.$and = [
+				{ "store_status": { $exists: true } },
+				{ "store_status.quantity": { $exists: true } },
+				{ "store_status.quantity": { $gt: 0 } },
+				{ "store_status.status": { $exists: true } },
+				{ "store_status.status": { $eq: true } },
+			];
 
 		}
 
@@ -179,11 +187,6 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 				}
 				return i;
 			}) : [];
-
-
-			if (req.custom.isProducts) {
-				// results.data = results.data.filter((i) => i.availability);
-			}
 
 			const out = {
 				total: total,
