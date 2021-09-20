@@ -130,7 +130,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 		pipeline.push({
 			$facet: {
-				data: [{ $skip: parseInt(req.query.skip || 0) }, { $limit: parseInt(req.custom.limit) }],
+				data: [{ $skip: parseInt(req.custom.skip || 0) }, { $limit: parseInt(req.custom.limit) }],
 				total: [
 					{
 						$count: 'count'
