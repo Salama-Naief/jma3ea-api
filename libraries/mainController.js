@@ -130,7 +130,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 		pipeline.push({
 			$facet: {
-				data: [{ $skip: parseInt(req.custom.skip || 0) }, { $limit: parseInt(req.custom.limit) }],
+				data: [{ $skip: parseInt(req.custom.skip || 0) }, { $limit: parseInt(req.custom.limit || 999999999) }],
 				total: [
 					{
 						$count: 'count'
@@ -211,8 +211,8 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 
 
-	}).
-		catch((err) => res.out({ 'message': err.message }, status_message.UNEXPECTED_ERROR));
+	})
+		.catch((err) => res.out({ 'message': err.message }, status_message.UNEXPECTED_ERROR));
 
 };
 
