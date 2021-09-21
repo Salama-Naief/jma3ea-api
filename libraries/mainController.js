@@ -124,6 +124,12 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 			$match: filter
 		});
 
+		if (!req.custom.isProducts && req.custom.clean_sort && typeof req.custom.clean_sort == 'object' && Object.keys(req.custom.clean_sort) > 0) {
+			pipeline.push({
+				$sort: req.custom.clean_sort
+			});
+		}
+
 		pipeline.push({
 			$project: projection
 		});
