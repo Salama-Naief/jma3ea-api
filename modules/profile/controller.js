@@ -708,6 +708,8 @@ function fix_user_data(req, userObj, city_id) {
 	address.street = userObj.address.street || 'N/A';
 	address.gada = userObj.address.gada || 'N/A';
 	address.house = userObj.address.house || 'N/A';
+	address.apartment_number = userObj.address.apartment_number || 'N/A';
+	address.floor = userObj.address.floor || 'N/A';
 	address.latitude = userObj.address.latitude || 0;
 	address.longitude = userObj.address.longitude || 0;
 
