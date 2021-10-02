@@ -7,7 +7,7 @@ const status_message = require('../../enums/status_message');
 module.exports = (req, res, next) => {
 	if ((req.custom.class === 'auth' && req.custom.action === 'check' && req.method === 'POST') ||
 		(req.custom.class === 'profile' && req.custom.action === 'resetpassword' && req.method === 'PUT') ||
-		['country', 'city'].indexOf(req.custom.class) > -1 ||
+		['country', 'city', 'page'].indexOf(req.custom.class) > -1 ||
 		req.method === 'OPTIONS') {
 		next();
 		return;
