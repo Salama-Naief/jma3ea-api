@@ -343,7 +343,7 @@ module.exports.read = async function (req, res) {
 
 							v.options = v.options ? v.options.filter((v_exists) => v_exists.name && v_exists.type && v_exists.value).map((v_option) => {
 								return {
-									label: v_option.name[req.custom.lang] || v_option.name[req.custom.config.local],
+									label: v_option.option.name[req.custom.lang] || v_option.option.name[req.custom.config.local],
 									name: v_option.name[req.custom.lang] || v_option.name[req.custom.config.local],
 									sku_code: v_option.sku_code,
 									type: v_option.type,
