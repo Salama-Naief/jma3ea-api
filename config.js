@@ -39,7 +39,8 @@ module.exports = {
 	},
 	mobile: {
 		app_store_url: process.env.MOBILE_APP_STORE_URL,
-		google_play_url: process.env.MOBILE_GOOGLE_PLAY_URL
+		google_play_url: process.env.MOBILE_GOOGLE_PLAY_URL,
+		app_gallery_url: process.env.MOBILE_APP_GALLERY_URL
 	},
 	tracking: {
 		adjust: {
