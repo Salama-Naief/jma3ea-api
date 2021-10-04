@@ -369,6 +369,7 @@ module.exports.list = async function (req, res) {
 		"prod_n_storeArr": 1,
 		"supplier_id": 1,
 		"variants": 1,
+		"preparation_time": 1,
 	}, async (out) => {
 		if (out.data.length === 0) {
 			return res.out({
@@ -551,6 +552,12 @@ module.exports.list = async function (req, res) {
 			addresses = [base_address, ...userObj.addresses || []];
 		}
 
+		let earliest_date_of_delivery = parseInt(cityObj.preparation_time || 0);
+		for (const p of products) {
+			let preparation_time_for_product = parseInt(p.preparation_time || 0) + ((p.quantity - 1) * parseInt((p.preparation_time || 0) / 2));
+			earliest_date_of_delivery += preparation_time_for_product / 60;
+		}
+
 		res.out({
 			subtotal: common.getRoundedPrice(total_prods),
 			shipping_cost: common.getFixedPrice(shipping_cost),
@@ -562,9 +569,11 @@ module.exports.list = async function (req, res) {
 			message: message,
 			addresses: addresses,
 			payment_methods: payment_methods,
+			earliest_date_of_delivery: parseInt(earliest_date_of_delivery),
 			delivery_times: delivery_times,
 			products: products.map((p) => {
 				delete p.variants;
+				delete p.preparation_time;
 				return p;
 			}),
 		});
@@ -598,6 +607,7 @@ async function products_to_save(products, user, req, to_display = false) {
 						uom: p.uom,
 						barcode: p.barcode,
 						weight: p.weight,
+						preparation_time: parseInt(p.preparation_time || 30),
 						prod_n_storeArr: v.prod_n_storeArr,
 						supplier_id: p.supplier_id,
 					});
@@ -605,6 +615,7 @@ async function products_to_save(products, user, req, to_display = false) {
 			}
 		} else if (Object.keys(user.cart).indexOf(p.sku) > -1) {
 			p.variants_options = null;
+			p.preparation_time = parseInt(p.preparation_time || 30);
 			products_arr.push(p);
 		}
 	}
