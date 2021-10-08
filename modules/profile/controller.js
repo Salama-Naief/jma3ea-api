@@ -647,7 +647,7 @@ module.exports.points2wallet = async function (req, res) {
 							"new_wallet": wallet,
 							"created": new Date(),
 						};
-						return point_history_collection.insertOne(point_data).catch(() => null);
+						return point_history_collection.insertOne(point_data);
 					})
 					.then((response) => {
 						const wallet_history_collection = req.custom.db.client().collection('wallet_history');
@@ -708,6 +708,8 @@ function fix_user_data(req, userObj, city_id) {
 	address.street = userObj.address.street || 'N/A';
 	address.gada = userObj.address.gada || 'N/A';
 	address.house = userObj.address.house || 'N/A';
+	address.apartment_number = userObj.address.apartment_number || 'N/A';
+	address.floor = userObj.address.floor || 'N/A';
 	address.latitude = userObj.address.latitude || 0;
 	address.longitude = userObj.address.longitude || 0;
 
