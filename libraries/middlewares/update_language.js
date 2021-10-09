@@ -1,6 +1,3 @@
-// Load required modules
-const status_message = require('../../enums/status_message');
-
 /**
  * Middleware for sorting
  */
