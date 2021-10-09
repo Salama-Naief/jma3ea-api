@@ -141,7 +141,7 @@ module.exports.list = function (req, res) {
 				user_obj.cart = user_obj.cart || {};
 
 				data.data.map((i) => {
-					i.prod_n_categoryArr = i.prod_n_categoryArr[0];
+					i.prod_n_categoryArr = i.prod_n_categoryArr && i.prod_n_categoryArr[0];
 
 					const prod_exists_in_cart = Object.keys(user_obj.cart).indexOf(i._id.toString()) > -1;
 					i.cart_status = {
@@ -152,8 +152,8 @@ module.exports.list = function (req, res) {
 					return i;
 				});
 				res.out(data.data.sort((a, b) => {
-					const prodA = a.prod_n_categoryArr.category_id;
-					const prodB = b.prod_n_categoryArr.category_id;
+					const prodA = a.prod_n_categoryArr && a.prod_n_categoryArr.category_id;
+					const prodB = b.prod_n_categoryArr && b.prod_n_categoryArr.category_id;
 
 					let comparison = 0;
 					if (prodA > prodB) {
