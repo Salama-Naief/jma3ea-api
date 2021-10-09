@@ -94,6 +94,7 @@ module.exports.login = function (req, res) {
 		const token = 'u_' + auth.generateToken();
 		const data = req.custom.authorizationObject;
 		data.member_id = theuser._id;
+		data.language = theuser.language || req.custom.lang;
 		delete theuser.password;
 		theuser.wallet = theuser.wallet && parseFloat(theuser.wallet) > 0 ? parseFloat(theuser.wallet) : 0;
 		req.custom.cache.set(token, data, req.custom.config.cache.life_time.token)
@@ -700,6 +701,7 @@ module.exports.wallet_history = function (req, res) {
 
 function fix_user_data(req, userObj, city_id) {
 	const userCollection = req.custom.db.client().collection('member');
+	let language = userObj.language || req.custom.lang;
 	let points = parseFloat(userObj.points || 0);
 	let wallet = userObj.wallet || 0;
 	let address = userObj.address;
@@ -718,6 +720,7 @@ function fix_user_data(req, userObj, city_id) {
 	}, {
 		$set: {
 			address: address,
+			language: language,
 			points: points,
 			wallet: wallet,
 		}
