@@ -558,6 +558,12 @@ module.exports.list = async function (req, res) {
 			earliest_date_of_delivery += preparation_time_for_product / 60;
 		}
 
+		if (cityObj.enable_immediate_delivery === false) {
+			earliest_date_of_delivery = 0;
+		} else {
+			earliest_date_of_delivery += parseInt(req.custom.settings.orders.min_delivery_time || 0);
+		}
+
 		res.out({
 			subtotal: common.getRoundedPrice(total_prods),
 			shipping_cost: common.getFixedPrice(shipping_cost),
