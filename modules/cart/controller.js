@@ -192,7 +192,7 @@ module.exports.remove = function (req, res) {
 			delete user.cart[data.sku];
 
 			const total_products = Object.keys(user.cart).length;
-			const prods_obj_skus = Object.keys(user.cart).map((i) => ObjectID(i));
+			const prods_obj_skus = Object.keys(user.cart).map((i) => i);
 			const projection = {
 				sku: 1,
 				price: 1,
