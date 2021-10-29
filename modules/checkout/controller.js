@@ -289,6 +289,7 @@ module.exports.buy = async function (req, res) {
 		order_data.shipping_cost = common.getFixedPrice(order_data.shipping_cost);
 		order_data.coupon.value = common.getFixedPrice(order_data.coupon.value);
 		order_data.total = common.getRoundedPrice(order_data.total);
+		order_data.delivery_time = moment(req.body.delivery_time).format(req.custom.config.date.format).toString();
 
 		req.custom.authorizationObject.cart = {};
 		req.custom.authorizationObject.coupon = {
