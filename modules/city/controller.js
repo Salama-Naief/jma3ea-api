@@ -12,7 +12,7 @@ const collectionName = 'city';
  */
 module.exports.list = function (req, res) {
 	req.custom.limit = 99999;
-	req.custom.cache_key = `${collectionName}_${req.custom.lang}`;
+	req.custom.cache_key = `${collectionName}_${req.query.flat == 'true' ? 'flat' : 'children'}_${req.custom.lang}`;
 	mainController.list(req, res, collectionName, {
 		"_id": 1,
 		"name": {
@@ -24,6 +24,21 @@ module.exports.list = function (req, res) {
 		"parent_id": 1,
 		"store_id": 1
 	}, (out) => {
+
+		if (req.query.flat == 'true') {
+			out = {
+				"total": out.data.length,
+				"count": out.data.length,
+				"per_page": out.data.length,
+				"current_page": 1,
+				"data": out.data
+			};
+			if (req.custom.cache_key && rows.length > 0) {
+				req.custom.cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time.token).catch(() => null);
+			}
+			return res.out(out);
+		}
+
 		let rows = [];
 		let childs = [];
 		if (out.data && out.data.length > 0) {
@@ -89,7 +104,7 @@ module.exports.listByCountry = function (req, res) {
 				"data": rows
 			}, req.custom.config.cache.life_time.data).catch(() => null);
 		}
-		
+
 		res.out({
 			"count": rows.length,
 			"data": rows
