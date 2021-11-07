@@ -385,6 +385,15 @@ module.exports.read = async function (req, res) {
 								v.gallery_pictures = results.gallery_pictures;
 							}
 
+							const prod_exists_in_cart = Object.keys(user.cart).indexOf(v.sku.toString()) > -1;
+							v.cart_status = {
+								is_exists: prod_exists_in_cart,
+								quantity: prod_exists_in_cart ? user.cart[v.sku.toString()] : 0
+							};
+							v.wishlist_status = {
+								is_exists: user.wishlist.indexOf(v.sku.toString()) > -1
+							};
+
 							return v;
 						}
 					}).filter((v) => v && v.options && v.options.length > 0);
