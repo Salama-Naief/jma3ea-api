@@ -117,9 +117,9 @@ module.exports.mail_checkout = function (checkout, custom) {
 											</tr>
 										</thead>
 										<tbody>`;
-	for (const s of Object.keys(checkout.products)) {
-		for (const i of checkout.products) {
-			mail_checkout += `<tr>
+
+	for (const i of checkout.products) {
+		mail_checkout += `<tr>
 													<td>
 														<img src="${i.picture}?w=48&h=48" />
 													</td>
@@ -137,7 +137,6 @@ module.exports.mail_checkout = function (checkout, custom) {
 													
 													</td>
 												</tr>`
-		}
 	}
 
 	mail_checkout += `</tbody>
