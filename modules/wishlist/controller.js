@@ -25,7 +25,7 @@ module.exports.add = function (req, res) {
 
 			const prod_collection = req.custom.db.client().collection('product');
 			prod_collection.findOne({
-				_id: data.product_id,
+				sku: data.sku,
 				status: true,
 				"prod_n_storeArr.store_id": ObjectID(req.custom.authorizationObject.store_id)
 			}).then((prod) => {
@@ -37,8 +37,8 @@ module.exports.add = function (req, res) {
 				}
 
 				user.wishlist = user.wishlist || [];
-				if (user.wishlist.indexOf(data.product_id.toString()) === -1) {
-					user.wishlist.push(data.product_id.toString());
+				if (user.wishlist.indexOf(data.sku.toString()) === -1) {
+					user.wishlist.push(data.sku.toString());
 				}
 
 				req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
@@ -69,7 +69,7 @@ module.exports.remove = function (req, res) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	req.custom.model = req.custom.model || require('./model/remove');
-	req.body.product_id = req.params.Id;
+	req.body.sku = req.params.sku;
 
 	req.custom.getValidData(req).
 		then(({ data, error }) => {
@@ -79,12 +79,12 @@ module.exports.remove = function (req, res) {
 			}
 			let user = req.custom.authorizationObject;
 			user.wishlist = user.wishlist || [];
-			if (user.wishlist.indexOf(data.product_id.toString()) === -1) {
+			if (user.wishlist.indexOf(data.sku.toString()) === -1) {
 				return res.out({
 					'message': req.custom.local.wishlist_product_not
 				}, status_message.NO_DATA)
 			} else {
-				user.wishlist = user.wishlist.filter((elm) => elm != data.product_id.toString());
+				user.wishlist = user.wishlist.filter((elm) => elm != data.sku.toString());
 
 				req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
 					.then((response) => res.out({
@@ -111,7 +111,6 @@ module.exports.list = function (req, res) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	const mainController = require("../../libraries/mainController");
-	const ObjectID = require("../../types/object_id");
 
 	profile.getInfo(req).
 		then((user) => {
@@ -120,15 +119,15 @@ module.exports.list = function (req, res) {
 			let prods = [];
 			if (user && user.wishlist) {
 				for (const i of user.wishlist) {
-					prods.push(ObjectID(i));
+					prods.push(i.toString());
 				}
 			}
-			req.custom.clean_filter._id = {
+			req.custom.clean_filter.sku = {
 				'$in': prods
 			};
 			req.custom.isProducts == true;
 			mainController.list(req, res, 'product', {
-				"_id": 1,
+				"sku": 1,
 				"name": {
 					$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 				},
@@ -143,10 +142,10 @@ module.exports.list = function (req, res) {
 				data.data.map((i) => {
 					i.prod_n_categoryArr = i.prod_n_categoryArr[0];
 
-					const prod_exists_in_cart = Object.keys(user_obj.cart).indexOf(i._id.toString()) > -1;
+					const prod_exists_in_cart = Object.keys(user_obj.cart).indexOf(i.sku.toString()) > -1;
 					i.cart_status = {
 						is_exists: prod_exists_in_cart,
-						quantity: prod_exists_in_cart ? user_obj.cart[i._id] : 0
+						quantity: prod_exists_in_cart ? user_obj.cart[i.sku] : 0
 					};
 
 					return i;
