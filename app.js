@@ -71,7 +71,7 @@ const all_modules = fs.readdirSync(path.join(__dirname, `modules`));
 for (const moduleName of all_modules) {
 	// api
 	const moduleRouter = require(`./modules/${moduleName}/route`);
-	app.use(`/${moduleName}`, moduleRouter);
+	app.use(`/v2/${moduleName}`, moduleRouter);
 }
 
 // error handler
