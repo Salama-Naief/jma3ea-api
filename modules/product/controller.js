@@ -109,13 +109,13 @@ module.exports.featured = async function (req, res) {
 
 				feature_category.products = feature_category.products.map((i) => {
 
-					const prod_exists_in_cart = Object.keys(user.cart).indexOf(i.sku.toString()) > -1;
+					const prod_exists_in_cart = i.sku && Object.keys(user.cart).indexOf(i.sku.toString()) > -1;
 					i.cart_status = {
 						is_exists: prod_exists_in_cart,
 						quantity: prod_exists_in_cart ? user.cart[i.sku.toString()] : 0
 					};
 					i.wishlist_status = {
-						is_exists: user.wishlist.indexOf(i.sku.toString()) > -1
+						is_exists: i.sku && user.wishlist.indexOf(i.sku.toString()) > -1
 					};
 
 					return i;
@@ -212,13 +212,13 @@ module.exports.featured = async function (req, res) {
 
 					i.availability = quantity_store && quantity_store.quantity > 0;
 
-					const prod_exists_in_cart = Object.keys(user.cart).indexOf(i.sku.toString()) > -1;
+					const prod_exists_in_cart = i.sku && Object.keys(user.cart).indexOf(i.sku.toString()) > -1;
 					i.cart_status = {
 						is_exists: prod_exists_in_cart,
 						quantity: prod_exists_in_cart ? user.cart[i.sku] : 0
 					};
 					i.wishlist_status = {
-						is_exists: user.wishlist.indexOf(i.sku.toString()) > -1
+						is_exists: i.sku && user.wishlist.indexOf(i.sku.toString()) > -1
 					};
 
 					return i;
