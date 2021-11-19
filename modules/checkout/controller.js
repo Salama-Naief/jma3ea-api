@@ -217,7 +217,7 @@ module.exports.buy = async function (req, res) {
 
 		// Fix delivery time
 		req.body.delivery_time = moment(req.body.delivery_time).isValid() ?
-			req.body.delivery_time : moment(common.getDate()).add(3, 'hours').format(req.custom.config.date.format).toString();
+			req.body.delivery_time : moment(common.getDate()).format(req.custom.config.date.format).toString();
 
 		const order_data = {
 			order_id: (user_info ? 'u' : 'v') + '_' + shortid.generate(),
