@@ -564,9 +564,10 @@ module.exports.list = async function (req, res) {
 		}
 
 		if (cityObj.enable_immediate_delivery === false || req.custom.settings.orders.enable_immediate_delivery === false) {
-			earliest_date_of_delivery = 0;
+			earliest_date_of_delivery = null;
 		} else {
 			earliest_date_of_delivery += parseInt(req.custom.settings.orders.min_delivery_time || 0);
+			earliest_date_of_delivery = moment().add(earliest_date_of_delivery, 'minutes');
 		}
 
 		res.out({
@@ -580,7 +581,7 @@ module.exports.list = async function (req, res) {
 			message: message,
 			addresses: addresses,
 			payment_methods: payment_methods,
-			earliest_date_of_delivery: parseInt(earliest_date_of_delivery),
+			earliest_date_of_delivery: common.getDate(earliest_date_of_delivery),
 			delivery_times: delivery_times,
 			products: products.map((p) => {
 				delete p.variants;
