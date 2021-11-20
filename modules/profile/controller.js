@@ -703,6 +703,7 @@ function fix_user_data(req, userObj, city_id) {
 	let points = parseFloat(userObj.points || 0);
 	let wallet = userObj.wallet || 0;
 	let address = userObj.address;
+	city_id = address.city_id || city_id;
 	address.city_id = ObjectID(city_id.toString());
 	address.widget = userObj.address.widget || 'N/A';
 	address.street = userObj.address.street || 'N/A';
