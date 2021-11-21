@@ -16,6 +16,8 @@ module.exports.list = function (req, res) {
 		"sorting": 1
 	};
 
+	req.custom.clean_filter['language_code'] = req.custom.lang;
+
 	mainController.list_all(req, res, collectionName, {
 		"_id": 1,
 		"name": 1,
