@@ -14,9 +14,9 @@ router.get('/', controller.list);
 router.get('/featured', controller.featured);
 
 /**
- * GET /product/:Id
+ * GET /product/:sku
  */
-router.get('/:Id', controller.read);
+router.get('/:sku', controller.read);
 
 /**
  * GET /product/:Id/category

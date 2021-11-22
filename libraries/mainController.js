@@ -73,152 +73,144 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 		}
 
-		// Pipeline
-		let pipeline = [];
+		collection.count(req.custom.clean_filter, (err, total) => {
+			if (err || total === 0) {
+				const out = {
+					total: 0,
+					count: 0,
+					per_page: req.custom.limit,
+					current_page: req.query.skip || 1,
+					data: []
+				};
 
-		if (req.custom.isProducts && ["/", "/:Id/category", "/:Id/category/:rankId/rank", "/wishlist"].indexOf(req.route.path) > -1) {
-
-			pipeline.push({
-				$addFields: {
-					"store_status": {
-						"$filter": {
-							"input": "$prod_n_storeArr",
-							"as": "p",
-							"cond": {
-								"$eq": ["$$p.store_id", ObjectID(req.custom.authorizationObject.store_id.toString())],
-							}
-						}
-					}
+				if (callback) {
+					callback(out);
+				} else {
+					res.out(out);
 				}
-			});
-
-			pipeline.push({
-				$addFields: {
-					"order": {
-						"$filter": {
-							"input": "$prod_n_categoryArr",
-							"as": "p",
-							"cond": {
-								"$eq": ["$$p.category_id", ObjectID(req.params.Id)]
-							}
-						}
-					}
-				}
-			});
-
-			pipeline.push({
-				$sort: { "order.sorting": 1 }
-			});
-
-			filter.$and = [
-				{ "store_status": { $exists: true } },
-				{ "store_status.quantity": { $exists: true } },
-				{ "store_status.quantity": { $gt: 0 } },
-				{ "store_status.status": { $exists: true } },
-				{ "store_status.status": { $eq: true } },
-			];
-
-		}
-
-		pipeline.push({
-			$match: filter
-		});
-
-		if (!req.custom.isProducts && req.custom.clean_sort && typeof req.custom.clean_sort == 'object' && Object.keys(req.custom.clean_sort).length > 0) {
-			pipeline.push({
-				$sort: req.custom.clean_sort
-			});
-		}
-
-		pipeline.push({
-			$project: projection
-		});
-
-		pipeline.push({
-			$facet: {
-				data: [{ $skip: parseInt(req.custom.skip || 0) }, { $limit: parseInt(req.custom.limit || 999999999) }],
-				total: [
-					{
-						$count: 'count'
-					}
-				]
-			}
-		});
-
-		const options = {
-			"allowDiskUse": true
-		};
-
-		collection.aggregate(pipeline, options).toArray((err, results) => {
-			if (err) {
-				return res.out({
-					'message': err.message
-				}, status_message.UNEXPECTED_ERROR);
-			}
-
-			results = results && results[0] ? results[0] : [];
-
-			const total = results.total && results.total[0] ? parseInt(results.total[0].count) : 0;
-			const count = results && results.data ? results.data.length : 0;
-			const limit = parseInt(req.custom.limit);
-			const skip = parseInt(req.custom.skip) || 1;
-
-			results.data = results && results.data ? results.data.map((i) => {
-				if (i.picture) {
-					i.picture = `${req.custom.config.media_url}${i.picture}`;
-				}
-				if (req.custom.isProducts == true) {
-					i.price = common.getFixedPrice(i.price);
-					i.old_price = common.getFixedPrice(i.old_price || 0);
-
-					const quantity_store = i.availability ? i.availability.find((p_n_s) => {
-						if (!p_n_s.feed_from_store_id && p_n_s.store_id.toString() === req.custom.authorizationObject.store_id.toString()) {
-							return p_n_s;
-						} else if (p_n_s.feed_from_store_id) {
-							const temp_store = i.availability.find((t_s) => t_s.store_id.toString() == p_n_s.feed_from_store_id.toString());
-							p_n_s.quantity = temp_store ? parseInt(temp_store.quantity) : 0;
-							return p_n_s;
-						}
-					}) : null;
-
-					i.availability = quantity_store && quantity_store.status && quantity_store.quantity > 0;
-					const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id.toString()) > -1;
-					i.cart_status = {
-						is_exists: prod_exists_in_cart,
-						quantity: prod_exists_in_cart ? user.cart[i._id] : 0
-					};
-					i.wishlist_status = {
-						is_exists: user.wishlist.indexOf(i._id.toString()) > -1
-					};
-				}
-				return i;
-			}) : [];
-
-			const out = {
-				total: total,
-				count: count,
-				per_page: limit,
-				current_page: skip,
-				data: results.data
-			};
-
-			if (callback) {
-				callback(out);
 			} else {
+				let sort = Object.keys(req.custom.clean_sort).length > 0 ? req.custom.clean_sort : {
+					"sorting": 1,
+					"name": 1
+				};
 
-				if (req.custom.cache_key && results.data.length > 0) {
-					cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time).catch(() => null);
+				// Pipeline
+				let pipeline = [];
+
+				if (req.custom.isProducts && ["/:Id/category", "/:Id/category/:rankId/rank", "/wishlist"].indexOf(req.route.path) > -1) {
+
+					pipeline.push({
+						$addFields: {
+							"order": {
+								"$filter": {
+									"input": "$prod_n_categoryArr",
+									"as": "p",
+									"cond": {
+										"$eq": ["$$p.category_id", ObjectID(req.params.Id)]
+									}
+								}
+							}
+						}
+					});
+
+					sort = {
+						"order.sorting": 1
+					};
 				}
-				const message = results.data.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
-				res.out(out, message);
+
+				pipeline.push({
+					$match: filter
+				});
+
+				pipeline.push({
+					$sort: sort
+				});
+
+				pipeline.push({
+					$skip: req.custom.skip
+				});
+
+				if (req.custom.limit > 0) {
+					pipeline.push({
+						$limit: req.custom.limit
+					});
+				}
+
+				pipeline.push({
+					$project: projection
+				});
+
+				const options = {
+					"allowDiskUse": true
+				};
+
+				collection.aggregate(pipeline, options).toArray((err, results) => {
+					if (err) {
+						return res.out({
+							'message': err.message
+						}, status_message.UNEXPECTED_ERROR);
+					}
+
+					results = results ? results.map((i) => {
+						if (i.picture) {
+							i.picture = `${req.custom.config.media_url}${i.picture}`;
+						}
+						if (req.custom.isProducts == true) {
+							i.price = common.getFixedPrice(i.price);
+							i.old_price = common.getFixedPrice(i.old_price || 0);
+
+							const quantity_store = i.availability ? i.availability.find((p_n_s) => {
+								if (!p_n_s.feed_from_store_id && p_n_s.store_id.toString() === req.custom.authorizationObject.store_id.toString()) {
+									return p_n_s;
+								} else if (p_n_s.feed_from_store_id) {
+									const temp_store = i.availability.find((t_s) => t_s.store_id.toString() == p_n_s.feed_from_store_id.toString());
+									p_n_s.quantity = temp_store ? parseInt(temp_store.quantity) : 0;
+									return p_n_s;
+								}
+							}) : null;
+
+							i.availability = quantity_store && quantity_store.status && quantity_store.quantity > 0;
+							const prod_exists_in_cart = Object.keys(user.cart).indexOf(i.sku.toString()) > -1;
+							i.cart_status = {
+								is_exists: prod_exists_in_cart,
+								quantity: prod_exists_in_cart ? user.cart[i.sku] : 0
+							};
+							i.wishlist_status = {
+								is_exists: user.wishlist.indexOf(i.sku.toString()) > -1
+							};
+						}
+						return i;
+					}) : [];
+
+					if (req.custom.isProducts) {
+						results = results.filter((i) => i.availability);
+					}
+
+					const out = {
+						total: total,
+						count: results.length,
+						per_page: req.custom.limit,
+						current_page: req.query.skip || 1,
+						data: results
+					};
+					if (callback) {
+						callback(out);
+					} else {
+
+						if (req.custom.cache_key && results.length > 0) {
+							cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time).catch(() => null);
+						}
+						const message = results.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
+						res.out(out, message);
+					}
+				});
 			}
 
 		});
 
 
-
-	})
-		.catch((err) => res.out({ 'message': err.message }, status_message.UNEXPECTED_ERROR));
+	}).
+		catch((err) => res.out({ 'message': err.message }, status_message.UNEXPECTED_ERROR));
 
 };
 
@@ -327,7 +319,7 @@ module.exports.read = function (req, res, collectionName, projection, callback) 
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
-	if (!ObjectID.isValid(req.params.Id)) {
+	if (!ObjectID.isValid(req.params.Id) && !req.custom.isProducts) {
 		return res.out({
 			'message': req.custom.local.id_not_valid
 		}, status_message.INVALID_URL_PARAMETER);
@@ -366,13 +358,15 @@ module.exports.read = function (req, res, collectionName, projection, callback) 
 			}, status_message.CITY_REQUIRED);
 		}
 
+		const id_key = req.custom.isProducts ? 'sku' : '_id';
+		const id_value = req.custom.isProducts ? req.params.sku : ObjectID(req.params.Id);
 		const collection = req.custom.db.client().collection(collectionName);
 		// Pipeline
 		const pipeline = [
 			// Stage 1
 			{
 				$match: {
-					"_id": ObjectID(req.params.Id),
+					[id_key]: id_value,
 					"status": true
 				}
 			},

@@ -19,9 +19,6 @@ module.exports.list = function (req, res) {
 	req.custom.clean_filter = req.custom.clean_filter || {};
 	req.custom.clean_filter['user_data._id'] = ObjectID(req.custom.authorizationObject.member_id);
 	req.custom.all_status = true;
-	req.custom.clean_sort = {
-		"created": -1,
-	};
 	mainController.list(req, res, collectionName, {
 		"_id": 1,
 		"order_id": 1,
