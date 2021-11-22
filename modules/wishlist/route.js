@@ -16,6 +16,6 @@ router.post('/', controller.add);
 /**
  * DELETE /wishlist
  */
-router.delete('/:Id', controller.remove);
+router.delete('/:sku', controller.remove);
 
 module.exports = router;

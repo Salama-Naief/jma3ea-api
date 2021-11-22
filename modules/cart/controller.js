@@ -141,7 +141,7 @@ module.exports.remove = function (req, res) {
 			delete user.cart[data.product_id];
 
 			const total_products = Object.keys(user.cart).length;
-			const prods_obj_ids = Object.keys(user.cart).map((i) => ObjectID(i));
+			const prods_obj_skus = Object.keys(user.cart).map((i) => i);
 			const projection = {
 				_id: 1,
 				price: 1,
@@ -321,11 +321,11 @@ module.exports.coupon = function (req, res) {
 		.then(() => {
 
 			const collection = req.custom.db.client().collection('coupon');
-			collection.findOne({ 
+			collection.findOne({
 				code: data.code,
-				$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } }], 
+				$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } }],
 				status: true
-			 }).
+			}).
 				then((coupon) => {
 
 					if (!coupon) {

@@ -33,6 +33,7 @@ const pagination = require('./libraries/middlewares/pagination');
 const response = require('./libraries/middlewares/response');
 const settings = require('./libraries/middlewares/settings');
 const sorting = require('./libraries/middlewares/sorting');
+const update_language = require('./libraries/middlewares/update_language');
 const validation = require('./libraries/middlewares/validation');
 
 app.use(initialize(__dirname));
@@ -44,6 +45,7 @@ app.use(cache);
 app.use(authorization);
 app.use(settings);
 app.use(analytics);
+app.use(update_language);
 app.use(filter);
 app.use(sorting);
 app.use(pagination);
@@ -69,7 +71,7 @@ const all_modules = fs.readdirSync(path.join(__dirname, `modules`));
 for (const moduleName of all_modules) {
 	// api
 	const moduleRouter = require(`./modules/${moduleName}/route`);
-	app.use(`/${moduleName}`, moduleRouter);
+	app.use(`/v2/${moduleName}`, moduleRouter);
 }
 
 // error handler

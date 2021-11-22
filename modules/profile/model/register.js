@@ -52,6 +52,14 @@ module.exports = {
 				"default": "",
 				"required": true
 			}),
+			"floor": new Field({
+				"default": "",
+				"required": false
+			}),
+			"apartment_number": new Field({
+				"default": "",
+				"required": false
+			}),
 			"latitude": new Field({}),
 			"longitude": new Field({})
 		}

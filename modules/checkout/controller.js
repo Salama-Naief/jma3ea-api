@@ -213,6 +213,10 @@ module.exports.buy = async function (req, res) {
 			});
 		}
 
+		// Fix delivery time
+		req.body.delivery_time = moment(req.body.delivery_time).isValid() ?
+			req.body.delivery_time : moment(common.getDate()).format(req.custom.config.date.format).toString();
+
 		const order_data = {
 			order_id: (user_info ? 'u' : 'v') + '_' + shortid.generate(),
 			payment_method: payment_method,
@@ -362,7 +366,9 @@ module.exports.list = async function (req, res) {
 		"barcode": 1,
 		"weight": 1,
 		"prod_n_storeArr": 1,
-		"supplier_id": 1
+		"supplier_id": 1,
+		"variants": 1,
+		"preparation_time": 1,
 	}, async (out) => {
 		if (out.data.length === 0) {
 			return res.out({
@@ -548,6 +554,20 @@ module.exports.list = async function (req, res) {
 			addresses = [base_address, ...userObj.addresses || []];
 		}
 
+		let earliest_date_of_delivery = parseInt(cityObj.preparation_time || 0);
+		for (const p of products) {
+			let preparation_time_for_product = parseInt(p.preparation_time || 0) + ((p.quantity - 1) * parseInt((p.preparation_time || 0) / 2));
+			earliest_date_of_delivery += preparation_time_for_product / 60;
+		}
+
+		if (cityObj.enable_immediate_delivery === false || req.custom.settings.orders.enable_immediate_delivery === false) {
+			earliest_date_of_delivery = 0;
+			// earliest_date_of_delivery = null;
+		} else {
+			earliest_date_of_delivery += parseInt(req.custom.settings.orders.min_delivery_time || 0);
+			// earliest_date_of_delivery = common.getDate(moment().add(earliest_date_of_delivery, 'minutes'));
+		}
+
 		res.out({
 			subtotal: common.getRoundedPrice(total_prods),
 			shipping_cost: common.getFixedPrice(shipping_cost),
@@ -559,13 +579,57 @@ module.exports.list = async function (req, res) {
 			message: message,
 			addresses: addresses,
 			payment_methods: payment_methods,
+			earliest_date_of_delivery: earliest_date_of_delivery,
 			delivery_times: delivery_times,
-			products: products
+			products: products.map((p) => {
+				delete p.variants;
+				delete p.preparation_time;
+				return p;
+			}),
 		});
 	});
 };
 
 async function products_to_save(products, user, req, to_display = false) {
+
+	let products_arr = [];
+	for (const p of products) {
+		if (p.variants && p.variants.length > 0) {
+			for (const v of p.variants) {
+				if (Object.keys(user.cart).indexOf(v.sku) > -1) {
+					products_arr.push({
+						_id: ObjectID(p._id),
+						sku: v.sku,
+						soft_code: v.soft_code,
+						price: parseFloat(v.price || p.price),
+						name: p.name,
+						variants_options: v.options.map((v_o) => {
+							return {
+								label: v_o.name[req.custom.lang] || v_o.name[req.custom.config.local],
+								name: v_o.name[req.custom.lang] || v_o.name[req.custom.config.local],
+								sku_code: v_o.sku_code,
+								value: v_o.value,
+								type: v_o.type,
+							};
+						}),
+						categories: p.categories,
+						picture: v.gallery_pictures && v.gallery_pictures[0] ? req.custom.config.media_url + v.gallery_pictures[0] : p.picture,
+						uom: p.uom,
+						barcode: p.barcode,
+						weight: p.weight,
+						preparation_time: parseInt(p.preparation_time || 30),
+						prod_n_storeArr: v.prod_n_storeArr,
+						supplier_id: p.supplier_id,
+					});
+				}
+			}
+		} else if (Object.keys(user.cart).indexOf(p.sku) > -1) {
+			p.variants_options = null;
+			p.preparation_time = parseInt(p.preparation_time || 30);
+			products_arr.push(p);
+		}
+	}
+
 	let all_categories = [];
 	await (async () => {
 		const cache = req.custom.cache;
