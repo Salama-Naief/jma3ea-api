@@ -761,21 +761,15 @@ function update_quantities(req, the_products, cart) {
 
 	for (const p of the_products) {
 		const quantity = cart[p.sku];
-		let store_id = null;
-		if (p.supplier_id) {
+		let store_id = req.custom.authorizationObject.store_id.toString();
 
-			const store = stores.find((i) =>
-				i.supplier_id.toString() == p.supplier_id.toString() &&
-				i.cities_n_storeArr.map((ci) => ci.city_id.toString()).indexOf(req.custom.authorizationObject.city_id.toString()) > -1);
-			store_id = store && store._id ? store._id : null;
-		}
 		if (p.sku.includes('-')) {
 
 			let variant = p.variants.find((i) => i.sku == p.sku);
 			let prod_n_storeArr = [];
 			if (variant.prod_n_storeArr) {
 				for (const i of variant.prod_n_storeArr) {
-					if (i.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
+					if (i.store_id.toString() == store_id) {
 						i.quantity -= quantity;
 						i.quantity = i.quantity >= 0 ? i.quantity : 0
 					}
