@@ -1,3 +1,5 @@
+const ObjectID = require('../../types/object_id');
+
 /**
  * Middleware for sorting
  */
