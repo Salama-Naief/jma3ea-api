@@ -2,7 +2,7 @@
  * Middleware for sorting
  */
 module.exports = (req, res, next) => {
-	if (req.custom.authorizationObject.user && req.custom.lang != req.custom.authorizationObject.user.language) {
+	if (req.custom.authorizationObject && req.custom.lang != req.custom.authorizationObject.language) {
 		const collection = req.custom.db.client().collection('member');
 		const data = {
 			language: req.custom.lang
