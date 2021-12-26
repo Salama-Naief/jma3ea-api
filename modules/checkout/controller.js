@@ -110,14 +110,14 @@ module.exports.buy = async function (req, res) {
 	req.custom.limit = 0;
 	mainController.list(req, res, 'product', {
 		"_id": 1,
-		"sku": 1,
+		"soft_code": 1,
+		"sku": { $ifNull: [`$sku`, `$soft_code`] }, // TODO: Change to sku
 		"name": 1,
 		"categories": "$prod_n_categoryArr",
 		"picture": 1,
 		"price": 1,
 		"uom": 1,
 		"barcode": 1,
-		"sku": { $ifNull: [`$sku`, `$soft_code`] }, // TODO: Change to sku
 		"weight": 1,
 		"prod_n_storeArr": 1,
 		"supplier_id": 1,
@@ -362,6 +362,7 @@ module.exports.list = async function (req, res) {
 	mainController.list(req, res, 'product', {
 		"_id": 1,
 		"sku": 1,
+		"soft_code": 1,
 		"name": {
 			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 		},
