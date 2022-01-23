@@ -760,13 +760,16 @@ function update_quantities(req, the_products, cart) {
 	const collection = req.custom.db.client().collection('product');
 	let promises = [];
 
-	for (const p of the_products) {
-		const quantity = parseInt(cart[p.sku]);
+	for (const p_n_c of Object.keys(cart)) {
+
+		const p = the_products.find((my_prod) => p_n_c.includes(my_prod.sku))
+
+		const quantity = parseInt(cart[p_n_c]);
 		let store_id = req.custom.authorizationObject.store_id.toString();
 
-		if (p.sku.includes('-')) {
+		if (p_n_c.includes('-')) {
 
-			let variant = p.variants.find((i) => i.sku == p.sku);
+			let variant = p.variants.find((i) => i.sku == p_n_c);
 			let prod_n_storeArr = [];
 			if (variant.prod_n_storeArr) {
 				for (const i of variant.prod_n_storeArr) {
@@ -779,7 +782,7 @@ function update_quantities(req, the_products, cart) {
 				}
 			}
 			let variants = p.variants.map((v) => {
-				if (v.sku == p.sku) {
+				if (v.sku == p_n_c) {
 					return variant;
 				}
 				return v;
@@ -818,6 +821,7 @@ function update_quantities(req, the_products, cart) {
 			}).catch(() => null);
 			promises.push(update);
 		}
+
 	}
 
 	return Promise.all(promises);
