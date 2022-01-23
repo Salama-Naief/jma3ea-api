@@ -761,7 +761,7 @@ function update_quantities(req, the_products, cart) {
 	let promises = [];
 
 	for (const p of the_products) {
-		const quantity = cart[p.sku];
+		const quantity = parseInt(cart[p.sku]);
 		let store_id = req.custom.authorizationObject.store_id.toString();
 
 		if (p.sku.includes('-')) {
