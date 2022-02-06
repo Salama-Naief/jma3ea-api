@@ -54,6 +54,7 @@ module.exports.add = async function (req, res) {
 	if (error) {
 		return res.out(error, status_message.VALIDATION_ERROR);
 	}
+	data.language = req.custom.lang || 'ar';
 	const collection = req.custom.db.client().collection(collectionName);
 	collection.createIndex({ token: 1 }, { unique: true });
 	collection.insertOne(data)
