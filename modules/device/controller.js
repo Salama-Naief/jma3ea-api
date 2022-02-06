@@ -12,6 +12,10 @@ module.exports.list = function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
+	const lang = req.query.lang;
+	if (!lang) {
+		return res.out({ message: req.custom.local.errors.is_not_valid('Language') }, status_message.INVALID_URL_PARAMETER);
+	}
 	const collection = req.custom.db.client().collection(collectionName);
 	collection.count(req.custom.clean_filter, (err, total) => {
 		if (err) {
@@ -20,6 +24,7 @@ module.exports.list = function (req, res) {
 		if (total === 0) {
 			return res.out({ count: 0, total: 0, links: [], data: [] }, status_message.NO_DATA);
 		}
+		req.custom.clean_filter.language = lang;
 		collection
 			.find(req.custom.clean_filter)
 			.sort(req.custom.clean_sort)
