@@ -605,6 +605,7 @@ async function products_to_save(products, user, req, to_display = false) {
 						_id: ObjectID(p._id),
 						sku: v.sku,
 						soft_code: v.soft_code,
+						barcode: v.barcode,
 						price: parseFloat(v.price || p.price),
 						name: p.name,
 						variants_options: v.options.map((v_o) => {
