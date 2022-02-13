@@ -620,7 +620,6 @@ async function products_to_save(products, user, req, to_display = false) {
 						categories: p.categories,
 						picture: v.gallery_pictures && v.gallery_pictures[0] ? req.custom.config.media_url + v.gallery_pictures[0] : p.picture,
 						uom: p.uom,
-						barcode: p.barcode,
 						weight: p.weight,
 						preparation_time: parseInt(p.preparation_time || 30),
 						prod_n_storeArr: v.prod_n_storeArr,
