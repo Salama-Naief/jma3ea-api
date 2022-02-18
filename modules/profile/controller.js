@@ -471,6 +471,7 @@ module.exports.updatecity = function (req, res) {
 								message: req.custom.local.saved_done,
 								data: {
 									city_id: data.city_id,
+									city: cityObj,
 									country_id: cityObj.country_id,
 									currency: countryObj.currency
 								}
