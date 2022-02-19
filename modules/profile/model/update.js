@@ -41,7 +41,7 @@ module.exports = {
 			}),
 			"gada": new Field({
 				"default": "",
-				"required": true
+				"required": false
 			}),
 			"house": new Field({
 				"default": "",
