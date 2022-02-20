@@ -64,6 +64,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 		}
 		if (req.custom.isProducts == true) {
 
+			filter.status = true;
 			const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 			if (!city_id) {
 				return res.out({
