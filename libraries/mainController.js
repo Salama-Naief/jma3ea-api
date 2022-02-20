@@ -182,10 +182,6 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 						return i;
 					}) : [];
 
-					if (req.custom.isProducts) {
-						results = results.filter((i) => i.availability);
-					}
-
 					const out = {
 						total: total,
 						count: results.length,
