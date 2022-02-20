@@ -74,7 +74,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 		}
 
-		collection.count(req.custom.clean_filter, (err, total) => {
+		collection.count(filter, (err, total) => {
 			if (err || total === 0) {
 				const out = {
 					total: 0,
@@ -98,6 +98,10 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 				// Pipeline
 				let pipeline = [];
 
+				pipeline.push({
+					$match: filter
+				});
+
 				if (req.custom.isProducts && ["/:Id/category", "/:Id/category/:rankId/rank", "/wishlist"].indexOf(req.route.path) > -1) {
 
 					pipeline.push({
@@ -118,10 +122,6 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 						"order.sorting": 1
 					};
 				}
-
-				pipeline.push({
-					$match: filter
-				});
 
 				pipeline.push({
 					$sort: sort
