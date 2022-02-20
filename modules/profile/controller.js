@@ -534,10 +534,16 @@ module.exports.updatecity = function (req, res) {
 									const userCollection = req.custom.db.client().collection('member');
 									userCollection.findOne({
 										_id: ObjectID(req.custom.authorizationObject.member_id.toString())
-									}).then((userObj) => fix_user_data(req, userObj, data.city_id)).catch(() => { });
+									}).then((userObj) => {
+										delete userObj.password;
+										row.user = userObj;
+										set_cache(row);
+										fix_user_data(req, userObj, data.city_id);
+									}).catch(() => { });
+								} else {
+									set_cache(row);
 								}
 
-								set_cache(row);
 
 							});
 
