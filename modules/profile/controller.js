@@ -535,8 +535,7 @@ module.exports.updatecity = function (req, res) {
 									userCollection.findOne({
 										_id: ObjectID(req.custom.authorizationObject.member_id.toString())
 									}).then((userObj) => {
-										delete userObj.password;
-										row.user = userObj;
+										row.member_id = userObj._id;
 										set_cache(row);
 										fix_user_data(req, userObj, data.city_id);
 									}).catch(() => { });
