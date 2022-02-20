@@ -436,7 +436,6 @@ module.exports.updatecity = function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
-
 	req.custom.model = req.custom.model || require('./model/updatecity');
 	req.custom.getValidData(req).
 		then(({ data, error }) => {
@@ -473,7 +472,8 @@ module.exports.updatecity = function (req, res) {
 									city_id: data.city_id,
 									city: cityObj,
 									country_id: cityObj.country_id,
-									currency: countryObj.currency
+									currency: countryObj.currency,
+									member_id: row.member_id,
 								}
 							}))
 							.catch((error) => res.out({
@@ -521,21 +521,22 @@ module.exports.updatecity = function (req, res) {
 								}
 
 
-								const row = {
-									city_id: data.city_id,
-									country_id: cityObj.country_id,
-									store_id: cityObj.store_id,
-									currency: countryObj.currency,
-									language: req.custom.lang,
-									cart: cart
-								};
+								const row = req.custom.authorizationObject;
 
-								if (req.custom.authorizationObject.member_id) {
+								row.city_id = data.city_id;
+								row.country_id = cityObj.country_id;
+								row.store_id = cityObj.store_id;
+								row.currency = countryObj.currency;
+								row.language = req.custom.lang;
+								row.cart = cart;
+								row.member_id = req.custom.authorizationObject.member_id;
+
+								if (row.member_id) {
 									const userCollection = req.custom.db.client().collection('member');
 									userCollection.findOne({
-										_id: ObjectID(req.custom.authorizationObject.member_id.toString())
+										_id: ObjectID(row.member_id.toString())
 									}).then((userObj) => {
-										row.member_id = userObj._id;
+										row.member_id = userObj._id.toString();
 										set_cache(row);
 										fix_user_data(req, userObj, data.city_id);
 									}).catch(() => { });
@@ -553,7 +554,8 @@ module.exports.updatecity = function (req, res) {
 							store_id: cityObj.store_id,
 							currency: countryObj.currency,
 							language: req.custom.lang,
-							cart: cart
+							cart: cart,
+							member_id: req.custom.authorizationObject.member_id,
 						});
 					}
 
