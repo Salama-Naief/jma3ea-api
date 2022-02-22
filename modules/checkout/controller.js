@@ -352,6 +352,30 @@ module.exports.list = async function (req, res) {
 	const ObjectID = require("../../types/object_id");
 
 	let user = req.custom.authorizationObject;
+	const profile = require('../profile/controller');
+	let user_info = await profile.getInfo(req, {
+		_id: 1,
+		fullname: 1,
+		email: 1,
+		mobile: 1,
+		address: 1,
+		addresses: 1,
+		points: 1,
+		wallet: 1,
+		device_token: 1,
+	}).catch(() => null);
+
+	let data = {};
+	if (user_info) {
+		data.user_data = user_info;
+		user_info.addresses = user_info.addresses || [];
+		const address = user_info.addresses.find((i) => i.id == req.query.address_id);
+		if (address) {
+			data.user_data.address = address;
+		}
+		delete data.user_data.addresses;
+	}
+
 	let prods = [];
 	if (user && user.cart) {
 		for (const i of Object.keys(user.cart)) {
@@ -390,7 +414,9 @@ module.exports.list = async function (req, res) {
 
 		const total_prods = parseFloat(products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
 
-		const user_city_id = req.custom.authorizationObject.city_id.toString();
+		const user_city_id = user_info && data.user_data && data.user_data.address && data.user_data.address.city_id ?
+			data.user_data.address.city_id.toString() :
+			req.custom.authorizationObject.city_id.toString();
 		const city_collection = req.custom.db.client().collection('city');
 		const cityObj = await city_collection
 			.findOne({
