@@ -86,7 +86,7 @@ async function validateRow(req, $set, model) {
 				(field.in_array !== null && typeof field.in_array === 'object' && field.in_array.indexOf(row_data) === -1) ||
 				(field.type === ObjectID && row_data && typeof row_data.match === 'function' && !row_data.match(/^[0-9a-fA-F]{24}$/) && !ObjectID.isValid(row_data)))) {
 			$error[k] = local.errors.is_not_valid(k);
-		} else if (field.unique === true && !(await checkIsUnique(req, field.collection, k, row_data))) {
+		} else if (field.unique === true && field.required === true && row_data && !(await checkIsUnique(req, field.collection, k, row_data))) {
 			$error[k] = local.errors.should_be_unique(k);
 		} else if (field.exists === true && !(await checkIsExists(req, field.collection, k, row_data))) {
 			$error[k] = local.errors.is_not_exists(k);
@@ -151,40 +151,40 @@ function getDataWithTypes(row, model, data = {}) {
 				continue;
 			}
 			switch (field.type) {
-			case ObjectID:
-				if (row[k]) {
-					data[k] = ObjectID(row[k].toString());
-				}
-				break;
-			case Boolean:
-				data[k] = Boolean([true, 'true', 1].indexOf(row[k]) > -1);
-				break;
-			case Date:
-				data[k] = common.getDate(row[k].toString());
-				break;
-			case Number:
-				data[k] = Number(common.parseArabicNumbers(row[k]));
-				break;
-			case Object:
-				data[k] = field.model ? getDataWithTypes(row[k], field.model) : row[k];
-				break;
-			case Array:
-				if (row[k] && row[k].length > 0) {
-					if (field.model) {
-						for (const r in row[k]) {
-							if (!data[k]) {
-								data[k] = [];
-							}
-							data[k][r] = getDataWithTypes(row[k][r], field.model);
-						}
-					} else {
-						data[k] = row[k];
+				case ObjectID:
+					if (row[k]) {
+						data[k] = ObjectID(row[k].toString());
 					}
-				}
-				break;
-			default:
-				data[k] = common.parseArabicNumbers(row[k]);
-				break;
+					break;
+				case Boolean:
+					data[k] = Boolean([true, 'true', 1].indexOf(row[k]) > -1);
+					break;
+				case Date:
+					data[k] = common.getDate(row[k].toString());
+					break;
+				case Number:
+					data[k] = Number(common.parseArabicNumbers(row[k]));
+					break;
+				case Object:
+					data[k] = field.model ? getDataWithTypes(row[k], field.model) : row[k];
+					break;
+				case Array:
+					if (row[k] && row[k].length > 0) {
+						if (field.model) {
+							for (const r in row[k]) {
+								if (!data[k]) {
+									data[k] = [];
+								}
+								data[k][r] = getDataWithTypes(row[k][r], field.model);
+							}
+						} else {
+							data[k] = row[k];
+						}
+					}
+					break;
+				default:
+					data[k] = common.parseArabicNumbers(row[k]);
+					break;
 			}
 		}
 	}

@@ -10,15 +10,15 @@ module.exports = {
 	"city_id": new Field({
 		"type": ObjectID,
 		"collection": "city",
-		"required": true
+		"required": config.data_to_save.indexOf("city_id") > -1 ? false : true,
 	}),
 	"widget": new Field({
 		"default": "",
-		"required": true
+		"required": config.data_to_save.indexOf("widget") > -1 ? false : true,
 	}),
 	"street": new Field({
 		"default": "",
-		"required": true
+		"required": config.data_to_save.indexOf("street") > -1 ? false : true,
 	}),
 	"gada": new Field({
 		"default": "",
@@ -26,7 +26,7 @@ module.exports = {
 	}),
 	"house": new Field({
 		"default": "",
-		"required": true
+		"required": config.data_to_save.indexOf("house") > -1 ? false : true,
 	}),
 	"floor": new Field({
 		"default": "",

@@ -63,5 +63,6 @@ module.exports = {
 	env: process.env.APP_ENV,
 	denied_agents: process.env.DENIED_AGENTS,
 	secret: process.env.APP_SECRET,
-	base_media_dir: process.env.APP_BASE_MEDIA_DIR
+	base_media_dir: process.env.APP_BASE_MEDIA_DIR,
+	data_to_save: process.env.IGNORE_REQUIRED_FIELDS ? process.env.IGNORE_REQUIRED_FIELDS.split(',') : [],
 };
