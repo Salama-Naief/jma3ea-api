@@ -88,11 +88,10 @@ module.exports.check = function (req, res) {
 							_id: cityObj.country_id
 						}).then((countryObj) => {
 
-							data.city_id = data.city_id;
+							data.city_id = cityObj._id;
 							data.city = cityObj;
 							data.country_id = cityObj.country_id;
 							data.currency = countryObj.currency;
-							data.member_id = row.member_id;
 
 							set_cache(data);
 
