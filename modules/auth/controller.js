@@ -90,6 +90,7 @@ module.exports.check = function (req, res) {
 
 							data.city_id = cityObj._id;
 							data.city = cityObj;
+							data.store_id = cityObj.store_id;
 							data.country_id = cityObj.country_id;
 							data.currency = countryObj.currency;
 
