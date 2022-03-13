@@ -2,6 +2,7 @@
 const common = require('../../../libraries/common');
 const ObjectID = require("../../../types/object_id");
 const Field = require("../../../libraries/field");
+const config = require("../../../config");
 
 module.exports = {
 	"fullname": new Field({
