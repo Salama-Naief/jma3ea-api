@@ -8,6 +8,13 @@ module.exports = {
 	"name": new Field({
 		"required": true,
 	}),
+	"fullname": new Field({
+		"required": true
+	}),
+	"mobile": new Field({
+		"required": true,
+		"length": 8,
+	}),
 	"city_id": new Field({
 		"type": ObjectID,
 		"collection": "city",
