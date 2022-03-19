@@ -12,26 +12,47 @@ const collectionName = 'banner';
  */
 module.exports.random_banner = function (req, res) {
 	req.custom.clean_filter.position = req.params.Id;
-	req.custom.cache_key = `${collectionName}_${req.custom.lang}_${req.custom.clean_filter.position}`;
+	const key = req.query.category || req.query.feature || '';
+	req.custom.cache_key = `${collectionName}_${req.custom.lang}_${req.custom.clean_filter.position}_${key}`;
 	if (req.query.category && ObjectID.isValid(req.query.category)) {
 		req.custom.clean_filter['$or'] = [{
-				categories: {
-					$exists: false
-				}
-			},
-			{
-				categories: {
-					$eq: []
-				}
-			},
-			{
-				categories: {
-					$eq: null
-				}
-			},
-			{
-				categories: req.query.category
+			categories: {
+				$exists: false
 			}
+		},
+		{
+			categories: {
+				$eq: []
+			}
+		},
+		{
+			categories: {
+				$eq: null
+			}
+		},
+		{
+			categories: req.query.category
+		}
+		];
+	} else if (req.query.feature && ObjectID.isValid(req.query.feature)) {
+		req.custom.clean_filter['$or'] = [{
+			features: {
+				$exists: false
+			}
+		},
+		{
+			features: {
+				$eq: []
+			}
+		},
+		{
+			features: {
+				$eq: null
+			}
+		},
+		{
+			features: req.query.feature
+		}
 		];
 	}
 	mainController.list_all(req, res, collectionName, {
