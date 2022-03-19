@@ -9,11 +9,10 @@ module.exports = {
 		"required": true,
 	}),
 	"fullname": new Field({
-		"required": true
+		"required": false
 	}),
 	"mobile": new Field({
-		"required": true,
-		"length": 8,
+		"required": false,
 	}),
 	"city_id": new Field({
 		"type": ObjectID,
