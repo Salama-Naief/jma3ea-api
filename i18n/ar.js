@@ -1,3 +1,5 @@
+const config = require('../config');
+
 const locals = {
 	address_name_exists: 'إسم العنوان موجود مسبقاً',
 	can_not_delete_default_address: 'لا يمكنك حذف العنوان الأساسي',
@@ -52,7 +54,7 @@ const locals = {
 	saved_done: 'تم الحفظ بنجاح',
 	shipping_cost: 'تكلفة الشحن',
 	subtotal: 'إجمالي المنتجات',
-	thanks_for_evaluation: 'شكراً لتقييم ومساهمتك في تطور الجمعية',
+	thanks_for_evaluation: `شكراً لتقييم ومساهمتك في تطور ال${config.info.website_name.ar}`,
 	the_payment_method: 'وسيلة الدفع',
 	total: 'الإجمالي',
 	unexpected_error: 'خطأ غير متوقع',
@@ -64,7 +66,8 @@ const locals = {
 	payment_method: {
 		cod: 'الدفع عند الاستلام (كاش / كي نت)',
 		knet: 'الدفع ببطاقة الكي نت (أون لاين)',
-		wallet: 'الدفع من رصيد الجمعية',
+		tap: 'الدفع ببطاقة الكي نت / فيزا / ماستر (أون لاين)',
+		wallet: `الدفع من رصيد ال${config.info.website_name.ar}`,
 	},
 	order_status_list: {
 		"0": 'لم يتم التأكيد',
@@ -93,8 +96,8 @@ const locals = {
 		reset_password_subject: 'إعادة تعيين كلمة المرور',
 		registerion_click_on: `اضغط على رابط`,
 		registerion_easy_shopping: `التسوق معنا أسهل!`,
-		registerion_footer1: 'يرجى الإنتباه إلى أن الصفحة التي سيتم تحويلك إليها عبر أية رسالة إلكترونية صادرة من جمعية دوت كوم هي صفحة حسابك. كذلك، نود لفت نظرك إلى أن جمعية دوت كوم لن يقوم بتحويلك إلى صفحة غير موجودة على موقع جمعية دوت كوم.',
-		registerion_footer2: 'تعاونك معنا هو أهم وسيلة للحفاظ على نزاهة تعاملاتك عبر جمعية دوت كوم و على سرية معلوماتك و خصوصيتك.',
+		registerion_footer1: `يرجى الإنتباه إلى أن الصفحة التي سيتم تحويلك إليها عبر أية رسالة إلكترونية صادرة من ${config.info.website_name.ar} دوت كوم هي صفحة حسابك. كذلك، نود لفت نظرك إلى أن ${config.info.website_name.ar} دوت كوم لن يقوم بتحويلك إلى صفحة غير موجودة على موقع ${config.info.website_name.ar} دوت كوم.`,
+		registerion_footer2: `تعاونك معنا هو أهم وسيلة للحفاظ على نزاهة تعاملاتك عبر ${config.info.website_name.ar} دوت كوم و على سرية معلوماتك و خصوصيتك.`,
 		registerion_gift: (wallet) => {
 			return `مبروك كسبت ${wallet} دينار كويتي`;
 		},

@@ -1,3 +1,5 @@
+const config = require('../config');
+
 const locals = {
 	address_name_exists: 'Address name is already exists',
 	can_not_delete_default_address: 'You cannot delete the primary address',
@@ -47,7 +49,7 @@ const locals = {
 	saved_done: 'Item has been saved successfully.',
 	shipping_cost: 'Shipping Cost',
 	subtotal: 'Total Products',
-	thanks_for_evaluation: 'Thank you for evaluating and contributing to the development Jm3eia',
+	thanks_for_evaluation: `Thank you for evaluating and contributing to the development ${config.info.website_name.en}`,
 	the_payment_method: 'Payment Method',
 	total: 'Total',
 	unexpected_error: 'Unexpected error',
@@ -62,7 +64,8 @@ const locals = {
 	payment_method: {
 		cod: 'Cash on delivery (Cash / Knet)',
 		knet: 'KNET Online Payment (Online)',
-		wallet: 'Pay by Jm3eia Wallet',
+		tap: 'KNET / Master Card / Visa (Online)',
+		wallet: `Pay by ${config.info.website_name.en} Wallet`,
 	},
 	order_status_list: {
 		"0": 'Not confirmed',
@@ -91,8 +94,8 @@ const locals = {
 		reset_password_subject: 'Reset password',
 		registerion_click_on: `Click on the link`,
 		registerion_easy_shopping: `Shopping with us easier!`,
-		registerion_footer1: 'Please note that the page to which you will be redirected via any email from Jm3eia.com is your account page. Also, we would like to draw your attention that Jm3eia will not redirect you to a page that is not on the Jm3eia website. ',
-		registerion_footer2: 'Your cooperation with us is the most important way to maintain the integrity of your transactions through Jm3eia.com and the confidentiality of your information and privacy.',
+		registerion_footer1: `Please note that the page to which you will be redirected via any email from ${config.info.domain} is your account page. Also, we would like to draw your attention that ${config.info.website_name.en} will not redirect you to a page that is not on the ${config.info.website_name.en} website.`,
+		registerion_footer2: `Your cooperation with us is the most important way to maintain the integrity of your transactions through ${config.info.domain} and the confidentiality of your information and privacy.`,
 		registerion_gift: (wallet) => {
 			return `Congratulations, ${wallet} Kuwaiti Dinar has been added to your wallet`;
 		},

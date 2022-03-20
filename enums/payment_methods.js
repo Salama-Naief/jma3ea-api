@@ -14,6 +14,11 @@ module.exports = (req) => {
 			id: 'knet',
 			name: req ? req.custom.local.payment_method.knet : 'knet',
 			valid: true
+		},
+		{
+			id: 'tap',
+			name: req ? req.custom.local.payment_method.tap : 'tap',
+			valid: true
 		}
 	];
 };

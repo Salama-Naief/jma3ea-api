@@ -52,6 +52,13 @@ module.exports = {
 			}
 		}
 	},
+	info: {
+		domain: process.env.DOMAIN_NAME,
+		website_name: {
+			ar: process.env.WEBSITE_NAME_AR,
+			en: process.env.WEBSITE_NAME_EN,
+		}
+	},
 	api_version: process.env.API_VERSION,
 	local: process.env.APP_LOCAL,
 	base_url_level: process.env.APP_BASE_URL_LEVEL,
