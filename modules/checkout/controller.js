@@ -602,6 +602,8 @@ module.exports.list = async function (req, res) {
 			// earliest_date_of_delivery = common.getDate(moment().add(earliest_date_of_delivery, 'minutes'));
 		}
 
+		earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
+
 		res.out({
 			subtotal: common.getRoundedPrice(total_prods),
 			shipping_cost: common.getFixedPrice(shipping_cost),
