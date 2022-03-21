@@ -104,23 +104,29 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 				if (req.custom.isProducts && ["/:Id/category", "/:Id/category/:rankId/rank", "/wishlist"].indexOf(req.route.path) > -1) {
 
-					pipeline.push({
-						$addFields: {
-							"order": {
-								"$filter": {
-									"input": "$prod_n_categoryArr",
-									"as": "p",
-									"cond": {
-										"$eq": ["$$p.category_id", ObjectID(req.params.Id)]
+					if (req.query.featured == 'true') {
+						sort = {
+							"feature_sorting": 1
+						};
+					} else {
+						pipeline.push({
+							$addFields: {
+								"order": {
+									"$filter": {
+										"input": "$prod_n_categoryArr",
+										"as": "p",
+										"cond": {
+											"$eq": ["$$p.category_id", ObjectID(req.params.Id)]
+										}
 									}
 								}
 							}
-						}
-					});
+						});
 
-					sort = {
-						"order.sorting": 1
-					};
+						sort = {
+							"order.sorting": 1
+						};
+					}
 				}
 
 				pipeline.push({
