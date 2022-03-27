@@ -26,6 +26,6 @@ module.exports = {
 		"collection": 'order'
 	}),
 	"address_id": new Field({
-		"required": true,
+		"required": config.data_to_save.indexOf("address_id") > -1 ? false : true,
 	}),
 };
