@@ -82,7 +82,7 @@ module.exports.login = function (req, res) {
 		const cityid = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 
 
-		if (!ObjectID.isValid(cityid)) {
+		if (!req.custom.config.auto_load_city && !ObjectID.isValid(cityid)) {
 			return res.out({
 				'message': req.custom.local.choose_city_first
 			}, status_message.CITY_REQUIRED);
@@ -712,17 +712,17 @@ function fix_user_data(req, userObj, city_id) {
 	let language = userObj.language || req.custom.lang;
 	let points = parseFloat(userObj.points || 0);
 	let wallet = userObj.wallet || 0;
-	let address = userObj.address;
+	let address = userObj.address || {};
 	city_id = address.city_id || city_id;
-	address.city_id = ObjectID(city_id.toString());
-	address.widget = userObj.address.widget || 'N/A';
-	address.street = userObj.address.street || 'N/A';
-	address.gada = userObj.address.gada || 'N/A';
-	address.house = userObj.address.house || 'N/A';
-	address.apartment_number = userObj.address.apartment_number || 'N/A';
-	address.floor = userObj.address.floor || 'N/A';
-	address.latitude = userObj.address.latitude || 0;
-	address.longitude = userObj.address.longitude || 0;
+	address.city_id = !req.custom.config.auto_load_city && ObjectID.isValid(city_id.toString()) ? ObjectID(city_id.toString()) : null;
+	address.widget = address.widget || 'N/A';
+	address.street = address.street || 'N/A';
+	address.gada = address.gada || 'N/A';
+	address.house = address.house || 'N/A';
+	address.apartment_number = address.apartment_number || 'N/A';
+	address.floor = address.floor || 'N/A';
+	address.latitude = address.latitude || 0;
+	address.longitude = address.longitude || 0;
 
 	userCollection.updateOne({
 		_id: userObj._id
