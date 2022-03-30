@@ -828,23 +828,25 @@ function update_quantities(req, the_products, cart) {
 
 		} else {
 			let prod_n_storeArr = [];
-			for (const i of p.prod_n_storeArr) {
-				if (i.feed_from_store_id) {
-					const temp_store = p.prod_n_storeArr.find((pi) => pi.store_id.toString() == i.feed_from_store_id.toString());
-					i.quantity = temp_store.quantity;
-					p.prod_n_storeArr = p.prod_n_storeArr.map((pi) => {
-						if (pi.store_id.toString() == temp_store.store_id.toString()) {
-							pi.quantity -= quantity;
-							pi.quantity = pi.quantity >= 0 ? pi.quantity : 0;
-						}
-						return pi;
-					});
-				} else if (i.store_id.toString() == store_id) {
-					i.quantity -= quantity;
-					i.quantity = i.quantity >= 0 ? i.quantity : 0
+			if (p.prod_n_storeArr) {
+				for (const i of p.prod_n_storeArr) {
+					if (i.feed_from_store_id) {
+						const temp_store = p.prod_n_storeArr.find((pi) => pi.store_id.toString() == i.feed_from_store_id.toString());
+						i.quantity = temp_store.quantity;
+						p.prod_n_storeArr = p.prod_n_storeArr.map((pi) => {
+							if (pi.store_id.toString() == temp_store.store_id.toString()) {
+								pi.quantity -= quantity;
+								pi.quantity = pi.quantity >= 0 ? pi.quantity : 0;
+							}
+							return pi;
+						});
+					} else if (i.store_id.toString() == store_id) {
+						i.quantity -= quantity;
+						i.quantity = i.quantity >= 0 ? i.quantity : 0
+					}
+					i.store_id = ObjectID(i.store_id.toString());
+					prod_n_storeArr.push(i);
 				}
-				i.store_id = ObjectID(i.store_id.toString());
-				prod_n_storeArr.push(i);
 			}
 			const update = collection.updateOne({
 				_id: ObjectID(p._id.toString())
