@@ -65,7 +65,7 @@ const locals = {
 		cod: 'Cash on delivery (Cash / Knet)',
 		knet: 'KNET Online Payment (Online)',
 		tap: 'KNET / Master Card / Visa (Online)',
-		wallet: `Pay by ${config.info.website_name.en} Wallet`,
+		wallet: `Pay by Wallet`,
 	},
 	order_status_list: {
 		"0": 'Not confirmed',
