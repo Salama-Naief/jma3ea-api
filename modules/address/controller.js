@@ -36,7 +36,7 @@ module.exports.get = function (req, res) {
 					user.address.name = req.custom.local.default_address;
 					user.addresses = [user.address, ...user.addresses];
 					user.addresses = user.addresses.map((i) => {
-						const parent_city = cities.find((c) => c._id.toString() == i.city_id.toString());
+						const parent_city = cities.find((c) => c._id && i.city_id && c._id.toString() == i.city_id.toString());
 
 						i.country_id = parent_city ? parent_city.country_id : null;
 						i.parent_city_id = parent_city ? parent_city.parent_id : null;
