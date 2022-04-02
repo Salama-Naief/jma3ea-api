@@ -33,6 +33,9 @@ module.exports = {
 				"collection": "city",
 				"required": config.data_to_save.indexOf("city_id") > -1 ? false : true,
 			}),
+			"fullname": new Field({
+				"required": false
+			}),
 			"widget": new Field({
 				"default": "",
 				"required": config.data_to_save.indexOf("widget") > -1 ? false : true,
