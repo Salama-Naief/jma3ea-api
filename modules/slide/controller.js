@@ -11,7 +11,8 @@ const collectionName = 'slide';
  * @param {Object} res
  */
 module.exports.list = function (req, res) {
-	req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
+	const feature = req.query.feature;
+	req.custom.cache_key = `${collectionName}_${req.custom.lang}_${feature || 'all'}`;
 
 	req.custom.clean_sort = {
 		"sorting": 1
@@ -19,8 +20,8 @@ module.exports.list = function (req, res) {
 
 	req.custom.clean_filter['language_code'] = req.custom.lang;
 
-	if (req.query.feature && ObjectID.isValid(req.query.feature)) {
-		req.custom.clean_filter['features'] = ObjectID(req.query.feature.toString());
+	if (feature && ObjectID.isValid(feature)) {
+		req.custom.clean_filter['features'] = feature;
 	} else {
 		req.custom.clean_filter['features'] = { $eq: null };
 	}
