@@ -8,6 +8,7 @@ const { v4: uuid } = require('uuid');
 const mainController = require("../../libraries/mainController");
 const mail_view = require("./view/mail");
 const moment = require('moment');
+const axios = require('axios');
 const shortid = require('shortid');
 shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-');
 
@@ -313,8 +314,12 @@ module.exports.buy = async function (req, res) {
 		// Copy to admin
 		await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], req.custom.settings.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch(() => null);
 
-		// Update quantities
-		await update_quantities(req, up_products, up_cart)
+		const token = await get_remote_token(req).catch(() => null);
+
+		if (token) {
+			// Update quantities
+			await update_quantities(req, up_products, up_cart, token).catch(() => null);
+		}
 
 		res.out(order_data);
 	});
@@ -788,7 +793,7 @@ function getRoundedDate(minutes, d = null) {
 	return new Date(Math.round(d.getTime() / ms) * ms);
 }
 
-function update_quantities(req, the_products, cart) {
+function update_quantities(req, the_products, cart, token) {
 	const collection = req.custom.db.client().collection('product');
 	let promises = [];
 
@@ -798,6 +803,12 @@ function update_quantities(req, the_products, cart) {
 
 		const quantity = parseInt(cart[p_n_c]);
 		let store_id = req.custom.authorizationObject.store_id.toString();
+
+		const remote_product = {
+			store_id: store_id,
+			quantity: 0,
+			soft_code: p_n_c,
+		};
 
 		if (p_n_c.includes('-')) {
 
@@ -809,6 +820,7 @@ function update_quantities(req, the_products, cart) {
 						i.quantity -= quantity;
 						i.quantity = i.quantity >= 0 ? i.quantity : 0
 					}
+					remote_product.quantity = i.quantity;
 					i.store_id = ObjectID(i.store_id.toString());
 					prod_n_storeArr.push(i);
 				}
@@ -845,6 +857,7 @@ function update_quantities(req, the_products, cart) {
 						i.quantity = i.quantity >= 0 ? i.quantity : 0
 					}
 					i.store_id = ObjectID(i.store_id.toString());
+					remote_product.quantity = i.quantity;
 					prod_n_storeArr.push(i);
 				}
 			}
@@ -854,9 +867,71 @@ function update_quantities(req, the_products, cart) {
 				$set: { prod_n_storeArr: prod_n_storeArr }
 			}).catch(() => null);
 			promises.push(update);
+			promises.push(update_remote_quantity(remote_product, token));
 		}
 
 	}
 
 	return Promise.all(promises);
+}
+
+function get_remote_token(req) {
+	if (
+		!req.custom.config.desktop.app_id ||
+		!req.custom.config.desktop.app_secret ||
+		!req.custom.config.desktop.email ||
+		!req.custom.config.desktop.password
+	) {
+		return false;
+	}
+	var data = JSON.stringify({
+		"appId": req.custom.config.desktop.app_id,
+		"appSecret": req.custom.config.desktop.app_secret,
+		"email": req.custom.config.desktop.email,
+		"password": req.custom.config.desktop.password,
+	});
+
+	var config = {
+		method: 'post',
+		url: `${req.custom.config.desktop.base_url}/auth/login`,
+		headers: {
+			'Content-Type': 'application/json',
+			'Language': 'ar'
+		},
+		data: data
+	};
+
+	return axios(config)
+		.then(function (response) {
+			return response.data && response.data.results && response.data.results.token;
+		})
+		.catch(function (error) {
+			console.log(error);
+		});
+
+}
+
+function update_remote_quantity(p, token) {
+	var data = JSON.stringify({
+		"store_id": p.store_id,
+		"quantity": p.quantity,
+		"status": true
+	});
+
+	var config = {
+		method: 'put',
+		url: `${req.custom.config.desktop.base_url}/product/${p.soft_code}/quantity`,
+		headers: {
+			'Accept': 'application/json',
+			'Language': 'en',
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${token}`
+		},
+		data: data
+	};
+
+	return axios(config)
+		.catch(function (error) {
+			console.log(error);
+		});
 }

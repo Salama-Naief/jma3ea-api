@@ -59,6 +59,13 @@ module.exports = {
 			en: process.env.WEBSITE_NAME_EN,
 		}
 	},
+	desktop: {
+		app_id: process.env.DESKTOP_APP_ID,
+		app_secret: process.env.DESKTOP_APP_SECRET,
+		email: process.env.DESKTOP_EMAIL,
+		password: process.env.DESKTOP_PASSWORD,
+		base_url: process.env.DESKTOP_BASE_URL,
+	},
 	api_version: process.env.API_VERSION,
 	local: process.env.APP_LOCAL,
 	base_url_level: process.env.APP_BASE_URL_LEVEL,
