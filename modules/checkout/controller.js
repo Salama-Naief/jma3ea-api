@@ -867,7 +867,7 @@ function update_quantities(req, the_products, cart, token) {
 				$set: { prod_n_storeArr: prod_n_storeArr }
 			}).catch(() => null);
 			promises.push(update);
-			promises.push(update_remote_quantity(remote_product, token));
+			promises.push(update_remote_quantity(req, remote_product, token));
 		}
 
 	}
@@ -911,7 +911,7 @@ function get_remote_token(req) {
 
 }
 
-function update_remote_quantity(p, token) {
+function update_remote_quantity(req, p, token) {
 	var data = JSON.stringify({
 		"store_id": p.store_id,
 		"quantity": p.quantity,
