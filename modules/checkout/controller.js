@@ -820,7 +820,6 @@ function update_quantities(req, the_products, cart, token) {
 						i.quantity -= quantity;
 						i.quantity = i.quantity >= 0 ? i.quantity : 0
 					}
-					remote_product.quantity = i.quantity;
 					i.store_id = ObjectID(i.store_id.toString());
 					prod_n_storeArr.push(i);
 				}
@@ -857,7 +856,6 @@ function update_quantities(req, the_products, cart, token) {
 						i.quantity = i.quantity >= 0 ? i.quantity : 0
 					}
 					i.store_id = ObjectID(i.store_id.toString());
-					remote_product.quantity = i.quantity;
 					prod_n_storeArr.push(i);
 				}
 			}
@@ -867,6 +865,7 @@ function update_quantities(req, the_products, cart, token) {
 				$set: { prod_n_storeArr: prod_n_storeArr }
 			}).catch(() => null);
 			promises.push(update);
+			remote_product.quantity = quantity;
 			promises.push(update_remote_quantity(req, remote_product, token));
 		}
 
@@ -914,13 +913,12 @@ function get_remote_token(req) {
 function update_remote_quantity(req, p, token) {
 	var data = JSON.stringify({
 		"store_id": p.store_id,
-		"quantity": p.quantity,
-		"status": true
+		"quantity": p.quantity
 	});
 
 	var config = {
 		method: 'put',
-		url: `${req.custom.config.desktop.base_url}/product/${p.soft_code}/quantity`,
+		url: `${req.custom.config.desktop.base_url}/product/${p.soft_code}/decrease_quantity`,
 		headers: {
 			'Accept': 'application/json',
 			'Language': 'en',
