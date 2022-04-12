@@ -707,21 +707,23 @@ async function products_to_save(products, user, req, to_display = false) {
 	const out_data = products_arr.map((prod) => {
 
 		prod.quantity = user.cart[prod.sku.toString()];
-		for (const store of prod.prod_n_storeArr) {
-			if (store.feed_from_store_id) {
-				const temp_store = prod.prod_n_storeArr.find((i) => i.store_id.toString() == store.feed_from_store_id.toString());
-				store.quantity = temp_store.quantity;
-			}
-			if (store.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
-				prod.cart_quantity = prod.quantity;
-				if (store.status == false || store.quantity <= 0) {
-					prod.quantity = 0;
-					prod.warning = req.custom.local.cart_product_unavailable;
-				} else if (store.quantity < prod.quantity) {
-					prod.quantity = store.quantity;
-					prod.warning = req.custom.local.cart_product_exceeded_allowed_updated;
+		if (prod.prod_n_storeArr) {
+			for (const store of prod.prod_n_storeArr) {
+				if (store.feed_from_store_id) {
+					const temp_store = prod.prod_n_storeArr.find((i) => i.store_id.toString() == store.feed_from_store_id.toString());
+					store.quantity = temp_store.quantity;
 				}
-				break;
+				if (store.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
+					prod.cart_quantity = prod.quantity;
+					if (store.status == false || store.quantity <= 0) {
+						prod.quantity = 0;
+						prod.warning = req.custom.local.cart_product_unavailable;
+					} else if (store.quantity < prod.quantity) {
+						prod.quantity = store.quantity;
+						prod.warning = req.custom.local.cart_product_exceeded_allowed_updated;
+					}
+					break;
+				}
 			}
 		}
 
