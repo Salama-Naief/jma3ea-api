@@ -607,12 +607,13 @@ module.exports.points2wallet = async function (req, res) {
 				}
 
 				const points_2_wallet_values = {
-					"50": common.getFixedPrice(0.500),
-					"100": common.getFixedPrice(2),
-					"200": common.getFixedPrice(5),
+					"100": common.getFixedPrice(1),
+					"200": common.getFixedPrice(4),
 					"300": common.getFixedPrice(8),
 					"400": common.getFixedPrice(12),
 					"500": common.getFixedPrice(20),
+					"800": common.getFixedPrice(40),
+					"1000": common.getFixedPrice(75),
 				};
 
 				if (Object.keys(points_2_wallet_values).indexOf(req.body.points.toString()) < 0) {
