@@ -31,7 +31,7 @@ module.exports = {
 		"required": true,
 		"model": {
 			"fullname": new Field({
-				"required": true
+				"required": config.data_to_save.indexOf("fullname") > -1 ? false : true,
 			}),
 			"email": new Field({
 				"type": "email",
