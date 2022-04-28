@@ -16,6 +16,8 @@ const config = require('./config');
 const status_message = require('./enums/status_message');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const Sentry = require("@sentry/node");
+const Tracing = require("@sentry/tracing");
 
 process.env.TZ = config.date.timezone || process.env.TZ;
 
@@ -67,6 +69,28 @@ const corsOptions = {
 
 app.use(cors(corsOptions))
 
+Sentry.init({
+	dsn: config.sentry.dsn,
+	integrations: [
+		// enable HTTP calls tracing
+		new Sentry.Integrations.Http({ tracing: true }),
+		// enable Express.js middleware tracing
+		new Tracing.Integrations.Express({ app }),
+	],
+
+	// Set tracesSampleRate to 1.0 to capture 100%
+	// of transactions for performance monitoring.
+	// We recommend adjusting this value in production
+	tracesSampleRate: 1.0,
+});
+
+// RequestHandler creates a separate execution context using domains, so that every
+// transaction/span/breadcrumb is attached to its own Hub instance
+app.use(Sentry.Handlers.requestHandler());
+// TracingHandler creates a trace for every incoming request
+app.use(Sentry.Handlers.tracingHandler());
+
+
 const all_modules = fs.readdirSync(path.join(__dirname, `modules`));
 for (const moduleName of all_modules) {
 	// api
@@ -74,31 +98,13 @@ for (const moduleName of all_modules) {
 	app.use(`/v2/${moduleName}`, moduleRouter);
 }
 
-// error handler
-app.use(function (err, req, res, next) {
-	// set locals, only providing error in development
-	res.locals.message = err.message;
-	res.locals.error = req.app.get('env') === 'development' ? err : {};
-	console.log('=====================Start of Error====================');
-	console.log('=========================================');
-	console.log('--------[DateTime]------', '::', new Date());
-	console.log('--------[Protocol]------', '::', req.protocol);
-	console.log('--------[Hostname]------', '::', req.hostname);
-	console.log('--------[OriginalUrl]---', '::', req.originalUrl);
-	console.log('--------[IP]------------', '::', req.ip);
-	console.log('--------[Method]--------', '::', req.method);
-	console.log('--------[Params]--------', '::', req.params);
-	console.log('--------[User-Agent]----', '::', req.get('User-Agent'));
-	console.log('--------[User-IP]-------', '::', req.headers['x-forwarded-for'] || req.connection.remoteAddress);
-	console.log('--------[Query]---------', '::', req.query);
-	console.log('--------[Body]----------', '::', req.body);
-	console.log('--------------[Error Details]--------------');
-	console.log(err);
-	console.log('--------------[End Error Details]--------------');
-	console.log('=========================================');
-	console.log('=====================End of Error====================');
+// The error handler must be before any other error middleware and after all controllers
+app.use(Sentry.Handlers.errorHandler());
 
-	// render the error page
+// Optional fallthrough error handler
+app.use(function onError(err, req, res, next) {
+	// The error id is attached to `res.sentry` to be returned
+	// and optionally displayed to the user for support.
 	res.out({
 		errors: 'Error!',
 	}, status_message.UNEXPECTED_ERROR);

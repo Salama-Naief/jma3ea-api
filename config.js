@@ -80,4 +80,7 @@ module.exports = {
 	base_media_dir: process.env.APP_BASE_MEDIA_DIR,
 	data_to_save: process.env.IGNORE_REQUIRED_FIELDS ? process.env.IGNORE_REQUIRED_FIELDS.split(',') : [],
 	auto_load_city: process.env.AUTO_LOAD_CITY,
+	sentry: {
+		dsn: process.env.SENTRY_DSN,
+	},
 };
