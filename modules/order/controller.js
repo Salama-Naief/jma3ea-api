@@ -152,7 +152,7 @@ module.exports.repeat = function (req, res) {
 			const products = {};
 			const order_products = Array.isArray(order.products) ? order.products : order.products.Jm3eia;
 			for (const prod of order_products) {
-				products[prod._id.toString()] = prod.quantity;
+				products[prod.sku.toString()] = prod.quantity;
 			}
 
 			let user = req.custom.authorizationObject;
