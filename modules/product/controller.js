@@ -16,16 +16,33 @@ module.exports.list = function (req, res) {
 	req.custom.isProducts = true;
 	const name = common.parseArabicNumbers(req.query.q);
 	if (name) {
-		let or = [];
-		for (const l of req.custom.available_languages) {
-			or.push({
-				[`name.${l}`]: {
-					$regex: name,
-					'$options': 'i'
+		let names_array = name.split(' ');
+		let and = [];
+		for (let item of names_array) {
+			let or = [];
+			for (const l of req.custom.available_languages) {
+				if (common.begins_with_similar_alif_letters(item)){
+					let alif_words = common.transform_word_begins_with_alif_letter(item);
+					alif_words.forEach((alif_word) => {
+						or.push({
+							[`name.${l}`]: {
+								$regex: alif_word,
+								'$options': 'i'
+							}
+						});
+					});
+				}else{
+					or.push({
+						[`name.${l}`]: {
+							$regex: item,
+							'$options': 'i'
+						}
+					});
 				}
-			});
+			}
+			and.push({$or:or});
 		}
-		req.custom.clean_filter['$or'] = or;
+		req.custom.clean_filter = {$or: and};
 	} else {
 		req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
 	}

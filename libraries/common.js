@@ -36,3 +36,29 @@ module.exports.group_products_by_suppliers = (products, req) => {
 		return prod;
 	}, {});
 }
+
+module.exports.begins_with_similar_alif_letters = (text) => {
+	const firstLetter = text.charAt(0);
+	const repeatables = ['ا','أ','إ','آ'];
+	for (let index = 0; index < repeatables.length; index++) {
+		const repeatable = repeatables[index];
+		if (firstLetter == repeatable) {
+			return true;
+		}
+	}
+	return false;
+}
+
+module.exports.transform_word_begins_with_alif_letter = (text) => {
+	const firstLetter = text.charAt(0);
+	const repeatables = ['ا', 'أ', 'إ', 'آ'];
+	let word_without_first_alif = text.substring(1);
+	let words = [];
+	for (let index = 0; index < repeatables.length; index++) {
+		const repeatable = repeatables[index];
+		words.push(
+			repeatable + word_without_first_alif
+		);
+	}
+	return words;
+}
