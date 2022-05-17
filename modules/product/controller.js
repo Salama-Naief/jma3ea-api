@@ -17,32 +17,43 @@ module.exports.list = function (req, res) {
 	const name = common.parseArabicNumbers(req.query.q);
 	if (name) {
 		let names_array = name.split(' ');
-		let and = [];
+		const newNames = [];
 		for (let item of names_array) {
-			let or = [];
-			for (const l of req.custom.available_languages) {
-				if (common.begins_with_similar_alif_letters(item)){
-					let alif_words = common.transform_word_begins_with_alif_letter(item);
-					alif_words.forEach((alif_word) => {
-						or.push({
-							[`name.${l}`]: {
-								$regex: alif_word,
-								'$options': 'i'
-							}
-						});
-					});
-				}else{
-					or.push({
-						[`name.${l}`]: {
-							$regex: item,
-							'$options': 'i'
-						}
-					});
-				}
+
+			// Get the last character of the word
+			const lastCharacter = item.slice(-1);
+
+			// If the last character of teh word contains ه
+			if (/\u0647/.test(lastCharacter)) {
+			  // Add new search item for ة
+			  newNames.push(item.slice(0, -1) + '\u0629');
 			}
-			and.push({$or:or});
+	  
+			// If the last character of teh word contains ة
+			if (/\u0629/.test(lastCharacter)) {
+			  // Add new search item for ه
+			  newNames.push(item.slice(0, -1) + '\u0647');
+			}
+
+			// If the word begins with Alif
+			if (common.begins_with_similar_alif_letters(item)){
+
+				// Set all different types of Alifs to the search
+				let alif_words = common.transform_word_begins_with_alif_letter(item);
+				alif_words.forEach((alif_word) => {
+					newNames.push(alif_word);
+				});
+			}
 		}
-		req.custom.clean_filter = {$or: and};
+
+		// Add the text filter operator
+		req.custom.clean_filter['$text'] = {
+			$search: `${name} ${newNames.join(' ')}`,
+		};
+
+		// Set the sort option
+		req.custom.clean_sort = { score: { $meta: 'textScore' } };
+
 	} else {
 		req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
 	}
