@@ -71,7 +71,8 @@ module.exports.list = function (req, res) {
 		"price": 1,
 		"availability": `$prod_n_storeArr`,
 		"has_variants": { $isArray: "$variants" },
-		"prod_n_storeArr": 1
+		"prod_n_storeArr": 1,
+		"max_quantity_cart" :1
 	});
 };
 
@@ -106,7 +107,8 @@ module.exports.listByCategory = function (req, res) {
 		"price": 1,
 		"availability": `$prod_n_storeArr`,
 		"has_variants": { $isArray: "$variants" },
-		"prod_n_storeArr": 1
+		"prod_n_storeArr": 1,
+		"max_quantity_cart": 1
 	});
 };
 
@@ -186,7 +188,8 @@ module.exports.featured = async function (req, res) {
 				"price": 1,
 				"availability": `$prod_n_storeArr`,
 				"has_variants": { $isArray: "$variants" },
-				"prod_n_storeArr": 1
+				"prod_n_storeArr": 1,
+				"max_quantity_cart": 1
 			};
 
 			const sort = {
@@ -350,6 +353,7 @@ module.exports.read = async function (req, res) {
 					$ifNull: ["$max_quantity_cart", 0]
 				},
 				"prod_n_storeArr": 1,
+				"max_quantity_cart": 1,
 				"variants": 1,
 			}, async (results) => {
 				if (!results || !results.sku) {
