@@ -72,7 +72,9 @@ module.exports.list = function (req, res) {
 		"availability": `$prod_n_storeArr`,
 		"has_variants": { $isArray: "$variants" },
 		"prod_n_storeArr": 1,
-		"max_quantity_cart" :1
+		"max_quantity_cart": {
+			$ifNull: ["$max_quantity_cart", 0]
+		},
 	});
 };
 
