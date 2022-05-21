@@ -5,7 +5,10 @@ const mainController = require("../../libraries/mainController");
 const common = require('../../libraries/common');
 const status_message = require('../../enums/status_message');
 const ObjectID = require("../../types/object_id");
+
 const collectionName = 'product';
+
+module.exports.collectionName = collectionName;
 
 /**
  * List all products
