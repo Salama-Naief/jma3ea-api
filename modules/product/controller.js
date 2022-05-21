@@ -5,7 +5,10 @@ const mainController = require("../../libraries/mainController");
 const common = require('../../libraries/common');
 const status_message = require('../../enums/status_message');
 const ObjectID = require("../../types/object_id");
+
 const collectionName = 'product';
+
+module.exports.collectionName = collectionName;
 
 /**
  * List all products
@@ -28,7 +31,7 @@ module.exports.list = function (req, res) {
 			  // Add new search item for ة
 			  newNames.push(item.slice(0, -1) + '\u0629');
 			}
-	  
+
 			// If the last character of teh word contains ة
 			if (/\u0629/.test(lastCharacter)) {
 			  // Add new search item for ه
@@ -68,7 +71,11 @@ module.exports.list = function (req, res) {
 		"price": 1,
 		"availability": `$prod_n_storeArr`,
 		"has_variants": { $isArray: "$variants" },
-	});
+		"prod_n_storeArr": 1,
+		"max_quantity_cart": {
+			$ifNull: ["$max_quantity_cart", 0]
+		},
+		});
 };
 
 /**
@@ -102,6 +109,10 @@ module.exports.listByCategory = function (req, res) {
 		"price": 1,
 		"availability": `$prod_n_storeArr`,
 		"has_variants": { $isArray: "$variants" },
+		"prod_n_storeArr": 1,
+		"max_quantity_cart": {
+			$ifNull: ["$max_quantity_cart", 0]
+		},
 	});
 };
 
@@ -181,6 +192,10 @@ module.exports.featured = async function (req, res) {
 				"price": 1,
 				"availability": `$prod_n_storeArr`,
 				"has_variants": { $isArray: "$variants" },
+				"prod_n_storeArr": 1,
+				"max_quantity_cart": {
+					$ifNull: ["$max_quantity_cart", 0]
+				},
 			};
 
 			const sort = {
@@ -343,6 +358,7 @@ module.exports.read = async function (req, res) {
 				"max_quantity_cart": {
 					$ifNull: ["$max_quantity_cart", 0]
 				},
+				"prod_n_storeArr": 1,
 				"variants": 1,
 			}, async (results) => {
 				if (!results || !results.sku) {

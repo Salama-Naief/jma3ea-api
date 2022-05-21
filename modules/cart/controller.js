@@ -3,6 +3,7 @@ const common = require('../../libraries/common');
 const status_message = require('../../enums/status_message');
 const mainController = require("../../libraries/mainController");
 const ObjectID = require("../../types/object_id");
+const { resetPrice } = require('../product/utils');
 
 /**
  * Add new product to Cart
@@ -102,6 +103,8 @@ module.exports.add = function (req, res) {
 				const projection = {
 					sku: 1,
 					price: 1,
+					old_price: 1,
+					discount_price_valid_until: 1,
 					variants: 1,
 				};
 
@@ -112,6 +115,21 @@ module.exports.add = function (req, res) {
 					const products = [];
 					for (const p of rows.data) {
 
+						// If the product has an expired discount price
+						// Set the price to the old one
+						if (p.old_price && p.discount_price_valid_until < new Date()) {
+							const oldPrice = parseFloat(p.old_price);
+							p.price = oldPrice;
+							resetPrice(req, p.sku, oldPrice).then(isPriceResetted => {
+								if (!isPriceResetted) {
+									res.out({
+										message: req.custom.local.unexpected_error
+									}, status_message.UNEXPECTED_ERROR);
+								}
+							});
+						}
+
+						
 						if (p.variants && p.variants.length > 0) {
 							for (const v of p.variants) {
 								if (Object.keys(user.cart).indexOf(v.sku) > -1) {
