@@ -28,6 +28,12 @@ module.exports = {
 		"unique": true,
 		"collection": 'member'
 	}),
+	"secondary_mobile": new Field({
+		"required": false,
+		"length": 8,
+		"unique": false,
+		"collection": 'member'
+	}),
 	"address": new Field({
 		"type": Object,
 		"required": config.data_to_save.indexOf("address") > -1 ? false : true,
