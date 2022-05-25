@@ -41,10 +41,10 @@ module.exports = {
 				"required": true,
 				"length": 8,
 			}),
-			"secondary_mobile": new Field({
-				"required": false,
-				"length": 8,
-			}),
+			// "secondary_mobile": new Field({
+			// 	"required": false,
+			// 	"length": 8,
+			// }),
 			"address": new Field({
 				"type": Object,
 				"required": config.data_to_save.indexOf("address_id") > -1 ? false : true,
