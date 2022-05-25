@@ -13,6 +13,7 @@ const collectionName = 'city';
 module.exports.list = function (req, res) {
 	req.custom.limit = 99999;
 	req.custom.cache_key = `${collectionName}_${req.query.flat == 'true' ? 'flat' : 'children'}_${req.custom.lang}`;
+	// req.custom.clean_sort = { [`name.${ req.custom.lang }`] : 1}
 	mainController.list(req, res, collectionName, {
 		"_id": 1,
 		"name": {
