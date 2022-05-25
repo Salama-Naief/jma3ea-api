@@ -130,7 +130,11 @@ module.exports.add = function (req, res) {
 						}
 
 						
-						if (p.variants && p.variants.length > 0) {
+						// Check if the product sku in the cart exists in the main product
+						// Then we check for product variations
+						if (Object.keys(user.cart).indexOf(p.sku) > -1) {
+							products.push(p);
+						} else if (p.variants && p.variants.length > 0) {
 							for (const v of p.variants) {
 								if (Object.keys(user.cart).indexOf(v.sku) > -1) {
 									products.push({
@@ -142,8 +146,6 @@ module.exports.add = function (req, res) {
 									prod.price = parseFloat(v.price || p.price);
 								}
 							}
-						} else if (Object.keys(user.cart).indexOf(p.sku) > -1) {
-							products.push(p);
 						}
 
 					}
@@ -210,7 +212,7 @@ module.exports.remove = function (req, res) {
 			delete user.cart[data.sku];
 
 			const total_products = Object.keys(user.cart).length;
-			const prods_obj_skus = Object.keys(user.cart).map((i) => i);
+			const prods_obj_skus = Object.keys(user.cart).map((i) => i.toString().split('-')[0]);
 			const projection = {
 				sku: 1,
 				price: 1,
@@ -227,7 +229,11 @@ module.exports.remove = function (req, res) {
 
 				for (const p of rows.data) {
 
-					if (p.variants && p.variants.length > 0) {
+					// Check if the product sku in the cart exists in the main product
+					// Then we check for product variations
+					if (Object.keys(user.cart).indexOf(p.sku) > -1) {
+						products.push(p);
+					} else if (p.variants && p.variants.length > 0) {
 						for (const v of p.variants) {
 							if (Object.keys(user.cart).indexOf(v.sku) > -1) {
 								const options_names = v.options ? v.options.map((v_option) => v_option.name[req.custom.lang] || v_option.name[req.custom.config.local]) : [];
@@ -239,8 +245,6 @@ module.exports.remove = function (req, res) {
 								});
 							}
 						}
-					} else if (Object.keys(user.cart).indexOf(p.sku) > -1) {
-						products.push(p);
 					}
 
 				}
@@ -334,7 +338,11 @@ module.exports.list = function (req, res) {
 				let products = [];
 				for (const p of products_data.data) {
 
-					if (p.variants && p.variants.length > 0) {
+					// Check if the product sku in the cart exists in the main product
+					// Then we check for product variations
+					if (Object.keys(user.cart).indexOf(p.sku.toString()) > -1) {
+						products.push(p);
+					} else if (p.variants && p.variants.length > 0) {
 						for (const v of p.variants) {
 							if (Object.keys(user.cart).indexOf(v.sku.toString()) > -1) {
 								const options_names = v.options ? v.options.map((v_option) => v_option.name[req.custom.lang] || v_option.name[req.custom.config.local]) : [];
@@ -353,8 +361,6 @@ module.exports.list = function (req, res) {
 								products.push(variant);
 							}
 						}
-					} else if (Object.keys(user.cart).indexOf(p.sku.toString()) > -1) {
-						products.push(p);
 					}
 
 				}
