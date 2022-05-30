@@ -462,7 +462,7 @@ module.exports.coupon = function (req, res) {
 
 			const collection = req.custom.db.client().collection('coupon');
 			collection.findOne({
-				code: data.code,
+				code:  {'$regex': '^' + data.code + '$',$options:'i'},
 				$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } }],
 				status: true
 			}).
