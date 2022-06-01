@@ -493,9 +493,9 @@ module.exports.coupon = function (req, res) {
 							}
 
 							user.coupon = {
-								code: data.code || null,
+								code: coupon.code || null,
 								member_id: coupon ? (coupon.member_id || null) : null,
-								value: data.code ? (coupon.percent_value || coupon.discount_value) : 0,
+								value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0,
 							};
 
 
