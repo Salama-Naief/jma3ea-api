@@ -308,6 +308,7 @@ module.exports.list = function (req, res) {
 		"price": 1,
 		"prod_n_storeArr": 1,
 		"variants": 1,
+		"old_price": 1
 	}, (products_data) => {
 		out = {};
 		out.success = true;
@@ -335,6 +336,10 @@ module.exports.list = function (req, res) {
 
 				out.shipping_cost = parseInt(cityObj.shipping_cost);
 				let total = 0;
+
+				// Total price of products that don't have a discount price
+				let totalWithNoDiscount = 0;
+
 				let products = [];
 				for (const p of products_data.data) {
 
@@ -390,6 +395,9 @@ module.exports.list = function (req, res) {
 					}
 
 					total += i.price * i.quantity;
+					if (!i.old_price || i.old_price <= 0) {
+						totalWithNoDiscount += i.price * i.quantity;
+					}
 					delete i.prod_n_storeArr;
 					delete i.variants;
 					out.data.push(i);
@@ -414,7 +422,7 @@ module.exports.list = function (req, res) {
 				}).then((coupon) => {
 					out.coupon = {
 						code: coupon ? coupon.code : null,
-						value: coupon ? (coupon.percent_value ? (out.subtotal * coupon.percent_value) / 100 : coupon.discount_value) : 0
+						value: coupon ? (coupon.percent_value ? (totalWithNoDiscount * coupon.percent_value) / 100 : coupon.discount_value) : 0
 					};
 
 					out.total = total + out.shipping_cost - out.coupon.value;
