@@ -1,6 +1,7 @@
 const config = require('../config');
 
 const locals = {
+	upgrade_message:"Please update the app",
 	address_name_exists: 'Address name is already exists',
 	can_not_delete_default_address: 'You cannot delete the primary address',
 	cart_coupon_added: 'Coupon has been added',
@@ -91,6 +92,10 @@ const locals = {
 		forgotpassword_q: 'Forgot your password?',
 		forgotpassword_thanks: 'Thanks.',
 		reset_password_link_sent: 'Reset password link has been sent to your email, check your email.',
+		reset_password_otp_correct: 'OTP Code Correct',
+		reset_password_otp_incorrect: 'OTP Code Incorrect',
+		reset_password_otp_sent: 'OTP Code Sent',
+
 		reset_password_subject: 'Reset password',
 		registerion_click_on: `Click on the link`,
 		registerion_easy_shopping: `Shopping with us easier!`,
