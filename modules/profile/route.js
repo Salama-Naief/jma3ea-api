@@ -37,11 +37,15 @@ router.put('/updatepassword', controller.updatepassword);
  * POST /profile/forgotpassword
  */
 router.post('/forgotpassword', controller.forgotpassword);
+/**
+ * POST /verify-forget-password
+ */
 
+router.post('/verify-otp', controller.verifyOtp);
 /**
  * PUT /profile/resetpassword
  */
-router.put('/resetpassword/:hash', controller.resetpassword);
+router.post('/resetpassword', controller.resetpassword);
 
 /**
  * PUT /profile/updatecity

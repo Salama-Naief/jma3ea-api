@@ -10,11 +10,11 @@ const sha1 = require('sha1');
 const md5 = require('md5');
 const auth = require('../auth/controller');
 const mail_forgotpassword_view = require("./view/forgotpassword");
-const newpasswordrequest = require("./view/newpasswordrequest");
 const mail_register_view = require("./view/register");
 const mainController = require("../../libraries/mainController");
 const collectionName = 'member';
-
+const bcrypt = require('bcryptjs');
+const { resolve } = require("@sentry/utils");
 /**
  * Display profile data
  * @param {Object} req
@@ -71,14 +71,25 @@ module.exports.login = function (req, res) {
 			{
 				mobile: req.body.username.toString()
 			}
-		],
-		password: sha1(md5(req.body.password))
+		]
 	}).then((theuser) => {
+		console.log(theuser);
 		if (!theuser) {
 			return res.out({
 				message: local.failed_auth_user
 			}, status_message.INVALID_USER_AUTHENTICATION);
 		}
+
+
+		// bcrypt.compare(req.body.password, theuser.password, function (err, valid) {
+		// 	// if (err || !valid) {
+		// 	// 	console.log(err)
+		// 	// 	return res.out({
+		// 	// 		error: local.failed_auth_user
+		// 	// 	}, status_message.UNEXPECTED_ERROR);
+		// 	// }
+		// }).catch((err) => console.log(err));
+		// console.log('holol');
 		// create a token
 		const cityid = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 
@@ -316,7 +327,7 @@ module.exports.updatepassword = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
- module.exports.forgotpassword = function (req, res) {
+module.exports.forgotpassword = function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -333,7 +344,8 @@ module.exports.updatepassword = async function (req, res) {
 		userCollection.findOne({
 			email: data.email
 		}).then((userObj) => {
-			const otpCode = process.env.NODE_ENV !== "production" ? 1234 : Math.floor(1000 + Math.random() * 9000);
+			const otpCode = Math.floor(1000 + Math.random() * 9000);
+
 
 			const reset_hash = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
@@ -356,7 +368,7 @@ module.exports.updatepassword = async function (req, res) {
 
 					mail.send_mail(req.custom.settings.sender_emails.reset_password, req.custom.settings.site_name[req.custom.lang], data.email,
 						req.custom.local.mail.reset_password_subject,
-						newpasswordrequest.newpasswordrequest(forgotpassword_data, req.custom)).catch(() => null);
+						mail_forgotpassword_view.newpasswordrequest(forgotpassword_data, req.custom)).catch(() => null);
 
 					res.out({
 						message: req.custom.local.mail.reset_password_otp_sent,
@@ -412,36 +424,32 @@ module.exports.verifyOtp = function (req, res) {
  * @param {Object} res
  */
 module.exports.resetpassword = async function (req, res) {
-	var otpCode = req.body.otp_code;
-	if (req.custom.isAuthorized === false || !otpCode) {
+	var data = req.body;
+
+	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
-	otpCode = parseInt(otpCode);
+
+	if (req.body.new_password != req.body.password_confirmation || !data.email || !data.otp_code) {
+		return res.out({message:"password and its confirmation are not indenitcal"});
+	}
+
 	const collection = req.custom.db.client().collection(collectionName);
-	req.custom.model = req.custom.model || require('./model/resetpassword');
-	req.body.reset_hash = req.params.hash;
 
-	req.custom.getValidData(req).
-		then(({ data, error }) => {
-
-			if (error) {
-				return res.out(error, status_message.VALIDATION_ERROR);
-			}
-
-			const userCollection = req.custom.db.client().collection('member');
+	const userCollection = req.custom.db.client().collection('member');
 			userCollection.findOne({
-				email: req.body.email,
-				otp_code: otpCode
+				email: data.email,
+				otp_code: parseInt(data.otp_code),
+				otp_success: true,
 			}).then((user) => {
 
 				if (!user) {
-					console.log('no user');
 					res.out({
 						'message': error.message
 					}, status_message.UNEXPECTED_ERROR);
 				}
 
-				const password = sha1(md5(data.new_password));
+				const password = bcrypt.hashSync(data.new_password);
 				collection.updateOne({
 					_id: ObjectID(user._id.toString())
 				}, {
@@ -457,7 +465,6 @@ module.exports.resetpassword = async function (req, res) {
 						message: req.custom.local.password_has_been_updated
 					}))
 					.catch((error) => res.out({
-						'error': error,
 						'message': error.message
 					}, status_message.UNEXPECTED_ERROR));
 
@@ -465,8 +472,6 @@ module.exports.resetpassword = async function (req, res) {
 			}).catch(() => res.out({
 				'message': error.message
 			}, status_message.UNEXPECTED_ERROR));
-
-		});
 };
 
 /**

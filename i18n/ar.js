@@ -1,6 +1,7 @@
 const config = require('../config');
 
 const locals = {
+	upgrade_message:"المرجو تحديث التطبيق",
 	address_name_exists: 'إسم العنوان موجود مسبقاً',
 	can_not_delete_default_address: 'لا يمكنك حذف العنوان الأساسي',
 	cart_has_not_products: 'السلة لا تحتوي على منتجات',
@@ -93,6 +94,9 @@ const locals = {
 		forgotpassword_q: 'نسيت كلمة المرور؟',
 		forgotpassword_thanks: 'شكراً لكم',
 		reset_password_link_sent: 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني ، تحقق من بريدك الإلكتروني.',
+		reset_password_otp_correct: 'كلمة المرور المؤقتة صحيحة',
+		reset_password_otp_incorrect: 'كلمة المرور المؤقتة غير صحيحة',
+		reset_password_otp_sent: 'تم إرسال كلمة مرور مؤقتة',
 		reset_password_subject: 'إعادة تعيين كلمة المرور',
 		registerion_click_on: `اضغط على رابط`,
 		registerion_easy_shopping: `التسوق معنا أسهل!`,
