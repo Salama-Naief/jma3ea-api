@@ -498,7 +498,9 @@ module.exports.list = async function (req, res) {
 		const min_hour = parseInt(moment(min_delivery_time).format('H'));
 		let today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 		let available_delivery_times = req.custom.settings.orders.available_delivery_times[today.format('d')];
-		if (req.custom.authorizationObject.city.enable_custom_delivery_times) {
+		console.log("authorization object: ", req.custom.authorizationObject);
+		console.log("user object: ", userObj);
+		if (req.custom.authorizationObject.city && req.custom.authorizationObject.city.enable_custom_delivery_times) {
 			available_delivery_times = mergeDeliveryTimes(available_delivery_times, req.custom.authorizationObject.city.available_delivery_times[today.format('d')])
 		}
 		if (available_delivery_times) {
