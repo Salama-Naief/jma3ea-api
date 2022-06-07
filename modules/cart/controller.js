@@ -420,9 +420,10 @@ module.exports.list = function (req, res) {
 					$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } }],
 					status: true,
 				}).then((coupon) => {
+					let totalToApplyCoupon = coupon.apply_on_discounted_products ? out.subtotal : totalWithNoDiscount;
 					out.coupon = {
 						code: coupon ? coupon.code : null,
-						value: coupon ? (coupon.percent_value ? (totalWithNoDiscount * coupon.percent_value) / 100 : coupon.discount_value) : 0
+						value: coupon ? (coupon.percent_value ? (totalToApplyCoupon * coupon.percent_value) / 100 : coupon.discount_value) : 0
 					};
 
 					out.total = total + out.shipping_cost - out.coupon.value;
