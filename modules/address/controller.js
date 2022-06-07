@@ -28,7 +28,7 @@ module.exports.get = function (req, res) {
 			}
 
 			const cityCollection = req.custom.db.client().collection('city');
-			cityCollection.find({ [`name.${ req.custom.lang }`] : 1}).toArray().
+			cityCollection.find({}).toArray().
 				then((cities) => {
 
 					user.addresses = user.addresses || [];
