@@ -498,8 +498,9 @@ module.exports.list = async function (req, res) {
 		const min_hour = parseInt(moment(min_delivery_time).format('H'));
 		let today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 		let available_delivery_times = req.custom.settings.orders.available_delivery_times[today.format('d')];
-		if (req.custom.authorizationObject.city.enable_custom_delivery_times) {
-			available_delivery_times = mergeDeliveryTimes(available_delivery_times, req.custom.authorizationObject.city.available_delivery_times[today.format('d')])
+
+		if (cityObj && cityObj.enable_custom_delivery_times) {
+			available_delivery_times = mergeDeliveryTimes(available_delivery_times, cityObj.available_delivery_times[today.format('d')])
 		}
 		if (available_delivery_times) {
 			const day = moment().format('d');
@@ -543,8 +544,8 @@ module.exports.list = async function (req, res) {
 		moment.updateLocale('en', {});
 		let tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 		let tomorrow_available_delivery_times = req.custom.settings.orders.available_delivery_times[tomorrow.format('d')];
-		if (req.custom.authorizationObject.city.enable_custom_delivery_times) {
-			tomorrow_available_delivery_times = mergeDeliveryTimes(tomorrow_available_delivery_times, req.custom.authorizationObject.city.available_delivery_times[tomorrow.format('d')])
+		if (cityObj && cityObj.enable_custom_delivery_times) {
+			tomorrow_available_delivery_times = mergeDeliveryTimes(tomorrow_available_delivery_times, cityObj.available_delivery_times[tomorrow.format('d')])
 		}
 		if (tomorrow_available_delivery_times) {
 			const day = tomorrow.format('d');
