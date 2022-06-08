@@ -148,7 +148,11 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 				});
 
 				const options = {
-					"allowDiskUse": true
+					"allowDiskUse": true,
+					collation: {
+						locale : req.custom.lang,
+						alternate: "shifted"
+					}
 				};
 
 				collection.aggregate(pipeline, options).toArray((err, results) => {

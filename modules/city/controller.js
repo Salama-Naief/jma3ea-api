@@ -17,7 +17,11 @@ module.exports.list = function (req, res) {
 	mainController.list(req, res, collectionName, {
 		"_id": 1,
 		"name": {
-			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+			$trim: {
+				input: {
+					$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`],
+				},
+			}
 		},
 		"country": {
 			$ifNull: [`$country_obj.name.${req.custom.lang}`, `$country_obj.name.${req.custom.config.local}`]
