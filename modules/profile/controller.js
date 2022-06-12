@@ -167,6 +167,7 @@ module.exports.register = function (req, res) {
 					data.created = common.getDate();
 					data.wallet = req.custom.settings.wallet.register_gift ? parseFloat(req.custom.settings.wallet.register_gift) : 0;
 					data.wallet = registered_mobile ? 0 : data.wallet;
+					data.points = 100;
 					data.status = true;
 
 					data.password = sha1(md5(data.password));
