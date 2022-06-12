@@ -51,9 +51,9 @@ const locals = {
 	point_not_valid: "إختيارك غير صالح",
 	price: 'السعر',
 	quantity: 'الكمية',
-	registered_successfully: 'تم تسجيل حسابك بنجاح, مرحباً بك يا ',
-	saved_done: `تم تسجيل حسابك بنجاح
+	registered_successfully: `تم تسجيل حسابك بنجاح
 	مبروك ربحت 100 نقطه تم اضافتها لرصيد نقاط محفظه جمعيه دوت كوم`,
+	saved_done: 'تم الحفظ بنجاح',
 	shipping_cost: 'تكلفة الشحن',
 	subtotal: 'إجمالي المنتجات',
 	thanks_for_evaluation: `شكراً لتقييم ومساهمتك في تطور ال${config.info.website_name.ar}`,
