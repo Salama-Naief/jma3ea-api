@@ -80,10 +80,16 @@ module.exports.list = function (req, res) {
 module.exports.listByCountry = function (req, res) {
 	req.custom.clean_filter.country_id = ObjectID(req.params.Id);
 	req.custom.cache_key = `${collectionName}_${req.custom.lang}_country_${req.params.Id}`;
+	req.custom.clean_sort = { [`name.${ req.custom.lang }`] : 1};
+
 	mainController.list_all(req, res, collectionName, {
 		"_id": 1,
 		"name": {
-			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+			$trim: {
+				input: {
+					$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`],
+				},
+			}
 		},
 		"parent_id": 1,
 		"store_id": 1
