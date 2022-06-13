@@ -17,11 +17,7 @@ module.exports.list = function (req, res) {
 	mainController.list(req, res, collectionName, {
 		"_id": 1,
 		"name": {
-			$trim: {
-				input: {
-					$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`],
-				},
-			}
+			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 		},
 		"country": {
 			$ifNull: [`$country_obj.name.${req.custom.lang}`, `$country_obj.name.${req.custom.config.local}`]
@@ -85,11 +81,7 @@ module.exports.listByCountry = function (req, res) {
 	mainController.list_all(req, res, collectionName, {
 		"_id": 1,
 		"name": {
-			$trim: {
-				input: {
-					$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`],
-				},
-			}
+			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 		},
 		"parent_id": 1,
 		"store_id": 1
