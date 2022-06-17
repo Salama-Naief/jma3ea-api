@@ -91,12 +91,12 @@ module.exports.convertStrToInt = async function (req, res) {
     try {
         const collection = req.custom.db.client().collection("product");
         await collection.find({ "prod_n_storeArr.quantity": { $type: "string" } }).forEach(function (doc) {
-            doc.prod_n_storeArr = doc.prod_n_storeArr.map(s => ({ ...s, quantity: s.quantity = parseInt(s.quantity) }));
+            doc.prod_n_storeArr = doc.prod_n_storeArr.map(s => ({ ...s, quantity: s.quantity = isNaN(parseInt(s.quantity)) ? 0 : parseInt(s.quantity) }));
             collection.updateOne({ _id: new ObjectId(doc._id) }, { $set: { "prod_n_storeArr": doc.prod_n_storeArr } });
         });
 
         await collection.find({ "variants.prod_n_storeArr.quantity": { $type: "string" } }).forEach(function (doc) {
-            doc.variants = doc.variants.map(v => ({ ...v, prod_n_storeArr: v.prod_n_storeArr.map(s => ({ ...s, quantity: s.quantity = parseInt(s.quantity) })) }));
+            doc.variants = doc.variants.map(v => ({ ...v, prod_n_storeArr: v.prod_n_storeArr.map(s => ({ ...s, quantity: s.quantity = isNaN(parseInt(s.quantity)) ? 0 : parseInt(s.quantity) })) }));
             collection.updateOne({ _id: new ObjectId(doc._id) }, { $set: { "variants": doc.variants } });
         });
         
