@@ -85,3 +85,25 @@ module.exports.cleanProductsStatuses = async function (req, res) {
         return res.send('error')
     }
 }
+
+
+module.exports.convertStrToInt = async function (req, res) {
+    try {
+        const collection = req.custom.db.client().collection("product");
+        await collection.find({ "prod_n_storeArr.quantity": { $type: "string" } }).forEach(function (doc) {
+            doc.prod_n_storeArr = doc.prod_n_storeArr.map(s => s.quantity = parseInt(s.quantity));
+            collection.updateOne({ _id: new ObjectId(doc._id) }, { $set: { "prod_n_storeArr": doc.prod_n_storeArr } });
+        });
+
+        await collection.find({ "variants.prod_n_storeArr.quantity": { $type: "string" } }).forEach(function (doc) {
+            doc.variants = doc.variants.map(v => ({ ...v, prod_n_storeArr: v.prod_n_storeArr.map(s => s.quantity = parseInt(s.quantity)) }));
+            collection.updateOne({ _id: new ObjectId(doc._id) }, { $set: { "variants": doc.variants } });
+        });
+
+        res.out("success");
+
+    } catch (err) {
+        console.log(err);
+        res.Send("Error");
+    }
+}
