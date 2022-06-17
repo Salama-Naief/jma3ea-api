@@ -305,8 +305,8 @@ module.exports.buy = async function (req, res) {
 			code: null,
 			value: 0,
 		};
-		await cleanProduct(req, up_cart);
-		/* await req.custom.cache.set(req.custom.token, req.custom.authorizationObject, req.custom.config.cache.life_time.token);
+		
+		await req.custom.cache.set(req.custom.token, req.custom.authorizationObject, req.custom.config.cache.life_time.token);
 
 		// Copy to client
 		if (data.user_data.email) {
@@ -321,7 +321,9 @@ module.exports.buy = async function (req, res) {
 		if (token) {
 			// Update quantities
 			await update_quantities(req, up_products, up_cart, token).catch(() => null);
-		} */
+		}
+
+		await cleanProduct(req, up_cart);
 
 		res.out(order_data);
 	});
