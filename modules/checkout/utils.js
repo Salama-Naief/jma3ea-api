@@ -24,7 +24,73 @@ module.exports.cleanProduct = async function (req, cart) {
     const collection = req.custom.db.client().collection("product");
     const skus = Object.keys(cart).map((sku => sku.includes('-') ? sku.split('-')[0] : sku));
     try {
-        await collection.update(await collection.update({
+
+        await collection.update({
+            sku: { $in: skus },
+            variants: { $exists: true },
+            $expr: {
+                $gt: [
+                    {
+                        $reduce: {
+                            input: "$variants",
+                            initialValue: 0,
+                            in: {
+                                "$add": [
+                                    "$$value",
+                                    { $sum: "$$this.prod_n_storeArr.quantity" }
+                                ]
+                            }
+                        }
+                    },
+                    0
+                ]
+            },
+        }, [
+            {
+                $set: {
+                    "prod_n_storeArr.quantity": {
+                        $reduce: {
+                            input: "$variants",
+                            initialValue: 0,
+                            in: {
+                                "$add": [
+                                    "$$value",
+                                    { $sum: "$$this.prod_n_storeArr.quantity" }
+                                ]
+                            }
+                        }
+                    },
+                }
+            }
+        ], { multi: true });
+
+        await collection.update({
+            sku: { $in: skus },
+            prod_n_storeArr: { $exists: true },
+            $expr: {
+                $lt: [
+                    {
+                        $reduce: {
+                            input: "$prod_n_storeArr",
+                            initialValue: 0,
+                            in: {
+                                "$add": [
+                                    "$$value",
+                                    "$$this.quantity"
+                                ]
+                            }
+                        }
+                    },
+                    1
+                ]
+            },
+        }, [
+            {
+                $set: { "status": false }
+            }
+        ], { multi: true });
+
+        /* await collection.update(await collection.update({
             sku: skus,
             variants: { $exists: true },
             $expr: {
@@ -59,7 +125,7 @@ module.exports.cleanProduct = async function (req, cart) {
                             }
                         }
                     },
-                    "prod_n_storeArr.status": {
+                    "status": {
                         $cond:
                             [
                                 {
@@ -82,7 +148,7 @@ module.exports.cleanProduct = async function (req, cart) {
                     },
                 },
             }
-        ], { multi: true }));
+        ], { multi: true })); */
     } catch (err) {
         console.log(err);
     }
