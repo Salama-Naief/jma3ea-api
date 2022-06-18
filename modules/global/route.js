@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const controller = require('./controller');
 
-router.put('/products/quantities', controller.cleanProductsQuantities);
-router.put('/products/statuses', controller.cleanProductsStatuses);
-router.put('/products/strtoint', controller.convertStrToInt);
+router.post('/products/quantities', controller.cleanProductsQuantities);
+router.post('/products/statuses', controller.cleanProductsStatuses);
+router.post('/products/strtoint', controller.convertStrToInt);
 
 module.exports = router;
