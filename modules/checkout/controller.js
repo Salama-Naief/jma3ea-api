@@ -323,7 +323,7 @@ module.exports.buy = async function (req, res) {
 			await update_quantities(req, up_products, up_cart, token).catch(() => null);
 		}
 
-		await cleanProduct(req, up_cart);
+		// await cleanProduct(req, up_cart);
 
 		res.out(order_data);
 	});
