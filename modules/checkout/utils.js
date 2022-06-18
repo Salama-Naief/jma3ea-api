@@ -28,23 +28,6 @@ module.exports.cleanProduct = async function (req, cart) {
         await collection.update({
             sku: { $in: skus },
             variants: { $exists: true },
-            $expr: {
-                $gt: [
-                    {
-                        $reduce: {
-                            input: "$variants",
-                            initialValue: 0,
-                            in: {
-                                "$add": [
-                                    "$$value",
-                                    { $sum: "$$this.prod_n_storeArr.quantity" }
-                                ]
-                            }
-                        }
-                    },
-                    0
-                ]
-            },
         }, [
             {
                 $set: {
@@ -67,26 +50,31 @@ module.exports.cleanProduct = async function (req, cart) {
         await collection.update({
             sku: { $in: skus },
             prod_n_storeArr: { $exists: true },
-            $expr: {
-                $lt: [
-                    {
-                        $reduce: {
-                            input: "$prod_n_storeArr",
-                            initialValue: 0,
-                            in: {
-                                "$add": [
-                                    "$$value",
-                                    "$$this.quantity"
-                                ]
-                            }
-                        }
-                    },
-                    1
-                ]
-            },
         }, [
             {
-                $set: { "status": false }
+                $set: {
+                    "status": {
+                        $cond: {
+                            if: {
+                                $lt: [
+                                    {
+                                        $reduce: {
+                                            input: "$prod_n_storeArr",
+                                            initialValue: 0,
+                                            in: {
+                                                "$add": [
+                                                    "$$value",
+                                                    "$$this.quantity"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    1
+                                ]
+                            }, then: false, else: true
+                        }
+                    }
+                }
             }
         ], { multi: true });
 

@@ -1,4 +1,5 @@
 const { ObjectId } = require("mongodb");
+const mainController = require("../../libraries/mainController");
 
 module.exports.cleanProductsQuantities = async function (req, res) {
     try {
@@ -6,23 +7,6 @@ module.exports.cleanProductsQuantities = async function (req, res) {
 
         const results = await collection.update({
             variants: { $exists: true },
-            $expr: {
-                $gt: [
-                    {
-                        $reduce: {
-                            input: "$variants",
-                            initialValue: 0,
-                            in: {
-                                "$add": [
-                                    "$$value",
-                                    { $sum: "$$this.prod_n_storeArr.quantity" }
-                                ]
-                            }
-                        }
-                    },
-                    0
-                ]
-            },
         }, [
             {
                 $set: {
@@ -56,26 +40,31 @@ module.exports.cleanProductsStatuses = async function (req, res) {
 
         const results = await collection.update({
             prod_n_storeArr: { $exists: true },
-            $expr: {
-                $lt: [
-                    {
-                        $reduce: {
-                            input: "$prod_n_storeArr",
-                            initialValue: 0,
-                            in: {
-                                "$add": [
-                                    "$$value",
-                                    "$$this.quantity"
-                                ]
-                            }
-                        }
-                    },
-                    1
-                ]
-            },
         }, [
             {
-                $set: { "status": false }
+                $set: {
+                    "status": {
+                        $cond: {
+                            if: {
+                                $lt: [
+                                    {
+                                        $reduce: {
+                                            input: "$prod_n_storeArr",
+                                            initialValue: 0,
+                                            in: {
+                                                "$add": [
+                                                    "$$value",
+                                                    "$$this.quantity"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    1
+                                ]
+                            }, then: false, else: true
+                        }
+                    }
+                }
             }
         ], { multi: true });
 
@@ -99,7 +88,7 @@ module.exports.convertStrToInt = async function (req, res) {
             doc.variants = doc.variants.map(v => ({ ...v, prod_n_storeArr: v.prod_n_storeArr.map(s => ({ ...s, quantity: s.quantity = isNaN(parseInt(s.quantity)) ? 0 : parseInt(s.quantity) })) }));
             collection.updateOne({ _id: new ObjectId(doc._id) }, { $set: { "variants": doc.variants } });
         });
-        
+
         res.out("Success");
 
     } catch (err) {
@@ -107,3 +96,15 @@ module.exports.convertStrToInt = async function (req, res) {
         res.Send("Error");
     }
 }
+
+
+/* module.exports.test = async function(req, res) {
+    try {
+        mainController.list(req, res, "product", {
+            "name"
+        });
+    } catch(err) {
+        console.log(err);
+        res.out(err);
+    }
+} */
