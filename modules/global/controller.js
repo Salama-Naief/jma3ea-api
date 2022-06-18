@@ -3,7 +3,7 @@ const mainController = require("../../libraries/mainController");
 
 module.exports.cleanProductsQuantities = async function (req, res) {
     try {
-        const collection = req.custom.db.client().collection("newproduct");
+        const collection = req.custom.db.client().collection("product");
 
         const results = await collection.update({
             variants: { $exists: true },
@@ -36,7 +36,7 @@ module.exports.cleanProductsQuantities = async function (req, res) {
 
 module.exports.cleanProductsStatuses = async function (req, res) {
     try {
-        const collection = req.custom.db.client().collection("newproduct");
+        const collection = req.custom.db.client().collection("product");
 
         const results = await collection.update({
             prod_n_storeArr: { $exists: true },
@@ -78,7 +78,7 @@ module.exports.cleanProductsStatuses = async function (req, res) {
 
 module.exports.convertStrToInt = async function (req, res) {
     try {
-        const collection = req.custom.db.client().collection("newproduct");
+        const collection = req.custom.db.client().collection("product");
         await collection.find({ "prod_n_storeArr.quantity": { $type: "string" } }).forEach(function (doc) {
             doc.prod_n_storeArr = doc.prod_n_storeArr.map(s => ({ ...s, quantity: s.quantity = isNaN(parseInt(s.quantity)) ? 0 : parseInt(s.quantity) }));
             collection.updateOne({ _id: new ObjectId(doc._id) }, { $set: { "prod_n_storeArr": doc.prod_n_storeArr } });
