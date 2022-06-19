@@ -17,7 +17,7 @@ module.exports.list = function (req, res) {
 	};
 	req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
 	if (req.query.featured == 'true') {
-		req.custom.cache_key = `${collectionName}_${req.custom.lang}_features`;
+		req.custom.cache_key = `${collectionName}_${req.custom.lang}__features`;
 		req.custom.clean_filter['featured'] = {
 			$gt: 0
 		};
