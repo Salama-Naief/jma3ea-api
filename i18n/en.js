@@ -46,7 +46,7 @@ const locals = {
 	point_not_valid: "Your choice is not a valid",
 	price: 'Price',
 	quantity: 'Quantity',
-	registered_successfully: 'Your account has been registered successfully, You have recieved a 100 points in your account',
+	registered_successfully: 'Your account has been registered successfully, You have recieved a 50 points in your account',
 	saved_done: 'Item has been saved successfully.',
 	shipping_cost: 'Shipping Cost',
 	subtotal: 'Total Products',
