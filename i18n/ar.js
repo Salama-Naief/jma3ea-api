@@ -34,6 +34,7 @@ const locals = {
 	failed_create_auth_app: 'حدث خطأ أثناء إنشاء مفتاح جديد',
 	hash_error: 'المفتاح غير صالح',
 	id_not_valid: 'المعرف غير صالح',
+	account_deleted: 'تم حذف حسابك بنجاح',
 	invalid_location: 'لقد حددت موقعًا غير صالح ، يرجى تحديد موقع آخر نقوم بتغطيته',
 	logout_done: 'تم تسجيل الخروج بنجاح',
 	new_order: 'طلب شراء',

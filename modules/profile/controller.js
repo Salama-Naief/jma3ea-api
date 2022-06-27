@@ -751,6 +751,25 @@ module.exports.wallet_history = function (req, res) {
 	});
 };
 
+module.exports.delete = async function (req, res) {
+	if (req.custom.isAuthorized === false || !req.custom.authorizationObject.member_id) {
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+	}
+
+	const collection = req.custom.db.client().collection(collectionName);
+	const userId = ObjectID(req.custom.authorizationObject.member_id);
+	collection.deleteOne({_id: userId}).then(response => {
+		if (response.deletedCount > 0) {
+			req.custom.cache.unset(req.custom.token).catch(() => null);
+			return res.out({message: req.custom.local.account_deleted}, status_message.DELETED);
+		} else {
+			return res.out({message: req.custom.local.no_user_found}, status_message.VALIDATION_ERROR);
+		}
+	}).catch((error) => res.out({
+		'message': error.message
+	}, status_message.UNEXPECTED_ERROR));
+}
+
 function fix_user_data(req, userObj, city_id) {
 	const userCollection = req.custom.db.client().collection('member');
 	let language = userObj.language || req.custom.lang;
