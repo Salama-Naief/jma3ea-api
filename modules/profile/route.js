@@ -67,4 +67,9 @@ router.put('/wallet', controller.points2wallet);
  */
 router.get('/wallet_history', controller.wallet_history);
 
+/**
+ * DELETE /profile
+ */
+ router.delete('/', controller.delete);
+
 module.exports = router;
