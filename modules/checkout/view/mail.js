@@ -88,7 +88,7 @@ module.exports.mail_checkout = function (checkout, custom) {
 								<table cellspacing="0" cellpadding="0">
 									<tbody>
 										<tr>
-											<td height="48"><img src="${custom.config.site_base_url}/assets/img/logo.png" height="48" /></td>
+											<td height="48"><img src="${custom.config.site_base_url}/assets/img/jm3eia-logo.jpeg" height="48" /></td>
 										</tr>
 									</tbody>
 								</table>
