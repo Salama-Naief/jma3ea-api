@@ -3,7 +3,7 @@ module.exports.newpasswordrequest = function (forgotpassword, custom) {
 	const local = custom.local;
 	const setting = custom.settings;
 	const user = forgotpassword.user;
-
+	const otp = forgotpassword.otp_code;
 	let mail_newpasswordrequest = `
 	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 	<html xmlns="http://www.w3.org/1999/xhtml">
@@ -82,7 +82,7 @@ module.exports.newpasswordrequest = function (forgotpassword, custom) {
 									<br /><br />
 									${local.mail.forgotpassword_c_b} :
 									<br />
-									${user.otp_code}
+									${otp}
 									<br /><br />
 									${local.mail.forgotpassword_thanks},									<br /><span class="HOEnZb"><span style="color: #888888;">${ setting.site_name[lang] }</span></span>
 								</div>
