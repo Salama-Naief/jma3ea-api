@@ -18,9 +18,9 @@ module.exports.collectionName = collectionName;
 module.exports.list = function (req, res) {
 	req.custom.isProducts = true;
 	const name = common.parseArabicNumbers(req.query.q);
+	const newNames = [];
 	if (name) {
 		let names_array = name.split(' ');
-		const newNames = [];
 		for (let item of names_array) {
 
 			// Get the last character of the word
@@ -28,19 +28,19 @@ module.exports.list = function (req, res) {
 
 			// If the last character of teh word contains ه
 			if (/\u0647/.test(lastCharacter)) {
-			  // Add new search item for ة
-			  newNames.push(item.slice(0, -1) + '\u0629');
+				// Add new search item for ة
+				newNames.push(item.slice(0, -1) + '\u0629');
 			}
 
 			// If the last character of teh word contains ة
 			if (/\u0629/.test(lastCharacter)) {
-			  // Add new search item for ه
-			  newNames.push(item.slice(0, -1) + '\u0647');
+				// Add new search item for ه
+				newNames.push(item.slice(0, -1) + '\u0647');
 			}
 
 			// If the word begins with Alif
 			if (common.begins_with_similar_alif_letters(item)){
-
+				
 				// Set all different types of Alifs to the search
 				let alif_words = common.transform_word_begins_with_alif_letter(item);
 				alif_words.forEach((alif_word) => {
@@ -75,7 +75,39 @@ module.exports.list = function (req, res) {
 		"max_quantity_cart": {
 			$ifNull: ["$max_quantity_cart", 0]
 		},
-		});
+	}, (data) => {
+		if (data.total == 0) {
+			req.custom.clean_filter = {
+				'$or': [
+					{ "name.ar": { $regex: new RegExp(`${name}${newNames.join('|')}`, "i") } },
+					{ "name.en": { $regex: new RegExp(`${name}${newNames.join('|')}`, "i") } }
+				]
+			};
+			req.custom.clean_sort = { name_length: 1 };
+
+			mainController.list(req, res, collectionName, {
+				"_id": 0,
+				"sku": 1,
+				"name": {
+					$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+				},
+				"picture": 1,
+				"old_price": 1,
+				"price": 1,
+				"availability": `$prod_n_storeArr`,
+				"has_variants": { $isArray: "$variants" },
+				"prod_n_storeArr": 1,
+				"max_quantity_cart": {
+					$ifNull: ["$max_quantity_cart", 0]
+				},
+				"name_length": {
+					$strLenCP: { $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`] }
+				},
+			});
+		} else {
+			return res.out(data);
+		}
+	});
 };
 
 /**
