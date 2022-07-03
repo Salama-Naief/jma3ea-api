@@ -84,6 +84,7 @@ module.exports.list = function (req, res) {
 				]
 			};
 			req.custom.clean_sort = { name_length: 1 };
+			req.custom.sort_after = true;
 
 			mainController.list(req, res, collectionName, {
 				"_id": 0,
