@@ -31,7 +31,7 @@ module.exports.send_mail = async function (from, from_name, to, subject, body) {
 		html: body // html body
 	};
 	var result = await transporter.sendMail(mailOptions);
-	console.log(result);
+	console.log(result,mailOptions);
 	return result;
 
 	// send mail with defined transport object
