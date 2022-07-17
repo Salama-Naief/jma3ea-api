@@ -98,6 +98,7 @@ const locals = {
 		reset_password_link_sent: 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني ، تحقق من بريدك الإلكتروني.',
 		reset_password_otp_correct: 'كلمة المرور المؤقتة صحيحة',
 		reset_password_otp_incorrect: 'كلمة المرور المؤقتة غير صحيحة',
+		your_otp_request: 'كلمة المرور المؤقتة الخاصة بك:',
 		reset_password_otp_sent: 'تم إرسال كلمة مرور مؤقتة',
 		reset_password_subject: 'إعادة تعيين كلمة المرور',
 		registerion_click_on: `اضغط على رابط`,

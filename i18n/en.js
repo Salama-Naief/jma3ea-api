@@ -96,6 +96,7 @@ const locals = {
 		reset_password_otp_correct: 'OTP Code Correct',
 		reset_password_otp_incorrect: 'OTP Code Incorrect',
 		reset_password_otp_sent: 'OTP Code Sent',
+		your_otp_request: 'Your OTP: ',
 
 		reset_password_subject: 'Reset password',
 		registerion_click_on: `Click on the link`,
