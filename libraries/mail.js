@@ -9,7 +9,7 @@ module.exports.send_mail = async function (from, from_name, to, subject, body) {
 	const secure = config.mail.secure;
 	const username = config.mail.username;
 	const password = config.mail.password;
-
+	const from = config.mail.from;
 	const transporter = nodemailer.createTransport({
 		host: host,
 		port: port,
@@ -24,7 +24,7 @@ module.exports.send_mail = async function (from, from_name, to, subject, body) {
 	});
 	// setup email data with unicode symbols
 	const mailOptions = {
-		from: `"${from_name} " <${username}>`, // sender address
+		from: `"${from_name} " <${from}>`, // sender address
 		to: to, // list of receivers
 		subject: `${from_name} : ${subject}`, // Subject line
 		html: body // html body
