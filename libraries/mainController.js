@@ -129,9 +129,11 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 					}
 				}
 
-				pipeline.push({
-					$sort: sort
-				});
+				if (!req.custom.hasOwnProperty('sort_after') || !req.custom.sort_after) {
+					pipeline.push({
+						$sort: sort
+					});
+				}
 
 				pipeline.push({
 					$skip: req.custom.skip
@@ -150,6 +152,12 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 				const options = {
 					"allowDiskUse": true
 				};
+
+				if (req.custom.hasOwnProperty('sort_after') && req.custom.sort_after) {
+					pipeline.push({
+						$sort: sort
+					});
+				}
 
 				collection.aggregate(pipeline, options).toArray((err, results) => {
 					if (err) {

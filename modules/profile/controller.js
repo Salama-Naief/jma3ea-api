@@ -14,6 +14,7 @@ const newpasswordrequest = require("./view/newpasswordrequest");
 const mail_register_view = require("./view/register");
 const mainController = require("../../libraries/mainController");
 const collectionName = 'member';
+const sms = require('../../libraries/sms');
 
 /**
  * Display profile data
@@ -330,10 +331,13 @@ module.exports.updatepassword = async function (req, res) {
 		}
 
 		const userCollection = req.custom.db.client().collection('member');
+		var searchColumn = 'email';
 
-		userCollection.findOne({
-			email: data.email
-		}).then((userObj) => {
+		if(data.requestedColumn){
+			searchColumn = data.requestedColumn;
+		}
+
+		userCollection.findOne({[searchColumn]:data[searchColumn]}).then((userObj) => {
 			const otpCode = process.env.NODE_ENV !== "production" ? 1234 : Math.floor(1000 + Math.random() * 9000);
 
 			const reset_hash = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -354,14 +358,23 @@ module.exports.updatepassword = async function (req, res) {
 				}
 			})
 				.then((response) => {
-
-					mail.send_mail(req.custom.settings.sender_emails.reset_password, req.custom.settings.site_name[req.custom.lang], data.email,
-						req.custom.local.mail.reset_password_subject,
-						newpasswordrequest.newpasswordrequest(forgotpassword_data, req.custom)).catch(() => null);
-
-					res.out({
-						message: req.custom.local.mail.reset_password_otp_sent,
-					});
+					if(searchColumn == 'email'){
+						mail.send_mail(req.custom.settings.sender_emails.reset_password, req.custom.settings.site_name[req.custom.lang], data.email,
+							req.custom.local.mail.reset_password_subject,
+							newpasswordrequest.newpasswordrequest(forgotpassword_data, req.custom)).catch(() => null);
+	
+						res.out({
+							message: req.custom.local.mail.reset_password_otp_sent,
+						});
+					}else{
+						let localLang = req.custom.local;
+						let otpMessage = localLang.your_otp_request + ' ' + otpCode;
+						sms.sendSms(data.mobile, otpMessage);
+						res.out({
+							message: req.custom.local.mail.reset_password_otp_sent,
+						});
+					}
+		
 
 				})
 				.catch((error) => res.out({
