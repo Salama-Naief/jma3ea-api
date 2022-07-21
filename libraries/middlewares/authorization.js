@@ -6,10 +6,10 @@ const status_message = require('../../enums/status_message');
  */
 module.exports = (req, res, next) => {
 	let excludedUrls = [
-		''
+		'/api/v2/auth/check'
 	];
-	console.log(req.custom.class,req.custom.action,req.method,req.url);
-	if ((req.custom.class === 'auth' && req.custom.action === 'check' && req.method === 'POST') ||
+	
+	if (excludedUrls.indexOf(req.url) > -1 ||(req.custom.class === 'auth' && req.custom.action === 'check' && req.method === 'POST') ||
 		(req.custom.class === 'profile' && req.custom.action === 'resetpassword' && req.method === 'PUT') ||
 		['country', 'city', 'page'].indexOf(req.custom.class) > -1 ||
 		req.method === 'OPTIONS') {
