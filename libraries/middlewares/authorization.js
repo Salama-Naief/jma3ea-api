@@ -5,6 +5,7 @@ const status_message = require('../../enums/status_message');
  * Middleware for sorting
  */
 module.exports = (req, res, next) => {
+	console.log(req.custom.class,req.custom.action,req.method);
 	if ((req.custom.class === 'auth' && req.custom.action === 'check' && req.method === 'POST') ||
 		(req.custom.class === 'profile' && req.custom.action === 'resetpassword' && req.method === 'PUT') ||
 		['country', 'city', 'page'].indexOf(req.custom.class) > -1 ||
