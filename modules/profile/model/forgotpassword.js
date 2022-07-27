@@ -4,8 +4,13 @@ const Field = require("../../../libraries/field");
 module.exports = {
     "email": new Field({
         "type": "email",
-        "required": true,
+        "required": false,
         "exists": true,
         "collection": 'member'
     }),
+    "mobile": new Field({
+        "required": false,
+        "exists": true,
+        "collection": 'member'
+    })
 };
