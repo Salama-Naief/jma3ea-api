@@ -50,6 +50,7 @@ const locals = {
 	password_has_been_updated: 'تم تحديث كلمة المرور بنجاح',
 	points2wallet_saved_done: 'تم تحويل النقاط إلى رصيد بنجاح',
 	point_not_valid: "إختيارك غير صالح",
+	receiver_not_found: "لم نتمكن من العثور على هذا المستخدم",
 	price: 'السعر',
 	quantity: 'الكمية',
 	registered_successfully: `تم تسجيل حسابك بنجاح
