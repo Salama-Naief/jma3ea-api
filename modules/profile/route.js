@@ -63,6 +63,16 @@ router.put('/updateemail', controller.me);
 router.put('/wallet', controller.points2wallet);
 
 /**
+ * PUT /profile/wallet/add
+ */
+router.put('/wallet/add', controller.chargeWallet);
+
+/**
+ * PUT /profile/wallet/send
+ */
+ router.put('/wallet/send', controller.sendToWallet);
+
+/**
  * GET /profile/wallet_history
  */
 router.get('/wallet_history', controller.wallet_history);

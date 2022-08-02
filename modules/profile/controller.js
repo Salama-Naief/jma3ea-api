@@ -9,6 +9,7 @@ const common = require('../../libraries/common');
 const sha1 = require('sha1');
 const md5 = require('md5');
 const auth = require('../auth/controller');
+const { v4: uuid } = require('uuid');
 const mail_forgotpassword_view = require("./view/forgotpassword");
 const newpasswordrequest = require("./view/newpasswordrequest");
 const mail_register_view = require("./view/register");
@@ -318,7 +319,7 @@ module.exports.updatepassword = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
- module.exports.forgotpassword = function (req, res) {
+module.exports.forgotpassword = function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -333,18 +334,18 @@ module.exports.updatepassword = async function (req, res) {
 		const userCollection = req.custom.db.client().collection('member');
 		var searchColumn = 'email';
 
-		if(data.requestedColumn){
+		if (data.requestedColumn) {
 			searchColumn = data.requestedColumn;
 		}
 
-		userCollection.findOne({[searchColumn]:data[searchColumn]}).then((userObj) => {
+		userCollection.findOne({ [searchColumn]: data[searchColumn] }).then((userObj) => {
 			const otpCode = process.env.NODE_ENV !== "production" ? 1234 : Math.floor(1000 + Math.random() * 9000);
 
 			const reset_hash = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
 			const forgotpassword_data = {
 				otp_code: otpCode,
-				otp_success:false,
+				otp_success: false,
 				user: userObj
 			};
 
@@ -354,19 +355,19 @@ module.exports.updatepassword = async function (req, res) {
 			}, {
 				$set: {
 					otp_code: otpCode,
-					otp_success:false,
+					otp_success: false,
 				}
 			})
 				.then((response) => {
-					if(searchColumn == 'email'){
+					if (searchColumn == 'email') {
 						mail.send_mail(req.custom.settings.sender_emails.reset_password, req.custom.settings.site_name[req.custom.lang], data.email,
 							req.custom.local.mail.reset_password_subject,
 							newpasswordrequest.newpasswordrequest(forgotpassword_data, req.custom)).catch(() => null);
-	
+
 						res.out({
 							message: req.custom.local.mail.reset_password_otp_sent,
 						});
-					}else{
+					} else {
 						let localLang = req.custom.local;
 						let otpMessage = localLang.your_otp_request + ' ' + otpCode;
 						sms.sendSms(data.mobile, otpMessage);
@@ -374,7 +375,7 @@ module.exports.updatepassword = async function (req, res) {
 							message: req.custom.local.mail.reset_password_otp_sent,
 						});
 					}
-		
+
 
 				})
 				.catch((error) => res.out({
@@ -396,7 +397,7 @@ module.exports.verifyOtp = function (req, res) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	var data = req.body;
-	
+
 
 	const userCollection = req.custom.db.client().collection('member');
 	userCollection.findOne({
@@ -407,12 +408,12 @@ module.exports.verifyOtp = function (req, res) {
 			_id: userObj._id
 		}, {
 			$set: {
-				otp_success:true
+				otp_success: true
 			}
 		});
 
 		res.out({
-			verified:true,
+			verified: true,
 			message: req.custom.local.mail.reset_password_otp_correct,
 		});
 	}).catch(() => res.out({
@@ -742,6 +743,220 @@ module.exports.points2wallet = async function (req, res) {
 		});
 };
 
+module.exports.chargeWallet = async function (req, res) {
+	try {
+		if (req.custom.isAuthorized === false) {
+			return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+		}
+
+		const only_validation = req.query.validation !== undefined;
+
+		// Get the current user profile
+		const profile = require('../profile/controller');
+		let user_info = await profile.getInfo(req, {
+			_id: 1,
+			fullname: 1,
+			email: 1,
+			mobile: 1,
+			address: 1,
+			addresses: 1,
+			points: 1,
+			wallet: 1,
+			device_token: 1,
+		}).catch(() => null);
+
+		if (user_info) {
+			req.body.user_data = user_info;
+		}
+
+		let hash = uuid().replace(/-/g, '');
+
+		if (only_validation && !req.body.hash) {
+			req.body.hash = hash;
+
+			req.custom.authorizationObject.hash = hash;
+			await req.custom.cache.set(req.custom.token, req.custom.authorizationObject, req.custom.config.cache.life_time.token);
+
+		}
+
+
+		// Validate and sanitize inputs
+		req.custom.model = req.custom.model || require('./model/charge_wallet');
+		let {
+			data,
+			error
+		} = await req.custom.getValidData(req);
+
+		if (error) {
+			return res.out(error, status_message.VALIDATION_ERROR);
+		}
+
+		if (only_validation) {
+			return res.out({
+				message: true,
+				hash: hash,
+			});
+		}
+
+		if (user_info) {
+			data.user_data = user_info;
+		}
+
+		if (!data.hash) {
+			save_failed_payment(req, !data.hash ? 'NO_HASH' : 'HASH_NOT_VALID');
+			return res.out({
+				message: req.custom.local.hash_error
+			}, status_message.VALIDATION_ERROR);
+		}
+
+		// Validate Knet payment details
+		// TODO: Fix checking track id && req.body.hash != req.body.payment_details.trackid
+		if (req.body.payment_method == 'knet' && req.body.payment_details && !req.body.payment_details.trackid) {
+			save_failed_payment(req, 'TRACK_ID_NOT_VALID');
+			return res.out({
+				message: req.custom.local.hash_error
+			}, status_message.VALIDATION_ERROR);
+		}
+
+		let wallet_charge_value = data.amount ? parseFloat(data.amount) : 0;
+		if (req.body.payment_method == 'knet' && req.body.payment_details.amt) {
+			wallet_charge_value = parseFloat(req.body.payment_details.amt);
+		}
+		const new_wallet = common.getFixedPrice(parseFloat(user_info.wallet) + parseFloat(wallet_charge_value));
+		user_info.wallet = common.getFixedPrice(user_info.wallet);
+		const wallet_data = {
+			"member_id": ObjectID(data.user_data._id.toString()),
+			"old_wallet": user_info.wallet,
+			"new_wallet": new_wallet,
+			"notes": `Wallet charged from ${user_info.wallet} to ${new_wallet}`,
+			"created": new Date(),
+		};
+		const wallet_history_collection = req.custom.db.client().collection('wallet_history');
+		await wallet_history_collection.insertOne(wallet_data);
+
+		const member_collection = req.custom.db.client().collection('member');
+		await member_collection.updateOne({
+			_id: ObjectID(data.user_data._id.toString())
+		}, {
+			$set: { wallet: new_wallet }
+		}).catch(() => null)
+
+
+		res.out(wallet_data);
+	} catch (err) {
+		console.log('Err: ', err);
+	}
+
+};
+
+module.exports.sendToWallet = async function (req, res) {
+	if (req.custom.isAuthorized === false) {
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+	}
+
+	const profile = require('../profile/controller');
+	let user_info = await profile.getInfo(req, {
+		_id: 1,
+		fullname: 1,
+		email: 1,
+		mobile: 1,
+		address: 1,
+		addresses: 1,
+		points: 1,
+		wallet: 1,
+		device_token: 1,
+	}).catch(() => null);
+
+	if (!user_info) {
+		return res.out({
+			message: false
+		}, status_message.UNEXPECTED_ERROR)
+	}
+
+	req.body.user_data = user_info;
+
+	req.custom.model = req.custom.model || require('./model/send_to_wallet');
+	let {
+		data,
+		error
+	} = await req.custom.getValidData(req);
+
+	if (error) {
+		return res.out(error, status_message.VALIDATION_ERROR);
+	}
+
+	if (user_info) {
+		data.user_data = user_info;
+	}
+
+	if (user_info && user_info.mobile && user_info.mobile === data.mobile) {
+		return res.out({
+			message: false
+		}, status_message.UNEXPECTED_ERROR)
+	}
+
+	const sender_wallet = user_info && user_info.wallet ? parseFloat(user_info.wallet) : 0;
+	const amount = parseFloat(data.amount);
+	const new_sender_wallet = common.getFixedPrice(sender_wallet - amount);
+
+	if (amount > sender_wallet) {
+		save_failed_payment(req, 'WALLET_NOT_ENOUGH');
+		return res.out({
+			message: req.custom.local.no_enough_wallet
+		}, status_message.VALIDATION_ERROR);
+	}
+
+	const member_collection = req.custom.db.client().collection('member');
+
+	const receiver = await member_collection.findOne({ mobile: data.mobile }).catch(() => null);
+	if (!receiver) {
+		// No user found with this mobile
+		return res.out({
+			message: req.custom.local.receiver_not_found
+		}, status_message.UNEXPECTED_ERROR);
+	}
+
+	const receiver_wallet = receiver.wallet ? parseFloat(receiver.wallet) : 0;
+
+	const new_receiver_wallet = common.getFixedPrice(receiver_wallet + amount);
+
+	user_info.wallet = common.getFixedPrice(user_info.wallet);
+	const sender_wallet_data = {
+		"member_id": ObjectID(data.user_data._id.toString()),
+		"old_wallet": user_info.wallet,
+		"new_wallet": new_sender_wallet,
+		"notes": `Sent ${amount} to ${data.mobile}, and your wallet changed from ${user_info.wallet} to ${new_sender_wallet}`,
+		"created": new Date(),
+	};
+
+	const receiver_wallet_data = {
+		"member_id": ObjectID(receiver._id.toString()),
+		"old_wallet": common.getFixedPrice(receiver.wallet),
+		"new_wallet": new_receiver_wallet,
+		"notes": `Received ${amount} from ${user_info.fullname}, and your wallet changed from ${receiver.wallet} to ${new_receiver_wallet}`,
+		"created": new Date(),
+	};
+
+	const wallet_history_collection = req.custom.db.client().collection('wallet_history');
+	await wallet_history_collection.insertOne(sender_wallet_data);
+	await wallet_history_collection.insertOne(receiver_wallet_data);
+
+	await member_collection.updateOne({
+		_id: ObjectID(data.user_data._id.toString())
+	}, {
+		$set: { wallet: new_sender_wallet }
+	}).catch(() => null);
+
+	await member_collection.updateOne({
+		_id: ObjectID(receiver._id.toString())
+	}, {
+		$set: { wallet: new_receiver_wallet }
+	}).catch(() => null);
+
+	res.out(sender_wallet_data);
+
+};
+
 /**
  * List all orders
  * @param {Object} req
@@ -771,12 +986,12 @@ module.exports.delete = async function (req, res) {
 
 	const collection = req.custom.db.client().collection(collectionName);
 	const userId = ObjectID(req.custom.authorizationObject.member_id);
-	collection.deleteOne({_id: userId}).then(response => {
+	collection.deleteOne({ _id: userId }).then(response => {
 		if (response.deletedCount > 0) {
 			req.custom.cache.unset(req.custom.token).catch(() => null);
-			return res.out({message: req.custom.local.account_deleted}, status_message.DELETED);
+			return res.out({ message: req.custom.local.account_deleted }, status_message.DELETED);
 		} else {
-			return res.out({message: req.custom.local.no_user_found}, status_message.VALIDATION_ERROR);
+			return res.out({ message: req.custom.local.no_user_found }, status_message.VALIDATION_ERROR);
 		}
 	}).catch((error) => res.out({
 		'message': error.message
@@ -853,6 +1068,20 @@ function updateDeviceToken(user, device_token, req) {
 			}
 		});
 	});
+}
+
+function save_failed_payment(req, reason = null) {
+	const failed_payment_collection = req.custom.db.client().collection('failed_payment');
+	req.body.reason = reason;
+	const data = req.body;
+	data.created = common.getDate();
+	failed_payment_collection.insertOne(data)
+		.catch((error) => {
+			return {
+				success: false,
+				message: error.message
+			}
+		});
 }
 
 module.exports.getInfo = getInfo;
