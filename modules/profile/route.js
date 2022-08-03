@@ -65,7 +65,7 @@ router.put('/wallet', controller.points2wallet);
 /**
  * PUT /profile/wallet/add
  */
-router.put('/wallet/add', controller.chargeWallet);
+router.post('/wallet/add', controller.chargeWallet);
 
 /**
  * PUT /profile/wallet/send
