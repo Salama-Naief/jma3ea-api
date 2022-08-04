@@ -842,7 +842,7 @@ module.exports.chargeWallet = async function (req, res) {
 		}).catch(() => null)
 
 
-		res.out(wallet_data);
+		res.out({...wallet_data, total: data.amount});
 	} catch (err) {
 		console.log('Err: ', err);
 	}
@@ -872,6 +872,8 @@ module.exports.sendToWallet = async function (req, res) {
 			message: false
 		}, status_message.UNEXPECTED_ERROR)
 	}
+
+	console.log('Request body: ', req.body);
 
 	req.body.user_data = user_info;
 
