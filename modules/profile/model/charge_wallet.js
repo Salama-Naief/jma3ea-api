@@ -4,7 +4,7 @@ const Field = require("../../../libraries/field");
 module.exports = {
 	"payment_method": new Field({
 		"required": true,
-		"in_array": ["knet", "tap"]
+		"in_array": ["knet"]
 	}),
 	"payment_details": new Field({
 		"type": Object,
