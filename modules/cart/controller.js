@@ -307,6 +307,7 @@ module.exports.list = function (req, res) {
 		"picture": 1,
 		"price": 1,
 		"prod_n_storeArr": 1,
+		"prod_n_categoryArr": 1,
 		"variants": 1,
 		"old_price": 1
 	}, (products_data) => {
@@ -358,6 +359,7 @@ module.exports.list = function (req, res) {
 								variant.name += ' - ' + options_names.join('-');
 								variant.quantity = v.sku;
 								variant.prod_n_storeArr = v.prod_n_storeArr;
+								variant.prod_n_categoryArr = p.prod_n_categoryArr ? p.prod_n_categoryArr : [];
 								variant.max_quantity_cart = v.max_quantity_cart || p.max_quantity_cart;
 								variant.price = parseFloat(v.price || p.price);
 								if (v.gallery_pictures && v.gallery_pictures[0]) {
