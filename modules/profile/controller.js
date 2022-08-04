@@ -873,6 +873,8 @@ module.exports.sendToWallet = async function (req, res) {
 		}, status_message.UNEXPECTED_ERROR)
 	}
 
+	console.log('Request body: ', req.body);
+
 	req.body.user_data = user_info;
 
 	req.custom.model = req.custom.model || require('./model/send_to_wallet');
