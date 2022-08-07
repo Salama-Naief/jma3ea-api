@@ -324,6 +324,10 @@ module.exports.forgotpassword = function (req, res) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
+	console.log('**************TTTTTT************');
+	console.log(req?.body?.email);
+	console.log('**************endTTTTT************');
+
 	req.custom.model = req.custom.model || require('./model/forgotpassword');
 	req.custom.getValidData(req).then(({ data, error }) => {
 		
@@ -337,9 +341,6 @@ module.exports.forgotpassword = function (req, res) {
 		if (data.requestedColumn) {
 			searchColumn = data.requestedColumn;
 		}
-		console.log('**************TTTTTT************');
-		console.log(req?.body[searchColumn]);
-		console.log('**************endTTTTT************');
 
 		userCollection.findOne({ [searchColumn]: data[searchColumn] }).then((userObj) => {
 			const otpCode = process.env.NODE_ENV !== "production" ? 1234 : Math.floor(1000 + Math.random() * 9000);
