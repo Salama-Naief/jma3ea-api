@@ -326,7 +326,7 @@ module.exports.forgotpassword = function (req, res) {
 
 	req.custom.model = req.custom.model || require('./model/forgotpassword');
 	req.custom.getValidData(req).then(({ data, error }) => {
-		console.log('forgot pass data___^^^^^^^',data);
+		console.log(data);
 		if (error) {
 			return res.out(error, status_message.VALIDATION_ERROR);
 		}
