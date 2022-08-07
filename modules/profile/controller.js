@@ -337,13 +337,6 @@ module.exports.forgotpassword = function (req, res) {
 		if (data.requestedColumn) {
 			searchColumn = data.requestedColumn;
 		}
-		console.log('**************requestedColumn************');
-		console.log(data.requestedColumn);
-		console.log('**************endrequestedColumn************');
-
-		console.log('**************XYZ************');
-		console.log(data[searchColumn]);
-		console.log('**************endXYZ************');
 		console.log('**************TTTTTT************');
 		console.log(searchColumn);
 		console.log('**************endTTTTT************');
