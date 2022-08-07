@@ -31,9 +31,9 @@ module.exports.send_mail = async function (from, from_name, to, subject, body) {
 	};
 	transporter.sendMail(mailOptions, function(error, info){
 		if(error){
-			console.log(error);
+			console.log(error, 'to:' + to);
 		}else{
-			console.log(info);
+			console.log(info,'to:' + to);
 			resolve( info);
 		}
 	});

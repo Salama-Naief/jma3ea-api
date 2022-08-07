@@ -360,7 +360,7 @@ module.exports.forgotpassword = function (req, res) {
 			})
 				.then((response) => {
 					if (searchColumn == 'email') {
-						mail.send_mail(req.custom.settings.sender_emails.reset_password, req.custom.settings.site_name[req.custom.lang], data.email,
+						mail.send_mail(req.custom.settings.sender_emails.reset_password, req.custom.settings.site_name[req.custom.lang], data[searchColumn],
 							req.custom.local.mail.reset_password_subject,
 							newpasswordrequest.newpasswordrequest(forgotpassword_data, req.custom)).catch(() => null);
 
