@@ -338,7 +338,7 @@ module.exports.forgotpassword = function (req, res) {
 			searchColumn = data.requestedColumn;
 		}
 		console.log('**************TTTTTT************');
-		console.log(searchColumn);
+		console.log(req.body);
 		console.log('**************endTTTTT************');
 
 		userCollection.findOne({ [searchColumn]: data[searchColumn] }).then((userObj) => {
