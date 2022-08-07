@@ -337,11 +337,8 @@ module.exports.forgotpassword = function (req, res) {
 		if (data.requestedColumn) {
 			searchColumn = data.requestedColumn;
 		}
-		console.log('**************TTTTTT************');
-		console.log(req.body);
-		console.log('**************endTTTTT************');
 
-		userCollection.findOne({ [searchColumn]: data[searchColumn] }).then((userObj) => {
+		userCollection.findOne({ [searchColumn]: req.body[searchColumn] }).then((userObj) => {
 			const otpCode = process.env.NODE_ENV !== "production" ? 1234 : Math.floor(1000 + Math.random() * 9000);
 
 			const reset_hash = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -363,7 +360,7 @@ module.exports.forgotpassword = function (req, res) {
 			})
 				.then((response) => {
 					if (searchColumn == 'email') {
-						mail.send_mail(req.custom.settings.sender_emails.reset_password, req.custom.settings.site_name[req.custom.lang], data[searchColumn],
+						mail.send_mail(req.custom.settings.sender_emails.reset_password, req.custom.settings.site_name[req.custom.lang], req.body[searchColumn],
 							req.custom.local.mail.reset_password_subject,
 							newpasswordrequest.newpasswordrequest(forgotpassword_data, req.custom)).catch(() => null);
 
@@ -373,7 +370,7 @@ module.exports.forgotpassword = function (req, res) {
 					} else {
 						let localLang = req.custom.local;
 						let otpMessage = localLang.your_otp_request + ' ' + otpCode;
-						sms.sendSms(data.mobile, otpMessage);
+						sms.sendSms(req.body[searchColumn], otpMessage);
 						res.out({
 							message: req.custom.local.mail.reset_password_otp_sent,
 						});
