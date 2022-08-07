@@ -342,8 +342,11 @@ module.exports.forgotpassword = function (req, res) {
 		console.log('**************endrequestedColumn************');
 
 		console.log('**************XYZ************');
-		console.log(data[searchColumn] , searchColumn);
+		console.log(data[searchColumn]);
 		console.log('**************endXYZ************');
+		console.log('**************TTTTTT************');
+		console.log(searchColumn);
+		console.log('**************endTTTTT************');
 
 		userCollection.findOne({ [searchColumn]: data[searchColumn] }).then((userObj) => {
 			const otpCode = process.env.NODE_ENV !== "production" ? 1234 : Math.floor(1000 + Math.random() * 9000);
