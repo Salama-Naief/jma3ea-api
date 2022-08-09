@@ -376,7 +376,7 @@ module.exports.forgotpassword = function (req, res) {
 						});
 					} else {
 						let localLang = req.custom.local;
-						let otpMessage = localLang.your_otp_request + ' ' + otpCode;
+						let otpMessage = localLang.mail.your_otp_request + ' ' + otpCode;
 						sms.sendSms(data.mobile, otpMessage);
 						res.out({
 							message: req.custom.local.mail.reset_password_otp_sent,
