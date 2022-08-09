@@ -341,8 +341,8 @@ module.exports.forgotpassword = function (req, res) {
 		const userCollection = req.custom.db.client().collection('member');
 		var searchColumn = 'email';
 
-		if (data.requestedColumn) {
-			searchColumn = data.requestedColumn;
+		if (req.body?.requestedColumn) {
+			searchColumn = req.body.requestedColumn;
 		}
 
 		userCollection.findOne({ [searchColumn]: data[searchColumn] }).then((userObj) => {
