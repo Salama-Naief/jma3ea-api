@@ -412,7 +412,11 @@ module.exports.verifyOtp = function (req, res) {
 
 	const userCollection = req.custom.db.client().collection('member');
 	userCollection.findOne({
-		[columnName]: data[columnName],
+		"$or": [{
+			"email": data.email
+		}, {
+			"mobile": data.email
+		}],
 		otp_code: parseInt(data.otp_code)
 	}).then((userObj) => {
 		userCollection.updateOne({
