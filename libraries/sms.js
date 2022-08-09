@@ -21,7 +21,14 @@ module.exports.sendSms = async function (to, text) {
 		}
 	};
 
-	return axios(config, )
+	return axios.post('https://kuwait.uigtc.com/capi/sms/send_sms', {
+		api_key: apiKey,
+		sender_id: senderId,
+		send_type: sendType,
+		sms_content:text,
+		numbers:'965' +  to,
+		type:smsType
+	})
 		.then(function (response) {
 			console.log(response);
 			return response;
