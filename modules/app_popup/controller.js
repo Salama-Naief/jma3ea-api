@@ -10,7 +10,7 @@ const collectionName = 'app_popup';
  * @param {Object} res
  */
 module.exports.list = function (req, res) {
-	req.custom.cache_key = `${collectionName}_${req.custom.lang}_page_${req.custom.skip}__`;
+	req.custom.cache_key = `${collectionName}_${req.custom.lang}_page_${req.custom.skip}___`;
 	mainController.list(req, res, collectionName, {
 		"_id": 1,
 		"title": {
