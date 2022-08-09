@@ -460,7 +460,11 @@ module.exports.resetpassword = async function (req, res) {
 
 			const userCollection = req.custom.db.client().collection('member');
 			userCollection.findOne({
-				email: req.body.email,
+				"$or": [{
+					"email": req.body.email
+				}, {
+					"mobile": req.body.email
+				}],
 				otp_code: otpCode
 			}).then((user) => {
 
