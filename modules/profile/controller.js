@@ -320,6 +320,8 @@ module.exports.updatepassword = async function (req, res) {
  * @param {Object} res
  */
 module.exports.forgotpassword = function (req, res) {
+	console.log('SMSMSMSMSM****');
+	console.log(req.body);
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
