@@ -2,17 +2,28 @@ const config = require('../config');
 const axios = require('axios');
 
 module.exports.sendSms = async function (to, text) {
-	let username='jm3eia';
-	let password = '@Makkah786';
-	let sender = '96594469079';
+	let apiKey = '782.5C6219BF01D9EE9D72691F7AF1D969F6';
+	let senderId = 701;
+	let sendType = 1;
+	let smsContent = '';
+	let smsType = 'otp';
 
 	var config = {
-		method: 'get',
-		url: `https://www.kwtsms.com/API/send/?username=${username}&password=${password}&sender=${sender}&mobile=${to}&lang=1&message=${text}`
+		method: 'post',
+		url: `https://kuwait.uigtc.com/capi/sms/send_sms`, 
+		data: {
+			api_key: apiKey,
+			sender_id: senderId,
+			send_type: sendType,
+			sms_content:text,
+			numbers:'965' +  to,
+			type:smsType
+		}
 	};
 
-	return axios(config)
+	return axios(config, )
 		.then(function (response) {
+			console.log(response);
 			return response;
 		})
 		.catch(function (error) {
