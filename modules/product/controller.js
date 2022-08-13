@@ -60,6 +60,24 @@ module.exports.list = function (req, res) {
 	} else {
 		req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
 	}
+
+	if (req.query) {
+		if (req.query.brand_id && req.query.brand_id !== "all") {
+			req.custom.clean_filter['brand_id'] = new ObjectID(req.query.brand_id);
+		}
+		if (req.query.category_id && req.query.category_id !== "all") {
+			req.custom.clean_filter['prod_n_categoryArr.category_id'] = new ObjectID(req.query.category_id);
+		}
+	
+		if (req.query.sortBy && req.query.sorting) {
+			if (req.query.sortBy == "name") {
+				req.custom.clean_sort = { ["name." + req.custom.lang]: parseInt(req.query.sorting) };
+			} else {
+				req.custom.clean_sort = { [req.query.sortBy]: parseInt(req.query.sorting) };
+			}
+		}
+	}
+	
 	mainController.list(req, res, collectionName, {
 		"_id": 0,
 		"sku": 1,
