@@ -2,6 +2,8 @@
 
 // Load required modules
 const mainController = require("../../libraries/mainController");
+const ObjectID = require("../../types/object_id");
+
 const collectionName = 'brand';
 
 /**
@@ -54,7 +56,7 @@ module.exports.list = function (req, res) {
 					foreignField: "prod_n_categoryArr.category_id",
 					pipeline: [
 						{
-							$match: { $and: [{ brand_id: new ObjectId(data._id) }, { status: true }] },
+							$match: { $and: [{ brand_id: ObjectID(data._id) }, { status: true }] },
 						}
 					],
 					as: "products"
