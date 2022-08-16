@@ -689,7 +689,7 @@ module.exports.points2wallet = async function (req, res) {
 					"400": common.getFixedPrice(12),
 					"500": common.getFixedPrice(20),
 					"800": common.getFixedPrice(40),
-					"1000": common.getFixedPrice(75),
+					"1000": common.getFixedPrice(80),
 				};
 
 				if (Object.keys(points_2_wallet_values).indexOf(req.body.points.toString()) < 0) {
