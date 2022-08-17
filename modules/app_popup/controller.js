@@ -22,6 +22,7 @@ module.exports.list = function (req, res) {
 		"image": {
 			$ifNull: [`$image.${req.custom.lang}`, `$image.${req.custom.config.local}`]
 		},
+		"url": 1,
 		"accept_button_route":1,
 		"cancel_button_route":1,
 		"show_in_route":1,
@@ -45,6 +46,7 @@ module.exports.read = function (req, res) {
 		"image": {
 			$ifNull: [`$image.${req.custom.lang}`, `$image.${req.custom.config.local}`]
 		},
+		"url": 1,
 		"accept_button_route": 1,
 		"cancel_button_route": 1,
 		"show_in_route": 1,
