@@ -22,6 +22,7 @@ module.exports.list = function (req, res) {
 		"image": {
 			$ifNull: [`$image.${req.custom.lang}`, `$image.${req.custom.config.local}`]
 		},
+		"url": 1,
 		"accept_button_route":1,
 		"cancel_button_route":1,
 		"show_in_route":1,
@@ -36,8 +37,8 @@ module.exports.list = function (req, res) {
 module.exports.read = function (req, res) {
 	mainController.read(req, res, collectionName, {
 		"_id": 1,
-		"name": {
-			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+		"title": {
+			$ifNull: [`$title.${req.custom.lang}`, `$title.${req.custom.config.local}`]
 		},
 		"details": {
 			$ifNull: [`$details.${req.custom.lang}`, `$details.${req.custom.config.local}`]
@@ -45,6 +46,7 @@ module.exports.read = function (req, res) {
 		"image": {
 			$ifNull: [`$image.${req.custom.lang}`, `$image.${req.custom.config.local}`]
 		},
+		"url": 1,
 		"accept_button_route": 1,
 		"cancel_button_route": 1,
 		"show_in_route": 1,
