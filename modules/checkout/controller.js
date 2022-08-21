@@ -426,9 +426,9 @@ module.exports.list = async function (req, res) {
 
 		const total_prods = parseFloat(products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
 
-		const user_city_id = user_info && data.user_data && data.user_data.address && data.user_data.address.city_id ?
+		const user_city_id = req.query.city_id || (user_info && data.user_data && data.user_data.address && data.user_data.address.city_id ?
 			data.user_data.address.city_id.toString() :
-			req.custom.authorizationObject.city_id.toString();
+			req.custom.authorizationObject.city_id.toString());
 		const city_collection = req.custom.db.client().collection('city');
 		const cityObj = await city_collection
 			.findOne({
