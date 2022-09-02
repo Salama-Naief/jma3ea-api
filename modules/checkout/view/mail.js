@@ -3,6 +3,17 @@ module.exports.mail_checkout = function (checkout, custom) {
 	const local = custom.local;
 	const setting = custom.settings;
 	const symbol = custom.authorizationObject.currency[custom.lang];
+	if(checkout.payment_details){
+		let paymentData = {
+			"q" : checkout.payment_details['q'],
+			"paymentid" : checkout.payment_details['paymentid'],
+			"result" : checkout.payment_details['result'],
+			"amt" : checkout.payment_details['amt'],
+		 };
+	}else{
+	   let paymentData = null;
+	}
+
 	let mail_checkout = `
 	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 	<html xmlns="http://www.w3.org/1999/xhtml">
@@ -134,7 +145,7 @@ module.exports.mail_checkout = function (checkout, custom) {
 														${symbol}
 													</td>
 													<td>
-													
+
 													</td>
 												</tr>`
 	}
@@ -191,14 +202,14 @@ module.exports.mail_checkout = function (checkout, custom) {
 									<br />
 									<table>
 										<tbody>`;
-	if (checkout.payment_details) {
-		for (pdk of Object.keys(checkout.payment_details)) {
+	if (paymentData) {
+		for (pdk of Object.keys(paymentData)) {
 			mail_checkout += `<tr>
 														<td>
 															${pdk}
 														</td>
 														<td>
-															${checkout.payment_details[pdk]}
+															${paymentData[pdk]}
 														</td>
 													</tr>`;
 
