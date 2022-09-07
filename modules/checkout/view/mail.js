@@ -3,6 +3,7 @@ module.exports.mail_checkout = function (checkout, custom) {
 	const local = custom.local;
 	const setting = custom.settings;
 	const symbol = custom.authorizationObject.currency[custom.lang];
+	const hiddenItems = ['auth','avr','ref','tranid','postdate','trackid','udf1','udf2','udf3','udf4','udf5','udf6','udf7','udf8','udf9','udf10','udf5','authRespoCode'];
 	let mail_checkout = `
 	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 	<html xmlns="http://www.w3.org/1999/xhtml">
@@ -193,6 +194,8 @@ module.exports.mail_checkout = function (checkout, custom) {
 										<tbody>`;
 	if (checkout.payment_details) {
 		for (pdk of Object.keys(checkout.payment_details)) {
+			if(!hiddenItems.includes(pdk)){
+
 			mail_checkout += `<tr>
 														<td>
 															${pdk}
@@ -202,6 +205,7 @@ module.exports.mail_checkout = function (checkout, custom) {
 														</td>
 													</tr>`;
 
+			}
 		}
 	}
 
