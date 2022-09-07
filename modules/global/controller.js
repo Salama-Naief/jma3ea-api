@@ -97,6 +97,22 @@ module.exports.convertStrToInt = async function (req, res) {
     }
 }
 
+module.exports.convertWalletStrToFloat = async function (req, res) {
+    try {
+        const collection = req.custom.db.client().collection("member");
+        await collection.find({ "wallet": { $type: "string" } }).forEach(function (doc) {
+            doc.wallet = isNaN(parseFloat(doc.wallet)) ? 0 : parseFloat(doc.wallet);
+            collection.updateOne({ _id: new ObjectId(doc._id) }, { $set: { "wallet": doc.wallet } });
+        });
+
+        res.out("Success");
+
+    } catch (err) {
+        console.log(err);
+        res.Send("Error");
+    }
+}
+
 
 /* module.exports.test = async function(req, res) {
     try {
