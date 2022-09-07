@@ -231,7 +231,7 @@ module.exports.featured = async function (req, res) {
 		}
 	}, async (features) => {
 		const slideCollection = req.custom.db.client().collection("slide");
-		const slides = await slideCollection.find({ features: { $in: features.data.map(f => ObjectID(f._id)) } }).toArray() || [];
+		const slides = await slideCollection.find({ features: { $in: features.data.map(f => f._id.toString()) } }).toArray() || [];
 		const featured = [];
 		for (const c of features.data) {
 			c.slides = slides.filter(s => s.features && s.features.map(f => f.toString()).includes(c._id.toString())).map(s => ({_id: s._id, name: s.name, picture: s.picture, url: s.url}));
