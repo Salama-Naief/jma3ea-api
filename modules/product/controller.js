@@ -234,7 +234,8 @@ module.exports.featured = async function (req, res) {
 		const slides = await slideCollection.find({ features: { $in: features.data.map(f => f._id.toString()) } }).toArray() || [];
 		const featured = [];
 		for (const c of features.data) {
-			c.slides = slides.filter(s => s.features && s.features.map(f => f.toString()).includes(c._id.toString())).map(s => ({_id: s._id, name: s.name, picture: s.picture, url: s.url}));
+			const filteredSlides = slides.filter(s => s.features && s.features.map(f => f.toString()).includes(c._id.toString()) && s.language_code == req.custom.lang);
+			c.slides = filteredSlides.map(s => ({_id: s._id, name: s.name, picture: `${req.custom.config.media_url}${s.picture}`, url: s.url}));
 			const filter = {};
 			filter['status'] = true;
 			filter['feature_id'] = c._id;
