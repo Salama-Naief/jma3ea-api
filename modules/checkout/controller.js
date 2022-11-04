@@ -670,7 +670,7 @@ module.exports.list = async function (req, res) {
 			payment_methods: payment_methods,
 			earliest_date_of_delivery: earliest_date_of_delivery,
 			delivery_times: delivery_times,
-			products: productsGroupedBySupplier.map((data) => {
+			data: productsGroupedBySupplier.map((data) => {
 				data.products = data.products.map(p => {
 					delete p.variants;
 					delete p.preparation_time;
