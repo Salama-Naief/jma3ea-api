@@ -160,9 +160,9 @@ module.exports.buy = async function (req, res) {
 		data.user_data.address.city_name = cityObj.name[req.custom.lang];
 
 		const city_shipping_cost = parseFloat(cityObj.shipping_cost)
-		let shipping_cost = city_shipping_cost;
+		let shipping_cost = 0;
 
-		const productsGroupedBySupplier = groupBySupplier(products);
+		const productsGroupedBySupplier = groupBySupplier(products2save);
 
 		for (let sup of productsGroupedBySupplier) {
 			let supplier_products_total = parseFloat(sup.products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
@@ -171,16 +171,6 @@ module.exports.buy = async function (req, res) {
 
 			const supplier_shipping_cost = parseFloat(sup.supplier.shipping_cost) || city_shipping_cost;
 			shipping_cost += supplier_shipping_cost;
-
-			if (!message) {
-				if (sup.supplier.min_value && parseInt(sup.supplier.min_value) > supplier_products_total) {
-					message = req.custom.local.order_should_be_more_then({
-						value: sup.supplier.min_value,
-						currency: req.custom.authorizationObject.currency[req.custom.lang]
-					});
-				}
-
-			}
 
 			supplier_products_total += supplier_shipping_cost;
 
@@ -264,6 +254,14 @@ module.exports.buy = async function (req, res) {
 			total: total,
 			cart_total: cart_total,
 			user_data: data.user_data,
+			data: productsGroupedBySupplier.map((data) => {
+				data.products = data.products.map(p => {
+					delete p.variants;
+					delete p.preparation_time;
+					return p;
+				});
+				return data;
+			}),
 			products: products2save.map((p) => {
 				delete p.variants;
 				return p;
