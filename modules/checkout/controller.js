@@ -150,6 +150,7 @@ module.exports.buy = async function (req, res) {
 		const user_city_id = data.user_data && data.user_data.address && data.user_data.address.city_id ?
 			data.user_data.address.city_id.toString() :
 			req.custom.authorizationObject.city_id.toString();
+		console.log("this is user city id: ", user_city_id);
 		const city_collection = req.custom.db.client().collection('city');
 		const cityObj = await city_collection
 			.findOne({
@@ -157,12 +158,14 @@ module.exports.buy = async function (req, res) {
 			})
 			.then((c) => c)
 			.catch(() => null);
+		console.log("city object: ", cityObj);
 		data.user_data.address.city_name = cityObj.name[req.custom.lang];
 
 		const city_shipping_cost = parseFloat(cityObj.shipping_cost)
 		let shipping_cost = 0;
 
-		const productsGroupedBySupplier = groupBySupplier(products2save);
+		const products = await products_to_save(out.data, user, req, true);
+		const productsGroupedBySupplier = groupBySupplier(products);
 
 		for (let sup of productsGroupedBySupplier) {
 			let supplier_products_total = parseFloat(sup.products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
