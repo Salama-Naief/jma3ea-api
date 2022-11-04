@@ -134,7 +134,9 @@ module.exports.buy = async function (req, res) {
 
 		const up_products = JSON.parse(JSON.stringify(out.data));
 
-		const products2save = await products_to_save(out.data, user, req);
+		const products2save = await products_to_save(out.data, user, req, true);
+
+		console.log("products to save: ", products2save);
 
 		const payment_method = enums_payment_methods(req).find((pm) => pm.id == data.payment_method);
 
@@ -164,8 +166,8 @@ module.exports.buy = async function (req, res) {
 		const city_shipping_cost = parseFloat(cityObj.shipping_cost)
 		let shipping_cost = 0;
 
-		const products = await products_to_save(out.data, user, req, true);
-		const productsGroupedBySupplier = groupBySupplier(products);
+		//const products = await products_to_save(out.data, user, req, true);
+		const productsGroupedBySupplier = groupBySupplier(products2save);
 
 		for (let sup of productsGroupedBySupplier) {
 			let supplier_products_total = parseFloat(sup.products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
