@@ -157,8 +157,37 @@ module.exports.buy = async function (req, res) {
 			})
 			.then((c) => c)
 			.catch(() => null);
-		const shipping_cost = parseFloat(cityObj.shipping_cost);
 		data.user_data.address.city_name = cityObj.name[req.custom.lang];
+
+		const city_shipping_cost = parseFloat(cityObj.shipping_cost)
+		let shipping_cost = city_shipping_cost;
+
+		const productsGroupedBySupplier = groupBySupplier(products);
+
+		for (let sup of productsGroupedBySupplier) {
+			let supplier_products_total = parseFloat(sup.products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
+
+			sup.subtotal = supplier_products_total;
+
+			const supplier_shipping_cost = parseFloat(sup.supplier.shipping_cost) || city_shipping_cost;
+			shipping_cost += supplier_shipping_cost;
+
+			if (!message) {
+				if (sup.supplier.min_value && parseInt(sup.supplier.min_value) > supplier_products_total) {
+					message = req.custom.local.order_should_be_more_then({
+						value: sup.supplier.min_value,
+						currency: req.custom.authorizationObject.currency[req.custom.lang]
+					});
+				}
+
+			}
+
+			supplier_products_total += supplier_shipping_cost;
+
+			sup.shipping_cost = supplier_shipping_cost;
+			sup.total = common.getRoundedPrice(supplier_products_total);
+
+		}
 
 		const coupon_collection = req.custom.db.client().collection('coupon');
 		const coupon = user.coupon ? await coupon_collection.findOne({
@@ -447,7 +476,7 @@ module.exports.list = async function (req, res) {
 			.then((c) => c)
 			.catch(() => null);
 		const city_shipping_cost = parseFloat(cityObj.shipping_cost)
-		let shipping_cost = city_shipping_cost;
+		let shipping_cost = 0;
 
 		const productsGroupedBySupplier = groupBySupplier(products);
 
@@ -678,6 +707,12 @@ module.exports.list = async function (req, res) {
 				});
 				return data;
 			}),
+			products: products.map((p) => {
+				delete p.variants;
+				delete p.preparation_time;
+				return p;
+			}),
+
 		});
 	});
 };
