@@ -10,7 +10,7 @@ const mail_view = require("./view/mail");
 const moment = require('moment');
 const axios = require('axios');
 const shortid = require('shortid');
-const { mergeDeliveryTimes, cleanProduct } = require('./utils');
+const { mergeDeliveryTimes, cleanProduct, groupBySupplier } = require('./utils');
 shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-');
 
 
@@ -305,7 +305,7 @@ module.exports.buy = async function (req, res) {
 			code: null,
 			value: 0,
 		};
-		
+
 		await req.custom.cache.set(req.custom.token, req.custom.authorizationObject, req.custom.config.cache.life_time.token);
 
 		// Copy to client
@@ -323,7 +323,7 @@ module.exports.buy = async function (req, res) {
 				// Update quantities
 				await update_quantities(req, up_products, up_cart, token);//.catch(() => null);
 			}
-		} catch(err) {
+		} catch (err) {
 			console.log('Error: ', err);
 		}
 
@@ -426,6 +426,16 @@ module.exports.list = async function (req, res) {
 
 		const total_prods = parseFloat(products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
 
+		let purchase_possibility = req.custom.settings.orders && req.custom.settings.orders.min_value && parseInt(req.custom.settings.orders.min_value) > 0 && total_prods < parseInt(req.custom.settings.orders.min_value) ? false : true;
+
+		let message = null;
+		if (req.custom.settings.orders && req.custom.settings.orders.min_value && req.custom.settings.orders.min_value > total_prods) {
+			message = req.custom.local.order_should_be_more_then({
+				value: req.custom.settings.orders.min_value,
+				currency: req.custom.authorizationObject.currency[req.custom.lang]
+			});
+		}
+
 		const user_city_id = req.query.city_id || (user_info && data.user_data && data.user_data.address && data.user_data.address.city_id ?
 			data.user_data.address.city_id.toString() :
 			req.custom.authorizationObject.city_id.toString());
@@ -436,7 +446,41 @@ module.exports.list = async function (req, res) {
 			})
 			.then((c) => c)
 			.catch(() => null);
-		const shipping_cost = parseFloat(cityObj.shipping_cost);
+		const city_shipping_cost = parseFloat(cityObj.shipping_cost)
+		let shipping_cost = city_shipping_cost;
+
+		const productsGroupedBySupplier = groupBySupplier(products);
+
+		for (let sup of productsGroupedBySupplier) {
+			let supplier_products_total = parseFloat(sup.products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
+
+			sup.subtotal = supplier_products_total;
+
+
+			const supplier_shipping_cost = parseFloat(sup.supplier.shipping_cost) || city_shipping_cost;
+			shipping_cost += supplier_shipping_cost;
+
+			sup.purchase_possibility = sup.supplier.min_value && parseInt(sup.supplier.min_value) > 0 && supplier_products_total < parseInt(sup.supplier.min_value) ? false : true;
+			if (purchase_possibility && !sup.purchase_possibility) {
+				purchase_possibility = false;
+			}
+
+			if (!message) {
+				if (sup.supplier.min_value && parseInt(sup.supplier.min_value) > supplier_products_total) {
+					message = req.custom.local.order_should_be_more_then({
+						value: sup.supplier.min_value,
+						currency: req.custom.authorizationObject.currency[req.custom.lang]
+					});
+				}
+
+			}
+
+			supplier_products_total += supplier_shipping_cost;
+
+			sup.shipping_cost = supplier_shipping_cost;
+			sup.total = common.getRoundedPrice(supplier_products_total);
+
+		}
 
 		const coupon_collection = req.custom.db.client().collection('coupon');
 		const coupon = user.coupon ? await coupon_collection.findOne({
@@ -484,7 +528,7 @@ module.exports.list = async function (req, res) {
 					return true;
 				} else if (payment_method.id == 'wallet' && can_pay_by_wallet) {
 					return true;
-				} else if (['cod'].indexOf(payment_method.id) > -1) {
+				} else if (['cod'].indexOf(payment_method.id) > -1 && !productsGroupedBySupplier.find(s => s.supplier.allow_cod === false)) {
 					return true;
 				}
 				return false;
@@ -589,16 +633,6 @@ module.exports.list = async function (req, res) {
 			'times': times
 		});
 
-		const purchase_possibility = req.custom.settings.orders && req.custom.settings.orders.min_value && parseInt(req.custom.settings.orders.min_value) > 0 && total_prods < parseInt(req.custom.settings.orders.min_value) ? false : true;
-
-		let message = null;
-		if (req.custom.settings.orders && req.custom.settings.orders.min_value && req.custom.settings.orders.min_value > total_prods) {
-			message = req.custom.local.order_should_be_more_then({
-				value: req.custom.settings.orders.min_value,
-				currency: req.custom.authorizationObject.currency[req.custom.lang]
-			});
-		}
-
 		let addresses = [];
 		if (userObj) {
 			const base_address = userObj.address || {};
@@ -636,10 +670,13 @@ module.exports.list = async function (req, res) {
 			payment_methods: payment_methods,
 			earliest_date_of_delivery: earliest_date_of_delivery,
 			delivery_times: delivery_times,
-			products: products.map((p) => {
-				delete p.variants;
-				delete p.preparation_time;
-				return p;
+			products: productsGroupedBySupplier.map((data) => {
+				data.products = data.products.map(p => {
+					delete p.variants;
+					delete p.preparation_time;
+					return p;
+				});
+				return data;
 			}),
 		});
 	});
@@ -766,13 +803,21 @@ async function products_to_save(products, user, req, to_display = false) {
 			name: {
 				ar: supplier.name['ar'],
 				en: supplier.name['en'],
-			}
+			},
+			shipping_cost: supplier.shipping_cost || 0,
+			min_delivery_time: supplier.delivery_time,
+			min_value: supplier.min_order,
+			allow_cod: supplier.allow_cod,
+			delivery_time_text: supplier.delivery_time_text
 		} : to_display ? {
 			_id: req.custom.settings['site_name']['en'],
 			name: {
 				ar: req.custom.settings['site_name']['ar'],
 				en: req.custom.settings['site_name']['en'],
-			}
+			},
+			min_delivery_time: req.custom.settings.orders.min_delivery_time,
+			min_value: req.custom.settings.orders.min_value,
+			delivery_time_text: ""
 		} : null;
 
 		prod.delivery_time = supplier ? supplier.delivery_time : req.body.delivery_time;
