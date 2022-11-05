@@ -141,3 +141,18 @@ module.exports.cleanProduct = async function (req, cart) {
         console.log(err);
     }
 }
+
+
+module.exports.groupBySupplier = (products) => {
+    const newProducts = [];
+    for (let p of products) {
+        const foundSupplierIndex = newProducts.findIndex(np => np.supplier._id == p.supplier_id);
+        if (foundSupplierIndex > -1) {
+            newProducts[foundSupplierIndex].products.push(p);
+        } else {
+            newProducts.push({ supplier: p.supplier, products: [p] });
+        }
+    }
+
+    return newProducts;
+}
