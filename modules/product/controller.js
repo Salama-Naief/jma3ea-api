@@ -39,8 +39,8 @@ module.exports.list = function (req, res) {
 			}
 
 			// If the word begins with Alif
-			if (common.begins_with_similar_alif_letters(item)){
-				
+			if (common.begins_with_similar_alif_letters(item)) {
+
 				// Set all different types of Alifs to the search
 				let alif_words = common.transform_word_begins_with_alif_letter(item);
 				alif_words.forEach((alif_word) => {
@@ -68,7 +68,7 @@ module.exports.list = function (req, res) {
 		if (req.query.category_id && req.query.category_id !== "all") {
 			req.custom.clean_filter['prod_n_categoryArr.category_id'] = new ObjectID(req.query.category_id);
 		}
-	
+
 		if (req.query.sortBy && req.query.sorting) {
 			if (req.query.sortBy == "name") {
 				req.custom.clean_sort = { ["name." + req.custom.lang]: parseInt(req.query.sorting) };
@@ -77,7 +77,7 @@ module.exports.list = function (req, res) {
 			}
 		}
 	}
-	
+
 	mainController.list(req, res, collectionName, {
 		"_id": 0,
 		"sku": 1,
@@ -94,6 +94,7 @@ module.exports.list = function (req, res) {
 		"max_quantity_cart": {
 			$ifNull: ["$max_quantity_cart", 0]
 		},
+		"supplier_id": 1
 	}, (data) => {
 		if (data.total == 0) {
 			req.custom.clean_filter = {
@@ -167,6 +168,7 @@ module.exports.listByCategory = function (req, res) {
 		"max_quantity_cart": {
 			$ifNull: ["$max_quantity_cart", 0]
 		},
+		"supplier_id": 1
 	});
 };
 
@@ -235,7 +237,7 @@ module.exports.featured = async function (req, res) {
 		const featured = [];
 		for (const c of features.data) {
 			const filteredSlides = slides.filter(s => s.features && s.features.map(f => f.toString()).includes(c._id.toString()) && s.language_code == req.custom.lang);
-			c.slides = filteredSlides.map(s => ({_id: s._id, name: s.name, picture: `${req.custom.config.media_url}${s.picture}`, url: s.url}));
+			c.slides = filteredSlides.map(s => ({ _id: s._id, name: s.name, picture: `${req.custom.config.media_url}${s.picture}`, url: s.url }));
 			const filter = {};
 			filter['status'] = true;
 			filter['feature_id'] = c._id;
@@ -255,6 +257,7 @@ module.exports.featured = async function (req, res) {
 				"max_quantity_cart": {
 					$ifNull: ["$max_quantity_cart", 0]
 				},
+				"supplier_id": 1
 			};
 
 			const sort = {
@@ -420,6 +423,7 @@ module.exports.read = async function (req, res) {
 				"prod_n_storeArr": 1,
 				"prod_n_categoryArr": 1,
 				"variants": 1,
+				"supplier_id": 1
 			}, async (results) => {
 				if (!results || !results.sku) {
 					return res.out(results, status_message.NO_DATA);
