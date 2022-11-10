@@ -543,7 +543,7 @@ module.exports.list = async function (req, res) {
 
 		const can_pay_by_wallet = user_wallet >= parseFloat(total) ? true : false;
 
-		let payment_methods = enums_payment_methods(req).
+		const payment_methods = enums_payment_methods(req).
 			filter(payment_method => {
 				const disabled_payment_methods = process.env.ORDER_DISABLED_PAYMENT_METHODS ? process.env.ORDER_DISABLED_PAYMENT_METHODS.split(',') : [];
 				if (disabled_payment_methods.indexOf(payment_method.id) > -1) {
@@ -560,7 +560,7 @@ module.exports.list = async function (req, res) {
 					return true;
 				} else if (payment_method.id == 'wallet' && can_pay_by_wallet) {
 					return true;
-				} else if (['cod'].indexOf(payment_method.id) > -1 && !productsGroupedBySupplier.find(s => s.supplier.allow_cod === false)) {
+				} else if (['cod'].indexOf(payment_method.id) > -1) {
 					return true;
 				}
 				return false;
@@ -699,10 +699,11 @@ module.exports.list = async function (req, res) {
 			purchase_possibility: purchase_possibility,
 			message: message,
 			addresses: addresses,
-			payment_methods: payment_methods,
+			payment_methods: productsGroupedBySupplier.find(s => s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
 			earliest_date_of_delivery: earliest_date_of_delivery,
 			delivery_times: delivery_times,
 			data: productsGroupedBySupplier.map((data) => {
+				data.payment_methods = data.supplier.allow_cod === false ? payment_methods.filter(p => p.id !== 'cod') : payment_methods;
 				data.products = data.products.map(p => {
 					delete p.variants;
 					delete p.preparation_time;
@@ -782,7 +783,7 @@ async function products_to_save(products, user, req, to_display = false) {
 
 		const cache = req.custom.cache;
 		const cache_key = `supplier_all_solid`;
-		all_suppliers = await cache.get(cache_key).catch(() => null);
+		all_suppliers = false;//await cache.get(cache_key).catch(() => null);
 		if (!all_suppliers) {
 			const supplier_collection = req.custom.db.client().collection('supplier');
 			all_suppliers = await supplier_collection.find({}).toArray() || [];
