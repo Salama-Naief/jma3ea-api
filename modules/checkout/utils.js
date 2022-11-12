@@ -146,7 +146,7 @@ module.exports.cleanProduct = async function (req, cart) {
 module.exports.groupBySupplier = (products) => {
     const newProducts = [];
     for (let p of products) {
-        const foundSupplierIndex = newProducts.findIndex(np => np.supplier._id == p.supplier_id);
+        const foundSupplierIndex = newProducts.findIndex(np => np.supplier._id.toString() == p.supplier_id.toString());
         if (foundSupplierIndex > -1) {
             newProducts[foundSupplierIndex].products.push(p);
         } else {
