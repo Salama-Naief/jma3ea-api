@@ -16,6 +16,7 @@ const mail_register_view = require("./view/register");
 const mainController = require("../../libraries/mainController");
 const collectionName = 'member';
 const sms = require('../../libraries/sms');
+const moment = require("moment");
 
 /**
  * Display profile data
@@ -170,6 +171,7 @@ module.exports.register = function (req, res) {
 					data.wallet = req.custom.settings.wallet.register_gift ? parseFloat(req.custom.settings.wallet.register_gift) : 0;
 					data.wallet = registered_mobile ? 0 : data.wallet;
 					data.points = 50;
+					data.convertedPoints = 0;
 					data.status = true;
 
 					data.password = sha1(md5(data.password));
@@ -178,6 +180,16 @@ module.exports.register = function (req, res) {
 						.then((response) => {
 
 							mail.send_mail(req.custom.settings.sender_emails.register, req.custom.settings.site_name[req.custom.lang], data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch(() => null);
+
+							const point_transactions_collection = req.custom.db.client().collection('point_transactions');
+							point_transactions_collection.insertOne({
+								member_id: ObjectID(response.insertedId.toString()),
+								points: 50,
+								createdAt: common.getDate(),
+								expiresAt: moment(common.getDate()).add(9, 'months').toDate(),
+								used: false,
+								trashed: false
+							}).catch((err) => { console.log('Points transaction error: ', err) });
 
 							registered_mobile_collection.insertOne({
 								mobile: req.body.mobile,
@@ -328,14 +340,14 @@ module.exports.forgotpassword = function (req, res) {
 
 	req.custom.model = req.custom.model || require('./model/forgotpassword');
 	req.custom.getValidData(req).then(({ data, error }) => {
-		
+
 		if (error) {
 			return res.out(error, status_message.VALIDATION_ERROR);
 		}
 
 		data = {
-			'email' : req?.body?.email,
-			'mobile' : req?.body?.mobile,
+			'email': req?.body?.email,
+			'mobile': req?.body?.mobile,
 		};
 
 		const userCollection = req.custom.db.client().collection('member');
@@ -406,7 +418,7 @@ module.exports.verifyOtp = function (req, res) {
 
 	var columnName = 'email';
 
-	if(!columnName){
+	if (!columnName) {
 		columnName = 'mobile';
 	}
 
@@ -700,11 +712,13 @@ module.exports.points2wallet = async function (req, res) {
 
 				let points = parseFloat(user.points);
 				let wallet = parseFloat(user.wallet);
+				let convertedPoints = parseInt(user.convertedPoints);
 
 				const points_to_wallet = parseFloat(points_2_wallet_values[req.body.points.toString()]);
 				if (points > parseFloat(req.body.points)) {
 					wallet += points_to_wallet;
 					points -= parseFloat(req.body.points);
+					convertedPoints += parseInt(req.body.points);
 				} else {
 					return res.out({
 						"message": req.custom.local.no_enough_points
@@ -719,8 +733,9 @@ module.exports.points2wallet = async function (req, res) {
 					_id: ObjectID(user._id.toString())
 				}, {
 					$set: {
-						points: points,
-						wallet: wallet,
+						points,
+						convertedPoints,
+						wallet,
 					}
 				})
 					.then((response) => {
@@ -861,7 +876,7 @@ module.exports.chargeWallet = async function (req, res) {
 		}).catch(() => null)
 
 
-		res.out({...wallet_data, total: data.amount});
+		res.out({ ...wallet_data, total: data.amount });
 	} catch (err) {
 		console.log('Err: ', err);
 	}
