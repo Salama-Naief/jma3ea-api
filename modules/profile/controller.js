@@ -191,6 +191,18 @@ module.exports.register = function (req, res) {
 								trashed: false
 							}).catch((err) => { console.log('Points transaction error: ', err) });
 
+							const point_history_collection = req.custom.db.client().collection('point_history');
+							point_history_collection.insertOne({
+								member_id: ObjectID(response.insertedId.toString()),
+								old_points: common.getFixedPrice(0),
+								new_points: common.getFixedPrice(50),
+								old_wallet: common.getFixedPrice(0),
+								new_wallet: common.getFixedPrice(0),
+								notes: "User registration",
+								type: "register",
+								created: new Date(),
+							}).catch((err) => { console.log('Points history error: ', err) });
+
 							registered_mobile_collection.insertOne({
 								mobile: req.body.mobile,
 								created: new Date(),
@@ -746,6 +758,7 @@ module.exports.points2wallet = async function (req, res) {
 							"new_points": points,
 							"old_wallet": user.wallet,
 							"new_wallet": wallet,
+							"type": "converted",
 							"created": new Date(),
 						};
 						return point_history_collection.insertOne(point_data);
@@ -756,6 +769,7 @@ module.exports.points2wallet = async function (req, res) {
 							"member_id": ObjectID(user._id.toString()),
 							"old_wallet": user.wallet,
 							"new_wallet": wallet,
+							"type": "converted",
 							"notes": `Converted points to wallet and Update wallet from ${user.wallet} to ${wallet}`,
 							"created": new Date(),
 						};
@@ -857,11 +871,12 @@ module.exports.chargeWallet = async function (req, res) {
 			wallet_charge_value = parseFloat(req.body.payment_details.amt);
 		}
 		const new_wallet = common.getFixedPrice(parseFloat(user_info.wallet) + parseFloat(wallet_charge_value));
-		user_info.wallet = common.getFixedPrice(user_info.wallet);
+		user_info.wallet = common.getFixedPrice(user_info.wallet || 0);
 		const wallet_data = {
 			"member_id": ObjectID(data.user_data._id.toString()),
 			"old_wallet": user_info.wallet,
 			"new_wallet": new_wallet,
+			"type": "purchased",
 			"notes": `Wallet charged from ${user_info.wallet} to ${new_wallet}`,
 			"created": new Date(),
 		};
@@ -961,6 +976,7 @@ module.exports.sendToWallet = async function (req, res) {
 		"member_id": ObjectID(data.user_data._id.toString()),
 		"old_wallet": user_info.wallet,
 		"new_wallet": new_sender_wallet,
+		"type": "sent",
 		"notes": `Sent ${amount} to ${data.mobile}, and your wallet changed from ${user_info.wallet} to ${new_sender_wallet}`,
 		"created": new Date(),
 	};
@@ -969,6 +985,7 @@ module.exports.sendToWallet = async function (req, res) {
 		"member_id": ObjectID(receiver._id.toString()),
 		"old_wallet": common.getFixedPrice(receiver.wallet),
 		"new_wallet": new_receiver_wallet,
+		"type": "received",
 		"notes": `Received ${amount} from ${user_info.fullname}, and your wallet changed from ${receiver.wallet} to ${new_receiver_wallet}`,
 		"created": new Date(),
 	};
