@@ -1,5 +1,8 @@
-const { ObjectId } = require("mongodb");
 const mainController = require("../../libraries/mainController");
+const common = require('../../libraries/common');
+const moment = require('moment');
+const ObjectID = require("../../types/object_id");
+const cron = require('node-cron');
 
 module.exports.cleanProductsQuantities = async function (req, res) {
     try {
@@ -114,13 +117,74 @@ module.exports.convertWalletStrToFloat = async function (req, res) {
 }
 
 
-/* module.exports.test = async function(req, res) {
-    try {
-        mainController.list(req, res, "product", {
-            "name"
-        });
-    } catch(err) {
-        console.log(err);
-        res.out(err);
-    }
-} */
+module.exports.pointsToTransaction = async (req, res) => {
+    /**
+     * This code should be run on the Mongodb server
+     */
+    //.aggregate([ { $project: { member_id:'$_id', points: '$points', createdAt: { $literal:new Date() }, expiresAt: { $literal: new Date(new Date().setMonth(new Date().getMonth() + 9)) }, used: { $literal:false }, trashed: { $literal:false } } }, {$out:'point_transactions'} ])
+
+    cron.schedule('59 23 * * *', async () => {
+        console.log('running the points task....');
+        try {
+            const point_transactions_collection = req.custom.db.client().collection('point_transactions');
+            const expiredTransactions = await point_transactions_collection.find({ trashed: false, expiresAt: { $lt: common.getDate() } }).toArray() || [];
+
+            const transactionsGroupedByMember = [];
+            for (let transaction of expiredTransactions) {
+                const foundTransactionIndex = transactionsGroupedByMember.findIndex(t => t.member_id.toString() == transaction.member_id.toString());
+                if (foundTransactionIndex > -1) {
+                    transactionsGroupedByMember[foundTransactionIndex].transactions.push(transaction);
+                } else {
+                    transactionsGroupedByMember.push({ member_id: transaction.member_id, transactions: [transaction] });
+                }
+            }
+
+            const allTransactionsIds = transactionsGroupedByMember.map(t => ObjectID(t.member_id.toString()));
+
+            const member_collection = req.custom.db.client().collection('member');
+            const members = await member_collection.find({ _id: { $in: allTransactionsIds } }).toArray();
+
+            const promises = [];
+            for (let m of members) {
+                const foundTransactionIndex = transactionsGroupedByMember.findIndex(t => m._id.toString() == t.member_id.toString());
+                let pointsToRmove = 0;
+                let convertedPoints = parseInt(m.convertedPoints) || 0;
+                if (foundTransactionIndex > -1) {
+                    for (let t of transactionsGroupedByMember[foundTransactionIndex].transactions) {
+                        const transactionPoints = parseInt(t.points);
+                        if (convertedPoints >= transactionPoints) {
+                            promises.push(point_transactions_collection.updateOne({ _id: ObjectID(t._id.toString()) }, { $set: { used: true, trashed: true } }));
+                            convertedPoints -= transactionPoints;
+                        } else if (convertedPoints < transactionPoints) {
+                            promises.push(point_transactions_collection.updateOne({ _id: ObjectID(t._id.toString()) }, { $set: { trashed: true } }));
+                            const sub = transactionPoints - convertedPoints;
+                            convertedPoints = 0;
+                            pointsToRmove += sub;
+                        } else {
+                            pointsToRmove += transactionPoints;
+                        }
+                    }
+                }
+
+                let memberPoints = m.points ? parseInt(m.points) : 0;
+
+                if (pointsToRmove > 0 && memberPoints > 0) {
+                    memberPoints -= pointsToRmove;
+                    console.log(memberPoints);
+                    promises.push(member_collection.updateOne({ _id: ObjectID(m._id.toString()) }, { $set: { points: memberPoints, convertedPoints } }));
+                }
+
+            }
+
+            await Promise.all(promises);
+
+            //return res.out("Success");
+
+
+        } catch (err) {
+            console.log(err);
+        }
+    });
+
+    return res.out('Done!');
+}

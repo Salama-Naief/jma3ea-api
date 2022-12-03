@@ -306,6 +306,7 @@ module.exports.buy = async function (req, res) {
 				"member_id": ObjectID(data.user_data._id.toString()),
 				"old_wallet": user_info.wallet,
 				"new_wallet": new_wallet,
+				"type": "deducted",
 				"notes": `Buying by wallet from ${user_info.wallet} to ${new_wallet}`,
 				"created": new Date(),
 			};
