@@ -194,8 +194,8 @@ module.exports.register = function (req, res) {
 							const point_history_collection = req.custom.db.client().collection('point_history');
 							point_history_collection.insertOne({
 								member_id: ObjectID(response.insertedId.toString()),
-								old_points: common.getFixedPrice(0),
-								new_points: common.getFixedPrice(50),
+								old_points: 0,
+								new_points: 50,
 								old_wallet: common.getFixedPrice(0),
 								new_wallet: common.getFixedPrice(0),
 								notes: "User registration",
