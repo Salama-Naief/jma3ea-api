@@ -134,11 +134,20 @@ module.exports.buy = async function (req, res) {
 
 		const up_products = JSON.parse(JSON.stringify(out.data));
 
-		const products2save = await products_to_save(out.data, user, req, true);
-
-		console.log("products to save: ", products2save);
+		let products2save = await products_to_save(out.data, user, req, true);
 
 		const payment_method = enums_payment_methods(req).find((pm) => pm.id == data.payment_method);
+
+		if (req.body.suppliers) {
+			if (req.body.suppliers.length > 0) {
+				const suppliers_to_buy = req.body.suppliers;
+				products2save = products2save.filter(p => suppliers_to_buy.includes(p.supplier._id.toString()));
+			} else {
+				return res.out({
+					message: "No supplier selected"
+				}, status_message.VALIDATION_ERROR);
+			}
+		}
 
 		const total_prods = parseFloat(products2save.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0));
 
@@ -160,7 +169,7 @@ module.exports.buy = async function (req, res) {
 			})
 			.then((c) => c)
 			.catch(() => null);
-		console.log("city object: ", cityObj);
+
 		data.user_data.address.city_name = cityObj.name[req.custom.lang];
 
 		const city_shipping_cost = parseFloat(cityObj.shipping_cost)
@@ -168,6 +177,12 @@ module.exports.buy = async function (req, res) {
 
 		//const products = await products_to_save(out.data, user, req, true);
 		const productsGroupedBySupplier = groupBySupplier(products2save);
+
+		if (req.body.payment_method === 'cod' && productsGroupedBySupplier.find(s => s.supplier.allow_cod === false)) {
+			return res.out({
+				message: "COD not allowed!"
+			}, status_message.VALIDATION_ERROR);
+		}
 
 		for (let sup of productsGroupedBySupplier) {
 			let supplier_products_total = parseFloat(sup.products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
@@ -181,7 +196,6 @@ module.exports.buy = async function (req, res) {
 
 			sup.shipping_cost = supplier_shipping_cost;
 			sup.total = common.getRoundedPrice(supplier_products_total);
-
 		}
 
 		const coupon_collection = req.custom.db.client().collection('coupon');
@@ -195,6 +209,21 @@ module.exports.buy = async function (req, res) {
 			code: coupon ? coupon.code : null,
 			value: coupon ? parseFloat(common.getFixedPrice(coupon.percent_value ? (total_prods * coupon.percent_value) / 100 : coupon.discount_value)) : 0
 		};
+
+		try {
+			if (coupon && coupon.supplier_id) {
+				const sup = productsGroupedBySupplier.find(p => p.supplier._id.toString() === coupon.supplier_id.toString());
+				if (!sup) {
+					out_coupon.value = 0;
+				} else {
+					if (coupon.percent_value)
+						out_coupon.value = parseFloat(common.getFixedPrice(sup.subtotal * coupon.percent_value / 100));
+				}
+			}
+		} catch (err) {
+			console.log(err);
+			return res.out("done!");
+		}
 
 		let total = total_prods + shipping_cost - out_coupon.value;
 		total = total > 0 ? total : 0;
@@ -333,7 +362,16 @@ module.exports.buy = async function (req, res) {
 		order_data.total = common.getRoundedPrice(order_data.total);
 		order_data.delivery_time = moment(req.body.delivery_time).format(req.custom.config.date.format).toString();
 
-		req.custom.authorizationObject.cart = {};
+		const products_to_remove_from_cart = products2save.map(p => p.sku);
+		if (user && user.cart) {
+			for (const i of Object.keys(user.cart)) {
+				if (products_to_remove_from_cart.includes(i)) {
+					delete user.cart[i];
+				}
+			}
+		}
+
+		//req.custom.authorizationObject.cart = {};
 		req.custom.authorizationObject.coupon = {
 			code: null,
 			value: 0,
@@ -527,6 +565,16 @@ module.exports.list = async function (req, res) {
 			value: coupon ? common.getFixedPrice(coupon.percent_value ? (parseFloat(total_prods) * coupon.percent_value) / 100 : coupon.discount_value) : 0
 		};
 
+		if (coupon && coupon.supplier_id) {
+			const sup = productsGroupedBySupplier.find(p => p.supplier._id.toString() === coupon.supplier_id.toString());
+			if (!sup) {
+				out_coupon.value = 0;
+			} else {
+				if (coupon.percent_value)
+					out_coupon.value = parseFloat(common.getFixedPrice(sup.subtotal * coupon.percent_value / 100));
+			}
+		}
+
 		let total = parseFloat(total_prods) + parseFloat(shipping_cost) - parseFloat(out_coupon.value);
 		total = total > 0 ? total : 0;
 
@@ -689,6 +737,7 @@ module.exports.list = async function (req, res) {
 		}
 
 		earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
+		console.log('here: ', products);
 
 		res.out({
 			subtotal: common.getRoundedPrice(total_prods),

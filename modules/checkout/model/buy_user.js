@@ -22,6 +22,10 @@ module.exports = {
 	"delivery_time": new Field({
 		"required": true,
 	}),
+	"suppliers": new Field({
+		"type": Array,
+		"required": false,
+	}),
 	"hash": new Field({
 		"unique": true,
 		"collection": 'order'
