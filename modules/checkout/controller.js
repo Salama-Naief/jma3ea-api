@@ -211,7 +211,10 @@ module.exports.buy = async function (req, res) {
 		}
 
 		let discount_by_wallet_value = 0;
+		console.log('Discount By Wallet Field value is : ' + req.body.discount_by_wallet);
 		req.body.discount_by_wallet = ['TRUE', 'true', true].indexOf(req.body.discount_by_wallet) > -1 ? true : false;
+		console.log('after the discount by wallet checking new value : ' + req.body.discount_by_wallet);
+
 		if (req.body.discount_by_wallet == true && wallet2money > 0 && wallet2money < total) {
 			total -= parseFloat(wallet2money);
 			discount_by_wallet_value = parseFloat(common.getFixedPrice(wallet2money));
@@ -367,7 +370,7 @@ module.exports.buy = async function (req, res) {
 };
 
 /**
- * Save unsuccessfully 
+ * Save unsuccessfully
  * @param {Object} req
  * @param {Object} res
  */
