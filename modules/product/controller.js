@@ -195,7 +195,7 @@ module.exports.featured = async function (req, res) {
 	user.wishlist = Array.isArray(user.wishlist) ? user.wishlist : [];
 
 	const cache = req.custom.cache;
-	const cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_featred`;
+	const cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_featred__25`;
 
 	if (cache_key) {
 		let cached_data = await cache.get(cache_key).catch(() => null);
