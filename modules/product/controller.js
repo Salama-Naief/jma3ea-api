@@ -257,8 +257,7 @@ module.exports.featured = async function (req, res) {
 				"max_quantity_cart": {
 					$ifNull: ["$max_quantity_cart", 0]
 				},
-				"supplier_id": 1,
-				$limit: 25
+				"supplier_id": 1
 			};
 
 			const sort = {
