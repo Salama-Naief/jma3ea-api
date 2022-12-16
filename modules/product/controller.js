@@ -277,7 +277,7 @@ module.exports.featured = async function (req, res) {
 				},
 				// Stage 2
 				{
-					$limit: 1000
+					$limit: 25
 				},
 				// Stage 3
 				{
