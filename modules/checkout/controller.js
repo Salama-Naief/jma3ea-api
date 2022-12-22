@@ -184,6 +184,18 @@ module.exports.buy = async function (req, res) {
 			}, status_message.VALIDATION_ERROR);
 		}
 
+		const coupon_collection = req.custom.db.client().collection('coupon');
+		const coupons = user.coupon && (user.coupon.code || user.coupon.suppliers_coupons) ? (await coupon_collection.find({
+			code: user.coupon.code ? user.coupon.code : { $in: user.coupon.suppliers_coupons.map(c => c.code) },
+			$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } },],
+			status: true,
+		}).toArray() || []) : null;
+
+		const general_coupon = coupons ? coupons.find(c => !c.supplier_id) : null;
+		const suppliers_coupons = coupons ? coupons.filter(c => c.supplier_id) : [];
+
+		let total_coupon_value = 0;
+
 		for (let sup of productsGroupedBySupplier) {
 			let supplier_products_total = parseFloat(sup.products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
 
@@ -192,25 +204,34 @@ module.exports.buy = async function (req, res) {
 			const supplier_shipping_cost = parseFloat(sup.supplier.shipping_cost) || city_shipping_cost;
 			shipping_cost += supplier_shipping_cost;
 
-			supplier_products_total += supplier_shipping_cost;
+			if (!general_coupon && suppliers_coupons && suppliers_coupons.length > 0) {
+				const supplier_coupon = suppliers_coupons.find(c => c.supplier_id.toString() == sup.supplier._id.toString());
+				if (supplier_coupon) {
+					sup.coupon = {
+						code: supplier_coupon.code,
+						value: common.getFixedPrice(supplier_coupon.percent_value ? (parseFloat(supplier_products_total) * supplier_coupon.percent_value) / 100 : supplier_coupon.discount_value)
+					}
+					supplier_products_total -= parseFloat(sup.coupon.value || 0);
+					total_coupon_value += parseFloat(sup.coupon.value || 0);
+				}
+			}
 
+			supplier_products_total += supplier_shipping_cost;
 			sup.shipping_cost = supplier_shipping_cost;
 			sup.total = common.getRoundedPrice(supplier_products_total);
 		}
 
-		const coupon_collection = req.custom.db.client().collection('coupon');
-		const coupon = user.coupon ? await coupon_collection.findOne({
-			code: user.coupon.code,
-			$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } }],
-			status: true,
-		}).then((coupon) => coupon).catch(() => null) : null;
 
 		const out_coupon = {
-			code: coupon ? coupon.code : null,
-			value: coupon ? parseFloat(common.getFixedPrice(coupon.percent_value ? (total_prods * coupon.percent_value) / 100 : coupon.discount_value)) : 0
+			code: general_coupon ? general_coupon.code : null,
+			value: general_coupon ? common.getFixedPrice(general_coupon.percent_value ? (parseFloat(total_prods) * general_coupon.percent_value) / 100 : general_coupon.discount_value) : common.getFixedPrice(total_coupon_value),
+			suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
 		};
 
-		try {
+
+		let total = parseFloat(total_prods) + parseFloat(shipping_cost) - parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
+
+		/* try {
 			if (coupon && coupon.supplier_id) {
 				const sup = productsGroupedBySupplier.find(p => p.supplier._id.toString() === coupon.supplier_id.toString());
 				if (!sup) {
@@ -225,7 +246,7 @@ module.exports.buy = async function (req, res) {
 			return res.out("done!");
 		}
 
-		let total = total_prods + shipping_cost - out_coupon.value;
+		let total = total_prods + shipping_cost - out_coupon.value; */
 		total = total > 0 ? total : 0;
 		total = parseFloat(common.getRoundedPrice(total));
 
@@ -251,26 +272,28 @@ module.exports.buy = async function (req, res) {
 			cart_total = parseFloat(req.body.payment_details.amt);
 		}
 
-		if (coupon) {
-			await coupon_collection.updateOne({
-				_id: ObjectID(coupon._id.toString())
-			}, {
-				$set: {
-					number_of_uses: parseInt(coupon.number_of_uses || 0) + 1
-				}
-			}).catch(() => { });
+		if (coupons && coupons.length > 0) {
+			for (let coupon of coupons) {
+				await coupon_collection.updateOne({
+					_id: ObjectID(coupon._id.toString())
+				}, {
+					$set: {
+						number_of_uses: parseInt(coupon.number_of_uses || 0) + 1
+					}
+				}).catch(() => { });
 
-			const coupon_token_collection = req.custom.db.client().collection('coupon_token');
-			const coupon_token = await coupon_token_collection.findOne({ coupon: coupon.code, token: req.custom.token }).catch(() => null);
-			coupon_token ? await coupon_token_collection.updateOne({
-				_id: ObjectID(coupon_token._id.toString())
-			}, {
-				$set: { coupon: coupon.code, number_of_uses: parseInt(coupon_token.number_of_uses) + 1 }
-			}).catch(() => null) : await coupon_token_collection.insertOne({
-				token: req.custom.token,
-				coupon: coupon.code,
-				number_of_uses: 1
-			});
+				const coupon_token_collection = req.custom.db.client().collection('coupon_token');
+				const coupon_token = await coupon_token_collection.findOne({ coupon: coupon.code, token: req.custom.token }).catch(() => null);
+				coupon_token ? await coupon_token_collection.updateOne({
+					_id: ObjectID(coupon_token._id.toString())
+				}, {
+					$set: { coupon: coupon.code, number_of_uses: parseInt(coupon_token.number_of_uses) + 1 }
+				}).catch(() => null) : await coupon_token_collection.insertOne({
+					token: req.custom.token,
+					coupon: coupon.code,
+					number_of_uses: 1
+				});
+			}
 		}
 
 		// Fix delivery time
@@ -493,281 +516,290 @@ module.exports.list = async function (req, res) {
 			}, status_message.NO_DATA);
 		}
 
-		const products = await products_to_save(out.data, user, req, true);
+		try {
+			const products = await products_to_save(out.data, user, req, true);
 
-		const total_prods = parseFloat(products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
+			const total_prods = parseFloat(products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
 
-		let purchase_possibility = req.custom.settings.orders && req.custom.settings.orders.min_value && parseInt(req.custom.settings.orders.min_value) > 0 && total_prods < parseInt(req.custom.settings.orders.min_value) ? false : true;
+			let purchase_possibility = req.custom.settings.orders && req.custom.settings.orders.min_value && parseInt(req.custom.settings.orders.min_value) > 0 && total_prods < parseInt(req.custom.settings.orders.min_value) ? false : true;
 
-		let message = null;
-		if (req.custom.settings.orders && req.custom.settings.orders.min_value && req.custom.settings.orders.min_value > total_prods) {
-			message = req.custom.local.order_should_be_more_then({
-				value: req.custom.settings.orders.min_value,
-				currency: req.custom.authorizationObject.currency[req.custom.lang]
-			});
-		}
-
-		const user_city_id = req.query.city_id || (user_info && data.user_data && data.user_data.address && data.user_data.address.city_id ?
-			data.user_data.address.city_id.toString() :
-			req.custom.authorizationObject.city_id.toString());
-		const city_collection = req.custom.db.client().collection('city');
-		const cityObj = await city_collection
-			.findOne({
-				_id: ObjectID(user_city_id)
-			})
-			.then((c) => c)
-			.catch(() => null);
-		const city_shipping_cost = parseFloat(cityObj.shipping_cost)
-		let shipping_cost = 0;
-
-		const productsGroupedBySupplier = groupBySupplier(products);
-
-		for (let sup of productsGroupedBySupplier) {
-			let supplier_products_total = parseFloat(sup.products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
-
-			sup.subtotal = supplier_products_total;
-
-
-			const supplier_shipping_cost = parseFloat(sup.supplier.shipping_cost) || city_shipping_cost;
-			shipping_cost += supplier_shipping_cost;
-
-			sup.purchase_possibility = sup.supplier.min_value && parseInt(sup.supplier.min_value) > 0 && supplier_products_total < parseInt(sup.supplier.min_value) ? false : true;
-			if (purchase_possibility && !sup.purchase_possibility) {
-				purchase_possibility = false;
+			let message = null;
+			if (req.custom.settings.orders && req.custom.settings.orders.min_value && req.custom.settings.orders.min_value > total_prods) {
+				message = req.custom.local.order_should_be_more_then({
+					value: req.custom.settings.orders.min_value,
+					currency: req.custom.authorizationObject.currency[req.custom.lang]
+				});
 			}
 
-			if (!message) {
-				if (sup.supplier.min_value && parseInt(sup.supplier.min_value) > supplier_products_total) {
-					message = req.custom.local.order_should_be_more_then({
-						value: sup.supplier.min_value,
-						currency: req.custom.authorizationObject.currency[req.custom.lang]
-					});
+			const user_city_id = req.query.city_id || (user_info && data.user_data && data.user_data.address && data.user_data.address.city_id ?
+				data.user_data.address.city_id.toString() :
+				req.custom.authorizationObject.city_id.toString());
+			const city_collection = req.custom.db.client().collection('city');
+			const cityObj = await city_collection
+				.findOne({
+					_id: ObjectID(user_city_id)
+				})
+				.then((c) => c)
+				.catch(() => null);
+			const city_shipping_cost = parseFloat(cityObj.shipping_cost)
+			let shipping_cost = 0;
+
+			const productsGroupedBySupplier = groupBySupplier(products);
+			const coupon_collection = req.custom.db.client().collection('coupon');
+			const coupons = user.coupon && (user.coupon.code || user.coupon.suppliers_coupons) ? (await coupon_collection.find({
+				code: user.coupon.code ? user.coupon.code : { $in: user.coupon.suppliers_coupons.map(c => c.code) },
+				$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } },],
+				status: true,
+			}).toArray() || []) : null;
+
+			const general_coupon = coupons ? coupons.find(c => !c.supplier_id) : null;
+			const suppliers_coupons = coupons ? coupons.filter(c => c.supplier_id) : [];
+
+			let total_coupon_value = 0;
+
+			for (let sup of productsGroupedBySupplier) {
+				let supplier_products_total = parseFloat(sup.products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
+
+				sup.subtotal = supplier_products_total;
+
+				const supplier_shipping_cost = parseFloat(sup.supplier.shipping_cost) || city_shipping_cost;
+				shipping_cost += supplier_shipping_cost;
+
+				sup.purchase_possibility = sup.supplier.min_value && parseInt(sup.supplier.min_value) > 0 && supplier_products_total < parseInt(sup.supplier.min_value) ? false : true;
+				if (purchase_possibility && !sup.purchase_possibility) {
+					purchase_possibility = false;
 				}
 
+				if (!message) {
+					if (sup.supplier.min_value && parseInt(sup.supplier.min_value) > supplier_products_total) {
+						message = req.custom.local.order_should_be_more_then({
+							value: sup.supplier.min_value,
+							currency: req.custom.authorizationObject.currency[req.custom.lang]
+						});
+					}
+
+				}
+
+				if (!general_coupon && suppliers_coupons && suppliers_coupons.length > 0) {
+					const supplier_coupon = suppliers_coupons.find(c => c.supplier_id.toString() == sup.supplier._id.toString());
+					if (supplier_coupon) {
+						sup.coupon = {
+							code: supplier_coupon.code,
+							value: common.getFixedPrice(supplier_coupon.percent_value ? (parseFloat(supplier_products_total) * supplier_coupon.percent_value) / 100 : supplier_coupon.discount_value)
+						}
+						supplier_products_total -= parseFloat(sup.coupon.value || 0);
+						total_coupon_value += parseFloat(sup.coupon.value || 0);
+					}
+				}
+
+				supplier_products_total += supplier_shipping_cost;
+				sup.shipping_cost = supplier_shipping_cost;
+				sup.total = common.getRoundedPrice(supplier_products_total);
+
 			}
 
-			supplier_products_total += supplier_shipping_cost;
+			const out_coupon = {
+				code: general_coupon ? general_coupon.code : null,
+				value: general_coupon ? common.getFixedPrice(general_coupon.percent_value ? (parseFloat(total_prods) * general_coupon.percent_value) / 100 : general_coupon.discount_value) : common.getFixedPrice(total_coupon_value),
+				suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
+			};
 
-			sup.shipping_cost = supplier_shipping_cost;
-			sup.total = common.getRoundedPrice(supplier_products_total);
 
-		}
+			let total = parseFloat(total_prods) + parseFloat(shipping_cost) - parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
+			total = total > 0 ? total : 0;
 
-		const coupon_collection = req.custom.db.client().collection('coupon');
-		const coupon = user.coupon ? await coupon_collection.findOne({
-			code: user.coupon.code,
-			$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } }],
-			status: true,
-		}).then((coupon) => coupon).catch(() => null) : null;
+			const user_collection = req.custom.db.client().collection('member');
+			const userObj = req.custom.authorizationObject.member_id ? await user_collection
+				.findOne({
+					_id: ObjectID(req.custom.authorizationObject.member_id.toString())
+				})
+				.then((c) => c)
+				.catch(() => null) : null;
 
-		const out_coupon = {
-			code: coupon ? coupon.code : null,
-			value: coupon ? common.getFixedPrice(coupon.percent_value ? (parseFloat(total_prods) * coupon.percent_value) / 100 : coupon.discount_value) : 0
-		};
+			const user_wallet = userObj ? parseFloat(total > userObj.wallet ? userObj.wallet : parseFloat(total)) : 0;
 
-		if (coupon && coupon.supplier_id) {
-			const sup = productsGroupedBySupplier.find(p => p.supplier._id.toString() === coupon.supplier_id.toString());
-			if (!sup) {
-				out_coupon.value = 0;
+			const wallet2money = user_wallet <= parseFloat(total) ? user_wallet : (user_wallet ? parseFloat(total) : 0);
+
+			const can_pay_by_wallet = user_wallet >= parseFloat(total) ? true : false;
+
+			const payment_methods = enums_payment_methods(req).
+				filter(payment_method => {
+					const disabled_payment_methods = process.env.ORDER_DISABLED_PAYMENT_METHODS ? process.env.ORDER_DISABLED_PAYMENT_METHODS.split(',') : [];
+					if (disabled_payment_methods.indexOf(payment_method.id) > -1) {
+						return false;
+					}
+					const allow_payment_methods = req.custom.settings.orders.allow;
+					const platform = req.headers.platform;
+					const user_visitor = req.custom.authorizationObject.member_id ? 'registered' : 'visitors';
+					const method_key = `${payment_method.id}_for_${user_visitor}_on_${platform}`;
+					if (allow_payment_methods && allow_payment_methods[method_key] === false) {
+						return false;
+					}
+					if (payment_method.valid == true && total > 0) {
+						return true;
+					} else if (payment_method.id == 'wallet' && can_pay_by_wallet) {
+						return true;
+					} else if (['cod'].indexOf(payment_method.id) > -1) {
+						return true;
+					}
+					return false;
+				});
+
+			let delivery_times = [];
+
+			let min_delivery_time_setting = 30;
+			if (parseInt(req.custom.settings.orders.min_delivery_time) > 0) {
+				min_delivery_time_setting = parseInt(req.custom.settings.orders.min_delivery_time);
+			}
+
+			const cache = req.custom.cache;
+			let times = [];
+			moment.updateLocale('en', {});
+			const min_delivery_time = getRoundedDate(60, new Date(moment().add(min_delivery_time_setting, 'minutes').format(req.custom.config.date.format).toString()));
+			const min_hour = parseInt(moment(min_delivery_time).format('H'));
+			let today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+			let available_delivery_times = req.custom.settings.orders.available_delivery_times[today.format('d')];
+
+			if (cityObj && cityObj.enable_custom_delivery_times) {
+				available_delivery_times = mergeDeliveryTimes(available_delivery_times, cityObj.available_delivery_times[today.format('d')])
+			}
+			if (available_delivery_times) {
+				const day = moment().format('d');
+				const min_day = moment(min_delivery_time);
+				for (let idx = min_hour; idx < available_delivery_times.length; idx++) {
+					today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+					if (!available_delivery_times[idx] ||
+						!available_delivery_times[idx].is_available ||
+						!available_delivery_times[idx].max_orders ||
+						min_day.format('d') != moment().format('d') ||
+						(idx < min_hour)
+					) {
+						continue;
+					}
+					moment.updateLocale('en', {});
+					const full_date = today.add(idx, 'hours').format(req.custom.config.date.format);
+					const time = today.format('LT') + ' : ' + today.add(2, 'hours').format('LT');
+
+					const cache_key_dt = `delivery_times_${day}_${idx}`;
+					const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
+
+					if (available_delivery_times[idx].max_orders > cached_delivery_times) {
+						times.push({
+							'time': time,
+							'full_date': full_date,
+							'is_available': true,
+							'text': req.custom.local.delivery_time_available,
+						});
+					}
+
+				}
+			}
+			moment.updateLocale(req.custom.lang, {});
+			today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+			delivery_times.push({
+				'day': today.format('dddd'),
+				'times': times
+			});
+
+			times = [];
+			moment.updateLocale('en', {});
+			let tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+			let tomorrow_available_delivery_times = req.custom.settings.orders.available_delivery_times[tomorrow.format('d')];
+			if (cityObj && cityObj.enable_custom_delivery_times) {
+				tomorrow_available_delivery_times = mergeDeliveryTimes(tomorrow_available_delivery_times, cityObj.available_delivery_times[tomorrow.format('d')])
+			}
+			if (tomorrow_available_delivery_times) {
+				const day = tomorrow.format('d');
+
+				for (let idx = 0; idx < tomorrow_available_delivery_times.length; idx++) {
+					tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+					if (!tomorrow_available_delivery_times[idx] ||
+						!tomorrow_available_delivery_times[idx].is_available ||
+						!tomorrow_available_delivery_times[idx].max_orders
+					) {
+						continue;
+					}
+					moment.updateLocale('en', {});
+					const full_date = tomorrow.add(idx, 'hours').format(req.custom.config.date.format);
+					const time = tomorrow.format('LT') + ' : ' + tomorrow.add(2, 'hours').format('LT');
+
+					const cache_key_dt = `delivery_times_${day}_${idx}`;
+					const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
+					if (tomorrow_available_delivery_times && tomorrow_available_delivery_times[idx] && tomorrow_available_delivery_times[idx].max_orders > cached_delivery_times) {
+						times.push({
+							'time': time,
+							'full_date': full_date,
+							'is_available': true,
+							'text': req.custom.local.delivery_time_available,
+						});
+					}
+
+				}
+			}
+
+			moment.updateLocale(req.custom.lang, {});
+			tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+			delivery_times.push({
+				'day': tomorrow.format('dddd'),
+				'times': times
+			});
+
+			let addresses = [];
+			if (userObj) {
+				const base_address = userObj.address || {};
+				base_address.id = 'primary';
+				base_address.name = req.custom.local.default_address;
+				addresses = [base_address, ...userObj.addresses || []];
+			}
+
+			let earliest_date_of_delivery = parseInt(cityObj.preparation_time || 0);
+			for (const p of products) {
+				let preparation_time_for_product = parseInt(p.preparation_time || 0) + ((p.quantity - 1) * parseInt((p.preparation_time || 0) / 2));
+				earliest_date_of_delivery += preparation_time_for_product / 60;
+			}
+
+			if (cityObj.enable_immediate_delivery === false || req.custom.settings.orders.enable_immediate_delivery === false) {
+				earliest_date_of_delivery = 0;
+				// earliest_date_of_delivery = null;
 			} else {
-				if (coupon.percent_value)
-					out_coupon.value = parseFloat(common.getFixedPrice(sup.subtotal * coupon.percent_value / 100));
+				earliest_date_of_delivery += parseInt(req.custom.settings.orders.min_delivery_time || 0);
+				// earliest_date_of_delivery = common.getDate(moment().add(earliest_date_of_delivery, 'minutes'));
 			}
-		}
 
-		let total = parseFloat(total_prods) + parseFloat(shipping_cost) - parseFloat(out_coupon.value);
-		total = total > 0 ? total : 0;
+			earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
 
-		const user_collection = req.custom.db.client().collection('member');
-		const userObj = req.custom.authorizationObject.member_id ? await user_collection
-			.findOne({
-				_id: ObjectID(req.custom.authorizationObject.member_id.toString())
-			})
-			.then((c) => c)
-			.catch(() => null) : null;
-
-		const user_wallet = userObj ? parseFloat(total > userObj.wallet ? userObj.wallet : parseFloat(total)) : 0;
-
-		const wallet2money = user_wallet <= parseFloat(total) ? user_wallet : (user_wallet ? parseFloat(total) : 0);
-
-		const can_pay_by_wallet = user_wallet >= parseFloat(total) ? true : false;
-
-		const payment_methods = enums_payment_methods(req).
-			filter(payment_method => {
-				const disabled_payment_methods = process.env.ORDER_DISABLED_PAYMENT_METHODS ? process.env.ORDER_DISABLED_PAYMENT_METHODS.split(',') : [];
-				if (disabled_payment_methods.indexOf(payment_method.id) > -1) {
-					return false;
-				}
-				const allow_payment_methods = req.custom.settings.orders.allow;
-				const platform = req.headers.platform;
-				const user_visitor = req.custom.authorizationObject.member_id ? 'registered' : 'visitors';
-				const method_key = `${payment_method.id}_for_${user_visitor}_on_${platform}`;
-				if (allow_payment_methods && allow_payment_methods[method_key] === false) {
-					return false;
-				}
-				if (payment_method.valid == true && total > 0) {
-					return true;
-				} else if (payment_method.id == 'wallet' && can_pay_by_wallet) {
-					return true;
-				} else if (['cod'].indexOf(payment_method.id) > -1) {
-					return true;
-				}
-				return false;
-			});
-
-		let delivery_times = [];
-
-		let min_delivery_time_setting = 30;
-		if (parseInt(req.custom.settings.orders.min_delivery_time) > 0) {
-			min_delivery_time_setting = parseInt(req.custom.settings.orders.min_delivery_time);
-		}
-
-		const cache = req.custom.cache;
-		let times = [];
-		moment.updateLocale('en', {});
-		const min_delivery_time = getRoundedDate(60, new Date(moment().add(min_delivery_time_setting, 'minutes').format(req.custom.config.date.format).toString()));
-		const min_hour = parseInt(moment(min_delivery_time).format('H'));
-		let today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-		let available_delivery_times = req.custom.settings.orders.available_delivery_times[today.format('d')];
-
-		if (cityObj && cityObj.enable_custom_delivery_times) {
-			available_delivery_times = mergeDeliveryTimes(available_delivery_times, cityObj.available_delivery_times[today.format('d')])
-		}
-		if (available_delivery_times) {
-			const day = moment().format('d');
-			const min_day = moment(min_delivery_time);
-			for (let idx = min_hour; idx < available_delivery_times.length; idx++) {
-				today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-				if (!available_delivery_times[idx] ||
-					!available_delivery_times[idx].is_available ||
-					!available_delivery_times[idx].max_orders ||
-					min_day.format('d') != moment().format('d') ||
-					(idx < min_hour)
-				) {
-					continue;
-				}
-				moment.updateLocale('en', {});
-				const full_date = today.add(idx, 'hours').format(req.custom.config.date.format);
-				const time = today.format('LT') + ' : ' + today.add(2, 'hours').format('LT');
-
-				const cache_key_dt = `delivery_times_${day}_${idx}`;
-				const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
-
-				if (available_delivery_times[idx].max_orders > cached_delivery_times) {
-					times.push({
-						'time': time,
-						'full_date': full_date,
-						'is_available': true,
-						'text': req.custom.local.delivery_time_available,
+			res.out({
+				subtotal: common.getRoundedPrice(total_prods),
+				shipping_cost: common.getFixedPrice(shipping_cost),
+				coupon: out_coupon,
+				discount_by_wallet: common.getRoundedPrice(user_wallet),
+				discount_by_wallet_value: common.getRoundedPrice(wallet2money || 0),
+				total: common.getRoundedPrice(total),
+				purchase_possibility: purchase_possibility,
+				message: message,
+				addresses: addresses,
+				payment_methods: productsGroupedBySupplier.find(s => s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
+				earliest_date_of_delivery: earliest_date_of_delivery,
+				delivery_times: delivery_times,
+				data: productsGroupedBySupplier.map((data) => {
+					data.payment_methods = data.supplier.allow_cod === false ? payment_methods.filter(p => p.id !== 'cod') : payment_methods;
+					data.products = data.products.map(p => {
+						delete p.variants;
+						delete p.preparation_time;
+						return p;
 					});
-				}
-
-			}
-		}
-		moment.updateLocale(req.custom.lang, {});
-		today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-		delivery_times.push({
-			'day': today.format('dddd'),
-			'times': times
-		});
-
-		times = [];
-		moment.updateLocale('en', {});
-		let tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-		let tomorrow_available_delivery_times = req.custom.settings.orders.available_delivery_times[tomorrow.format('d')];
-		if (cityObj && cityObj.enable_custom_delivery_times) {
-			tomorrow_available_delivery_times = mergeDeliveryTimes(tomorrow_available_delivery_times, cityObj.available_delivery_times[tomorrow.format('d')])
-		}
-		if (tomorrow_available_delivery_times) {
-			const day = tomorrow.format('d');
-
-			for (let idx = 0; idx < tomorrow_available_delivery_times.length; idx++) {
-				tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-				if (!tomorrow_available_delivery_times[idx] ||
-					!tomorrow_available_delivery_times[idx].is_available ||
-					!tomorrow_available_delivery_times[idx].max_orders
-				) {
-					continue;
-				}
-				moment.updateLocale('en', {});
-				const full_date = tomorrow.add(idx, 'hours').format(req.custom.config.date.format);
-				const time = tomorrow.format('LT') + ' : ' + tomorrow.add(2, 'hours').format('LT');
-
-				const cache_key_dt = `delivery_times_${day}_${idx}`;
-				const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
-				if (tomorrow_available_delivery_times && tomorrow_available_delivery_times[idx] && tomorrow_available_delivery_times[idx].max_orders > cached_delivery_times) {
-					times.push({
-						'time': time,
-						'full_date': full_date,
-						'is_available': true,
-						'text': req.custom.local.delivery_time_available,
-					});
-				}
-
-			}
-		}
-
-		moment.updateLocale(req.custom.lang, {});
-		tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-		delivery_times.push({
-			'day': tomorrow.format('dddd'),
-			'times': times
-		});
-
-		let addresses = [];
-		if (userObj) {
-			const base_address = userObj.address || {};
-			base_address.id = 'primary';
-			base_address.name = req.custom.local.default_address;
-			addresses = [base_address, ...userObj.addresses || []];
-		}
-
-		let earliest_date_of_delivery = parseInt(cityObj.preparation_time || 0);
-		for (const p of products) {
-			let preparation_time_for_product = parseInt(p.preparation_time || 0) + ((p.quantity - 1) * parseInt((p.preparation_time || 0) / 2));
-			earliest_date_of_delivery += preparation_time_for_product / 60;
-		}
-
-		if (cityObj.enable_immediate_delivery === false || req.custom.settings.orders.enable_immediate_delivery === false) {
-			earliest_date_of_delivery = 0;
-			// earliest_date_of_delivery = null;
-		} else {
-			earliest_date_of_delivery += parseInt(req.custom.settings.orders.min_delivery_time || 0);
-			// earliest_date_of_delivery = common.getDate(moment().add(earliest_date_of_delivery, 'minutes'));
-		}
-
-		earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
-		console.log('here: ', products);
-
-		res.out({
-			subtotal: common.getRoundedPrice(total_prods),
-			shipping_cost: common.getFixedPrice(shipping_cost),
-			coupon: out_coupon,
-			discount_by_wallet: common.getRoundedPrice(user_wallet),
-			discount_by_wallet_value: common.getRoundedPrice(wallet2money || 0),
-			total: common.getRoundedPrice(total),
-			purchase_possibility: purchase_possibility,
-			message: message,
-			addresses: addresses,
-			payment_methods: productsGroupedBySupplier.find(s => s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
-			earliest_date_of_delivery: earliest_date_of_delivery,
-			delivery_times: delivery_times,
-			data: productsGroupedBySupplier.map((data) => {
-				data.payment_methods = data.supplier.allow_cod === false ? payment_methods.filter(p => p.id !== 'cod') : payment_methods;
-				data.products = data.products.map(p => {
+					return data;
+				}),
+				products: products.map((p) => {
 					delete p.variants;
 					delete p.preparation_time;
 					return p;
-				});
-				return data;
-			}),
-			products: products.map((p) => {
-				delete p.variants;
-				delete p.preparation_time;
-				return p;
-			}),
+				}),
 
-		});
+			});
+		} catch (err) {
+			console.log(err);
+		}
 	});
 };
 

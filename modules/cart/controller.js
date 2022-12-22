@@ -129,7 +129,7 @@ module.exports.add = function (req, res) {
 							});
 						}
 
-						
+
 						// Check if the product sku in the cart exists in the main product
 						// Then we check for product variations
 						if (Object.keys(user.cart).indexOf(p.sku) > -1) {
@@ -467,13 +467,14 @@ module.exports.coupon = function (req, res) {
 		code: null,
 		member_id: null,
 		value: 0,
+		suppliers_coupons: user.coupon && user.coupon.suppliers_coupons ? user.coupon.suppliers_coupons : []
 	};
 	req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
 		.then(() => {
 
 			const collection = req.custom.db.client().collection('coupon');
 			collection.findOne({
-				code:  {'$regex': '^' + data.code + '$',$options:'i'},
+				code: { '$regex': '^' + data.code + '$', $options: 'i' },
 				$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } }],
 				status: true
 			}).
@@ -503,11 +504,23 @@ module.exports.coupon = function (req, res) {
 								}, status_message.VALIDATION_ERROR);
 							}
 
-							user.coupon = {
-								code: coupon.code || null,
-								member_id: coupon ? (coupon.member_id || null) : null,
-								value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0,
-							};
+							if (coupon.supplier_id) {
+								if (user.coupon.suppliers_coupons && user.coupon.suppliers_coupons.findIndex(c => c.code === coupon.code) < 0) {
+									user.coupon.member_id = coupon ? (coupon.member_id || null) : null;
+									user.coupon.suppliers_coupons = [...user.coupon.suppliers_coupons, {
+										supplier_id: coupon.supplier_id,
+										code: coupon.code,
+										value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0
+									}];
+								}
+							} else {
+								user.coupon = {
+									code: coupon.code || null,
+									member_id: coupon ? (coupon.member_id || null) : null,
+									value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0,
+									suppliers_coupons: []
+								};
+							}
 
 
 							req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)

@@ -28,11 +28,24 @@ module.exports.remove_coupon = function (req, res) {
 		}, status_message.VALIDATION_ERROR);
 	}
 
-	user.coupon = {
-		code: null,
-		member_id: null,
-		value: 0,
-	};
+	if (user.coupon) {
+		if (user.coupon.code === data.code) {
+			user.coupon = {
+				code: null,
+				member_id: null,
+				value: 0,
+				suppliers_coupons: []
+			};
+		} else {
+			const coupon_index = user.coupon.suppliers_coupons ? user.coupon.suppliers_coupons.findIndex(c => c.code === data.code) : -1;
+			if (coupon_index < 0) {
+				return res.out({
+					message: req.custom.local.unexpected_error
+				}, status_message.NOT_FOUND);
+			}
+			user.coupon.suppliers_coupons.splice(coupon_index, 1);
+		}
+	}
 
 	req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
 		.then((response) => res.out({
