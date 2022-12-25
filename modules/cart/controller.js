@@ -453,7 +453,6 @@ module.exports.coupon = function (req, res) {
 
 	let user = req.custom.authorizationObject;
 
-
 	const data = req.body;
 	let coupon = null;
 
@@ -467,8 +466,9 @@ module.exports.coupon = function (req, res) {
 		code: null,
 		member_id: null,
 		value: 0,
-		suppliers_coupons: user.coupon && user.coupon.suppliers_coupons ? user.coupon.suppliers_coupons : []
+		suppliers_coupons: user.coupon && user.coupon.suppliers_coupons && Array.isArray(user.coupon.suppliers_coupons) ? user.coupon.suppliers_coupons : []
 	};
+
 	req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
 		.then(() => {
 
@@ -478,13 +478,37 @@ module.exports.coupon = function (req, res) {
 				$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } }],
 				status: true
 			}).
-				then((coupon) => {
+				then(async (coupon) => {
 
 					if (!coupon) {
 						return res.out({
 							"code": req.custom.local.cart_coupon_unavailable
 						}, status_message.VALIDATION_ERROR);
 					}
+
+					// Return error if there's no supplier for this coupon
+					if (coupon.supplier_id) {
+						const mainController = require("../../libraries/mainController");
+						let prods = [];
+						if (user && user.cart) {
+							for (const i of Object.keys(user.cart)) {
+								prods.push(i.split('-')[0]);
+							}
+						}
+
+						const product_collection = req.custom.db.client().collection('product');
+						const data = await product_collection.find({
+							sku: { $in: prods },
+							status: true
+						}).toArray();
+
+						if (!data || data.length < 0 || data.findIndex(p => p.supplier_id && p.supplier_id.toString() === coupon.supplier_id.toString()) < 0) {
+							return res.out({
+								"code": req.custom.local.cart_coupon_unavailable
+							}, status_message.VALIDATION_ERROR);
+						}
+					}
+
 
 					const coupon_token_collection = req.custom.db.client().collection('coupon_token');
 					coupon_token_collection.findOne({ coupon: coupon.code, token: req.custom.token }).
@@ -505,13 +529,21 @@ module.exports.coupon = function (req, res) {
 							}
 
 							if (coupon.supplier_id) {
-								if (user.coupon.suppliers_coupons && user.coupon.suppliers_coupons.findIndex(c => c.code === coupon.code) < 0) {
-									user.coupon.member_id = coupon ? (coupon.member_id || null) : null;
-									user.coupon.suppliers_coupons = [...user.coupon.suppliers_coupons, {
+								user.coupon.member_id = coupon ? (coupon.member_id || null) : null;
+								const index = user.coupon.suppliers_coupons.findIndex(c => c.code === coupon.code);
+								if (index < 0) {
+									user.coupon.suppliers_coupons.push({
 										supplier_id: coupon.supplier_id,
 										code: coupon.code,
 										value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0
-									}];
+									});
+								} else {
+									user.coupon.suppliers_coupons.splice(index, 1);
+									user.coupon.suppliers_coupons.push({
+										supplier_id: coupon.supplier_id,
+										code: coupon.code,
+										value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0
+									});
 								}
 							} else {
 								user.coupon = {
@@ -521,7 +553,6 @@ module.exports.coupon = function (req, res) {
 									suppliers_coupons: []
 								};
 							}
-
 
 							req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
 								.then((response) => res.out({
