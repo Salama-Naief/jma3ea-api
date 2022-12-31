@@ -596,7 +596,7 @@ module.exports.list = async function (req, res) {
 			supplier_products_total += supplier_shipping_cost;
 			sup.shipping_cost = supplier_shipping_cost;
 			sup.total = common.getRoundedPrice(supplier_products_total);
-
+			sup.gift_note = sup.products.findIndex(p => p.categories.findIndex(c => c._id.toString() == "636110bebabe343187e024fa" || c.name.en.toLowerCase() == "flowers") > -1) > -1;
 		}
 
 		const out_coupon = {
