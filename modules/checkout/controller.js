@@ -546,6 +546,7 @@ module.exports.list = async function (req, res) {
 		let shipping_cost = 0;
 
 		const productsGroupedBySupplier = groupBySupplier(products);
+		console.log('products suppliers: ', productsGroupedBySupplier.map(p => p.supplier));
 		const coupon_collection = req.custom.db.client().collection('coupon');
 		const coupons = user.coupon && (user.coupon.code || user.coupon.suppliers_coupons) ? (await coupon_collection.find({
 			code: user.coupon.code ? user.coupon.code : { $in: user.coupon.suppliers_coupons.map(c => c.code) },
