@@ -553,14 +553,14 @@ module.exports.coupon = function (req, res) {
 									const index = user.coupon.suppliers_coupons.findIndex(c => c.code === coupon.code);
 									if (index < 0) {
 										user.coupon.suppliers_coupons.push({
-											supplier_id: req.custom.req.custom.settings['site_id'],
+											supplier_id: req.custom.settings['site_id'],
 											code: coupon.code,
 											value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0
 										});
 									} else {
 										user.coupon.suppliers_coupons.splice(index, 1);
 										user.coupon.suppliers_coupons.push({
-											supplier_id: req.custom.req.custom.settings['site_id'],
+											supplier_id: req.custom.settings['site_id'],
 											code: coupon.code,
 											value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0
 										});
