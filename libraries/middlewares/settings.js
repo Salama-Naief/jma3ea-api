@@ -1,6 +1,8 @@
 // Load required modules
 const status_message = require('../../enums/status_message');
 
+const SITE_ID = "jm3eiadotcom";
+
 /**
  * Middleware for sorting
  */
@@ -26,5 +28,6 @@ module.exports = (req, res, next) => {
 						}
 					});
 			}
+			req.custom.settings['site_id'] = SITE_ID;
 		}).then(() => next());
 };

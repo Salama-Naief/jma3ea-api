@@ -191,8 +191,13 @@ module.exports.buy = async function (req, res) {
 			status: true,
 		}).toArray() || []) : null;
 
-		const general_coupon = coupons ? coupons.find(c => !c.supplier_id) : null;
-		const suppliers_coupons = coupons ? coupons.filter(c => c.supplier_id) : [];
+		const general_coupon = coupons ? coupons.find(c => !c.supplier_id && !c.only_for_jm3eia) : null;
+		const suppliers_coupons = coupons ? coupons.filter(c => c.supplier_id || c.only_for_jm3eia).map(c => {
+			if (c.only_for_jm3eia && !c.supplier_id) {
+				c.supplier_id = req.custom.settings['site_id'];
+			}
+			return c;
+		}) : [];
 
 		let total_coupon_value = 0;
 
@@ -208,6 +213,10 @@ module.exports.buy = async function (req, res) {
 				const supplier_coupon = suppliers_coupons.find(c => c.supplier_id.toString() == sup.supplier._id.toString());
 				if (supplier_coupon) {
 					sup.coupon = {
+						supplier: {
+							_id: sup.supplier._id,
+							name: sup.supplier.name[req.custom.lang] || sup.supplier.name['en']
+						},
 						code: supplier_coupon.code,
 						value: common.getFixedPrice(supplier_coupon.percent_value ? (parseFloat(supplier_products_total) * supplier_coupon.percent_value) / 100 : supplier_coupon.discount_value)
 					}
@@ -546,7 +555,6 @@ module.exports.list = async function (req, res) {
 		let shipping_cost = 0;
 
 		const productsGroupedBySupplier = groupBySupplier(products);
-		console.log('products suppliers: ', productsGroupedBySupplier.map(p => p.supplier));
 		const coupon_collection = req.custom.db.client().collection('coupon');
 		const coupons = user.coupon && (user.coupon.code || user.coupon.suppliers_coupons) ? (await coupon_collection.find({
 			code: user.coupon.code ? user.coupon.code : { $in: user.coupon.suppliers_coupons.map(c => c.code) },
@@ -554,8 +562,13 @@ module.exports.list = async function (req, res) {
 			status: true,
 		}).toArray() || []) : null;
 
-		const general_coupon = coupons ? coupons.find(c => !c.supplier_id) : null;
-		const suppliers_coupons = coupons ? coupons.filter(c => c.supplier_id) : [];
+		const general_coupon = coupons ? coupons.find(c => !c.supplier_id && !c.only_for_jm3eia) : null;
+		const suppliers_coupons = coupons ? coupons.filter(c => c.supplier_id || c.only_for_jm3eia).map(c => {
+			if (c.only_for_jm3eia && !c.supplier_id) {
+				c.supplier_id = req.custom.settings['site_id'];
+			}
+			return c;
+		}) : [];
 
 		let total_coupon_value = 0;
 
@@ -917,7 +930,7 @@ async function products_to_save(products, user, req, to_display = false) {
 			prod.categories = [];
 		}
 
-		prod.supplier_id = prod.supplier_id || req.custom.settings['site_name']['en'];
+		prod.supplier_id = prod.supplier_id || req.custom.settings['site_id'];
 		const supplier = all_suppliers.find((s) => prod.supplier_id && s._id.toString() == prod.supplier_id.toString());
 		prod.supplier = supplier ? {
 			_id: supplier._id,
@@ -931,7 +944,7 @@ async function products_to_save(products, user, req, to_display = false) {
 			allow_cod: supplier.allow_cod,
 			delivery_time_text: supplier.delivery_time_text
 		} : to_display ? {
-			_id: req.custom.settings['site_name']['en'],
+			_id: req.custom.settings['site_id'],
 			name: {
 				ar: req.custom.settings['site_name']['ar'],
 				en: req.custom.settings['site_name']['en'],

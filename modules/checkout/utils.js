@@ -147,14 +147,9 @@ module.exports.groupBySupplier = (products) => {
     const newProducts = [];
     for (let p of products) {
         const foundSupplierIndex = newProducts.findIndex(np => np.supplier._id.toString() == p.supplier_id.toString());
-        if (p.supplier._id == "Jm3eia") {
-            console.log("Details: ", foundSupplierIndex, p, newProducts);
-        }
         if (foundSupplierIndex > -1) {
-            console.log("Existing: ", p.supplier._id);
             newProducts[foundSupplierIndex].products.push(p);
         } else {
-            console.log("Adding: ", p.supplier_id);
             newProducts.push({ supplier: p.supplier, products: [p] });
         }
     }
