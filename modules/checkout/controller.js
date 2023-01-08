@@ -326,6 +326,12 @@ module.exports.buy = async function (req, res) {
 					delete p.preparation_time;
 					return p;
 				});
+				data.subtotal = common.getRoundedPrice(data.subtotal);
+				data.total = common.getRoundedPrice(data.total);
+				data.shipping_cost = common.getFixedPrice(data.shipping_cost);
+				if (data.coupon && data.coupon.code)
+					data.coupon.value = common.getFixedPrice(data.coupon.value);
+
 				return data;
 			}),
 			products: products2save.map((p) => {
