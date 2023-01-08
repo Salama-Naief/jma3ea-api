@@ -488,7 +488,7 @@ module.exports.coupon = function (req, res) {
 
 					// Return error if there's no supplier for this coupon
 					if (coupon.supplier_id) {
-						const mainController = require("../../libraries/mainController");
+						//const mainController = require("../../libraries/mainController");
 						let prods = [];
 						if (user && user.cart) {
 							for (const i of Object.keys(user.cart)) {
@@ -546,6 +546,8 @@ module.exports.coupon = function (req, res) {
 									});
 								}
 							} else if (coupon.only_for_jm3eia) {
+								console.log('it is only for jm3eia!');
+								console.log('Before: ', user.coupon);
 								user.coupon.member_id = coupon ? (coupon.member_id || null) : null;
 								const index = user.coupon.suppliers_coupons.findIndex(c => c.code === coupon.code);
 								if (index < 0) {
@@ -562,6 +564,7 @@ module.exports.coupon = function (req, res) {
 										value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0
 									});
 								}
+								console.log('After: ', user.coupon);
 							} else {
 								user.coupon = {
 									code: coupon.code || null,
