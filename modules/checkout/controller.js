@@ -124,6 +124,7 @@ module.exports.buy = async function (req, res) {
 		"prod_n_storeArr": 1,
 		"supplier_id": 1,
 		"variants": 1,
+		"free_shipping": 1
 	}, async (out) => {
 		if (out.data.length === 0) {
 			save_failed_payment(req, 'NO_PRODUCTS_IN_CART');
@@ -206,7 +207,10 @@ module.exports.buy = async function (req, res) {
 
 			sup.subtotal = supplier_products_total;
 
-			const supplier_shipping_cost = parseFloat(sup.supplier.shipping_cost) || city_shipping_cost;
+			let supplier_shipping_cost = parseFloat(sup.supplier.shipping_cost) || city_shipping_cost;
+			if (sup.supplier._id.toString() == req.custom.settings['site_id'] && sup.products.findIndex(p => p.free_shipping == true) > -1) {
+				supplier_shipping_cost = 0;
+			}
 			shipping_cost += supplier_shipping_cost;
 
 			if (!general_coupon && suppliers_coupons && suppliers_coupons.length > 0) {
@@ -524,6 +528,7 @@ module.exports.list = async function (req, res) {
 		"supplier_id": 1,
 		"variants": 1,
 		"preparation_time": 1,
+		"free_shipping": 1
 	}, async (out) => {
 		if (out.data.length === 0) {
 			return res.out({
@@ -583,7 +588,10 @@ module.exports.list = async function (req, res) {
 
 			sup.subtotal = supplier_products_total;
 
-			const supplier_shipping_cost = parseFloat(sup.supplier.shipping_cost) || city_shipping_cost;
+			let supplier_shipping_cost = parseFloat(sup.supplier.shipping_cost) || city_shipping_cost;
+			if (sup.supplier._id.toString() == req.custom.settings['site_id'] && sup.products.findIndex(p => p.free_shipping) > -1) {
+				supplier_shipping_cost = 0;
+			}
 			shipping_cost += supplier_shipping_cost;
 
 			sup.purchase_possibility = sup.supplier.min_value && parseInt(sup.supplier.min_value) > 0 && supplier_products_total < parseInt(sup.supplier.min_value) ? false : true;
