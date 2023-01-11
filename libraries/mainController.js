@@ -52,16 +52,18 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 		resolve(false);
 	});
 
-	is_cached.then((_is_cached) => {
+	is_cached.then(async (_is_cached) => {
 		if (_is_cached) {
 			return;
 		}
 
 		const collection = req.custom.db.client().collection(collectionName);
-		const filter = req.custom.clean_filter;
+		const filter = await common.filter_internal_suppliers_by_city(req);
+
 		if (req.custom.all_status != true) {
 			filter.status = req.custom.clean_filter.status || true;
 		}
+		
 		if (req.custom.isProducts == true) {
 
 			filter.status = true;
