@@ -19,7 +19,9 @@ module.exports.list = function (req, res) {
 	req.custom.isProducts = true;
 	const name = common.parseArabicNumbers(req.query.q);
 	const newNames = [];
-	if (name) {
+	const names_array = name ? name.split(' ') : [];
+
+	if (names_array.length > 0) {
 		let names_array = name.split(' ');
 		for (let item of names_array) {
 
@@ -98,12 +100,14 @@ module.exports.list = function (req, res) {
 		"show_discount_percentage": 1
 	}, (data) => {
 		if (data.total == 0) {
-			req.custom.clean_filter = {
-				'$or': [
-					{ "name.ar": { $regex: new RegExp(`${name}${newNames.join('|')}`, "i") } },
-					{ "name.en": { $regex: new RegExp(`${name}${newNames.join('|')}`, "i") } }
-				]
-			};
+			req.custom.clean_filter['$or'] = [
+				{ "name.ar": { $regex: new RegExp(`${name}|${names_array.join('|')}|${newNames.join('|')}`, "i") } },
+				{ "name.en": { $regex: new RegExp(`${name}|${names_array.join('|')}|${newNames.join('|')}`, "i") } }
+			];
+
+			if (delete req.custom.clean_filter.hasOwnProperty('$text'))
+				delete req.custom.clean_filter['$text'];
+
 			req.custom.clean_sort = { name_length: 1 };
 			req.custom.sort_after = true;
 
