@@ -97,7 +97,8 @@ module.exports.list = function (req, res) {
 			$ifNull: ["$max_quantity_cart", 0]
 		},
 		"supplier_id": 1,
-		"show_discount_percentage": 1
+		"show_discount_percentage": 1,
+		"discount_price_valid_until": 1
 	}, (data) => {
 		if (data.total == 0) {
 			req.custom.clean_filter['$or'] = [
@@ -130,7 +131,8 @@ module.exports.list = function (req, res) {
 				"name_length": {
 					$strLenCP: { $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`] }
 				},
-				"show_discount_percentage": 1
+				"show_discount_percentage": 1,
+				"discount_price_valid_until": 1
 			});
 		} else {
 			return res.out(data);
@@ -175,7 +177,8 @@ module.exports.listByCategory = function (req, res) {
 			$ifNull: ["$max_quantity_cart", 0]
 		},
 		"supplier_id": 1,
-		"show_discount_percentage": 1
+		"show_discount_percentage": 1,
+		"discount_price_valid_until": 1
 	});
 };
 
@@ -265,7 +268,8 @@ module.exports.featured = async function (req, res) {
 					$ifNull: ["$max_quantity_cart", 0]
 				},
 				"supplier_id": 1,
-				"show_discount_percentage": 1
+				"show_discount_percentage": 1,
+				"discount_price_valid_until": 1
 			};
 
 			const sort = {
@@ -432,7 +436,8 @@ module.exports.read = async function (req, res) {
 				"prod_n_categoryArr": 1,
 				"variants": 1,
 				"supplier_id": 1,
-				"show_discount_percentage": 1
+				"show_discount_percentage": 1,
+				"discount_price_valid_until": 1
 			}, async (results) => {
 				if (!results || !results.sku) {
 					return res.out(results, status_message.NO_DATA);

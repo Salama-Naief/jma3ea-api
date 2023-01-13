@@ -124,7 +124,8 @@ module.exports.buy = async function (req, res) {
 		"prod_n_storeArr": 1,
 		"supplier_id": 1,
 		"variants": 1,
-		"free_shipping": 1
+		"free_shipping": 1,
+		"discount_price_valid_until": 1
 	}, async (out) => {
 		if (out.data.length === 0) {
 			save_failed_payment(req, 'NO_PRODUCTS_IN_CART');
@@ -528,7 +529,8 @@ module.exports.list = async function (req, res) {
 		"supplier_id": 1,
 		"variants": 1,
 		"preparation_time": 1,
-		"free_shipping": 1
+		"free_shipping": 1,
+		"discount_price_valid_until": 1
 	}, async (out) => {
 		if (out.data.length === 0) {
 			return res.out({

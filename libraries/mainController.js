@@ -173,6 +173,19 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 							i.picture = `${req.custom.config.media_url}${i.picture}`;
 						}
 						if (req.custom.isProducts == true) {
+							
+							if (p.old_price && p.discount_price_valid_until && p.discount_price_valid_until < new Date()) {
+								const oldPrice = parseFloat(p.old_price);
+								p.price = oldPrice;
+								resetPrice(req, p.sku, oldPrice).then(isPriceResetted => {
+									if (!isPriceResetted) {
+										res.out({
+											message: req.custom.local.unexpected_error
+										}, status_message.UNEXPECTED_ERROR);
+									}
+								});
+							}
+
 							i.price = common.getFixedPrice(i.price);
 							i.old_price = common.getFixedPrice(i.old_price || 0);
 
