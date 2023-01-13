@@ -168,22 +168,22 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 						}, status_message.UNEXPECTED_ERROR);
 					}
 
-					results = results ? results.map((i) => {
+					results = results ? results.map(async (i) => {
 						if (i.picture) {
 							i.picture = `${req.custom.config.media_url}${i.picture}`;
 						}
 						if (req.custom.isProducts == true) {
 							
-							if (p.old_price && p.discount_price_valid_until && p.discount_price_valid_until < new Date()) {
-								const oldPrice = parseFloat(p.old_price);
-								p.price = oldPrice;
-								resetPrice(req, p.sku, oldPrice).then(isPriceResetted => {
+							if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
+								const oldPrice = parseFloat(i.old_price);
+								i.price = oldPrice;
+								await resetPrice(req, i.sku, oldPrice);/* .then(isPriceResetted => {
 									if (!isPriceResetted) {
 										res.out({
 											message: req.custom.local.unexpected_error
 										}, status_message.UNEXPECTED_ERROR);
 									}
-								});
+								}); */
 							}
 
 							i.price = common.getFixedPrice(i.price);
