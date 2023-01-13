@@ -161,14 +161,14 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 					});
 				}
 
-				collection.aggregate(pipeline, options).toArray((err, results) => {
+				collection.aggregate(pipeline, options).toArray(async (err, results) => {
 					if (err) {
 						return res.out({
 							'message': err.message
 						}, status_message.UNEXPECTED_ERROR);
 					}
 
-					results = results ? results.map(async (i) => {
+					results = results ? await Promise.all(results.map(async (i) => {
 						if (i.picture) {
 							i.picture = `${req.custom.config.media_url}${i.picture}`;
 						}
@@ -210,7 +210,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 							};
 						}
 						return i;
-					}) : [];
+					})) : [];
 
 					const out = {
 						total: total,
