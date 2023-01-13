@@ -4,6 +4,7 @@
 const common = require('./common');
 const status_message = require('../enums/status_message');
 const ObjectID = require("../types/object_id");
+const { resetPrice } = require('../modules/product/utils');
 
 /**
  * List all categories
@@ -63,7 +64,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 		if (req.custom.all_status != true) {
 			filter.status = req.custom.clean_filter.status || true;
 		}
-		
+
 		if (req.custom.isProducts == true) {
 
 			filter.status = true;
@@ -173,7 +174,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 							i.picture = `${req.custom.config.media_url}${i.picture}`;
 						}
 						if (req.custom.isProducts == true) {
-							
+
 							if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
 								const oldPrice = parseFloat(i.old_price);
 								i.price = oldPrice;
