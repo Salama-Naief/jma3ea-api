@@ -168,7 +168,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 						}, status_message.UNEXPECTED_ERROR);
 					}
 
-					results = results ? results.map((i) => {
+					results = results ? results.map(async (i) => {
 						if (i.picture) {
 							i.picture = `${req.custom.config.media_url}${i.picture}`;
 						}
@@ -177,13 +177,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 							if (p.old_price && p.discount_price_valid_until && p.discount_price_valid_until < new Date()) {
 								const oldPrice = parseFloat(p.old_price);
 								p.price = oldPrice;
-								resetPrice(req, p.sku, oldPrice).then(isPriceResetted => {
-									if (!isPriceResetted) {
-										res.out({
-											message: req.custom.local.unexpected_error
-										}, status_message.UNEXPECTED_ERROR);
-									}
-								});
+								await resetPrice(req, p.sku, oldPrice);
 							}
 
 							i.price = common.getFixedPrice(i.price);
