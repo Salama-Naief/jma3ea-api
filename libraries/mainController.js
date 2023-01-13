@@ -28,7 +28,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 					if (cached_data) {
 						if (req.custom.isProducts == true) {
-							cached_data.data = cached_data.data.map((i) => {
+							cached_data.data = Promise.all(cached_data.data.map(async (i) => {
 								const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id.toString()) > -1;
 								i.cart_status = {
 									is_exists: prod_exists_in_cart,
@@ -38,8 +38,16 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 									is_exists: user.wishlist.indexOf(i._id.toString()) > -1
 								};
 
+								if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
+									const oldPrice = parseFloat(i.old_price);
+									i.price = oldPrice;
+									await resetPrice(req, i.sku, oldPrice).catch(() => res.out({
+										message: req.custom.local.unexpected_error
+									}, status_message.UNEXPECTED_ERROR));
+								}
+
 								return i;
-							});
+							}));
 						}
 						res.out(cached_data);
 						resolve(true);
@@ -178,13 +186,9 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 							if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
 								const oldPrice = parseFloat(i.old_price);
 								i.price = oldPrice;
-								await resetPrice(req, i.sku, oldPrice);/* .then(isPriceResetted => {
-									if (!isPriceResetted) {
-										res.out({
-											message: req.custom.local.unexpected_error
-										}, status_message.UNEXPECTED_ERROR);
-									}
-								}); */
+								await resetPrice(req, i.sku, oldPrice).catch(() => res.out({
+									message: req.custom.local.unexpected_error
+								}, status_message.UNEXPECTED_ERROR));
 							}
 
 							i.price = common.getFixedPrice(i.price);
