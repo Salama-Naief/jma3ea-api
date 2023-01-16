@@ -546,7 +546,7 @@ module.exports.list = async function (req, res) {
 
 		const products = await products_to_save(out.data, user, req, true);
 
-		const should_be_gifted = products.findIndex(p => p.categories.findIndex(c => FLOWERS_CATEGORIES_IDS.includes(c._id.toString())) > -1);
+		const should_be_gifted = products.findIndex(p => p.categories.findIndex(c => FLOWERS_CATEGORIES_IDS.includes(c._id.toString())) > -1) > -1;
 
 		const total_prods = parseFloat(products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
 
@@ -632,7 +632,7 @@ module.exports.list = async function (req, res) {
 			supplier_products_total += supplier_shipping_cost;
 			sup.shipping_cost = supplier_shipping_cost;
 			sup.total = common.getRoundedPrice(supplier_products_total);
-			sup.gift_note = sup.products.findIndex(p => p.categories.findIndex(c => FLOWERS_CATEGORIES_IDS.includes(c._id.toString())) > -1);
+			sup.gift_note = sup.products.findIndex(p => p.categories.findIndex(c => FLOWERS_CATEGORIES_IDS.includes(c._id.toString())) > -1) > -1;
 		}
 
 		const out_coupon = {
