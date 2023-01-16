@@ -68,7 +68,7 @@ module.exports.transform_word_begins_with_alif_letter = (text) => {
 
 module.exports.filter_internal_suppliers_by_city = async function (req) {
 	try {
-		if (!req.custom.isProducts) {
+		if (req.custom.isProducts != true) {
 			return req.custom.clean_filter;
 		}
 

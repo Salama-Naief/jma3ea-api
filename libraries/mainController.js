@@ -28,7 +28,8 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 					if (cached_data) {
 						if (req.custom.isProducts == true) {
-							cached_data.data = Promise.all(cached_data.data.map(async (i) => {
+							const promises = [];
+							cached_data.data = cached_data.data.map((i) => {
 								const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id.toString()) > -1;
 								i.cart_status = {
 									is_exists: prod_exists_in_cart,
@@ -38,16 +39,20 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 									is_exists: user.wishlist.indexOf(i._id.toString()) > -1
 								};
 
+
 								if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
 									const oldPrice = parseFloat(i.old_price);
 									i.price = oldPrice;
-									await resetPrice(req, i.sku, oldPrice).catch(() => res.out({
+									promises.push(resetPrice(req, i.sku, oldPrice).catch(() => res.out({
 										message: req.custom.local.unexpected_error
-									}, status_message.UNEXPECTED_ERROR));
+									}, status_message.UNEXPECTED_ERROR)));
 								}
 
 								return i;
-							}));
+							});
+							if (promises.length > 0) {
+								Promise.all(promises);
+							}
 						}
 						res.out(cached_data);
 						resolve(true);
@@ -67,7 +72,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 		}
 
 		const collection = req.custom.db.client().collection(collectionName);
-		const filter = await common.filter_internal_suppliers_by_city(req);
+		const filter = req.custom.isProducts != true ? req.custom.clean_filter : await common.filter_internal_suppliers_by_city(req);
 
 		if (req.custom.all_status != true) {
 			filter.status = req.custom.clean_filter.status || true;
@@ -170,14 +175,15 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 					});
 				}
 
-				collection.aggregate(pipeline, options).toArray(async (err, results) => {
+				collection.aggregate(pipeline, options).toArray((err, results) => {
 					if (err) {
 						return res.out({
 							'message': err.message
 						}, status_message.UNEXPECTED_ERROR);
 					}
 
-					results = results ? await Promise.all(results.map(async (i) => {
+					const promises = [];
+					results = results ? results.map((i) => {
 						if (i.picture) {
 							i.picture = `${req.custom.config.media_url}${i.picture}`;
 						}
@@ -186,9 +192,9 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 							if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
 								const oldPrice = parseFloat(i.old_price);
 								i.price = oldPrice;
-								await resetPrice(req, i.sku, oldPrice).catch(() => res.out({
+								promises.push(resetPrice(req, i.sku, oldPrice).catch(() => res.out({
 									message: req.custom.local.unexpected_error
-								}, status_message.UNEXPECTED_ERROR));
+								}, status_message.UNEXPECTED_ERROR)));
 							}
 
 							i.price = common.getFixedPrice(i.price);
@@ -215,7 +221,11 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 							};
 						}
 						return i;
-					})) : [];
+					}) : [];
+
+					if (req.custom.isProducts == true && promises.length > 0) {
+						Promise.all(promises);
+					}
 
 					const out = {
 						total: total,
