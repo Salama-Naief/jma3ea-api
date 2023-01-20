@@ -813,7 +813,7 @@ module.exports.list = async function (req, res) {
 			discount_by_wallet: common.getRoundedPrice(user_wallet),
 			discount_by_wallet_value: common.getRoundedPrice(wallet2money || 0),
 			total: common.getRoundedPrice(total),
-			purchase_possibility: purchase_possibility,
+			purchase_possibility: productsGroupedBySupplier.length > 1 ? true : purchase_possibility,
 			message: message,
 			addresses: addresses,
 			gift_note: should_be_gifted,
