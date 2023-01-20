@@ -814,7 +814,7 @@ module.exports.list = async function (req, res) {
 			discount_by_wallet_value: common.getRoundedPrice(wallet2money || 0),
 			total: common.getRoundedPrice(total),
 			purchase_possibility: productsGroupedBySupplier.length > 1 ? true : purchase_possibility,
-			message: message,
+			message: productsGroupedBySupplier.length > 1 ? null : message,
 			addresses: addresses,
 			gift_note: should_be_gifted,
 			payment_methods: productsGroupedBySupplier.find(s => s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
