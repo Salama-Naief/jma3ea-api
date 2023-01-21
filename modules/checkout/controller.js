@@ -605,7 +605,7 @@ module.exports.list = async function (req, res) {
 
 			const supplier_min_value = sup.supplier.min_value && parseInt(sup.supplier.min_value) > 0 ? parseInt(sup.supplier.min_value) : (req.custom.settings.orders.min_value ? parseInt(req.custom.settings.orders.min_value) : 0)
 			sup.purchase_possibility = supplier_min_value > 0 && supplier_products_total < supplier_min_value ? false : true;
-			console.log("possibility: ", supplier_min_value, sup.purchase_possibility);
+			console.log("possibility: ", supplier_min_value, supplier_products_total, sup.purchase_possibility);
 			if (purchase_possibility && !sup.purchase_possibility) {
 				purchase_possibility = false;
 			}
