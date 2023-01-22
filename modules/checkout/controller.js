@@ -1,12 +1,12 @@
 // Checkout Controller
 const enums_payment_methods = require('../../enums/payment_methods');
 const common = require('../../libraries/common');
-//const mail = require('../../libraries/mail');
+const mail = require('../../libraries/mail');
 const ObjectID = require("../../types/object_id");
 const status_message = require('../../enums/status_message');
 const { v4: uuid } = require('uuid');
 const mainController = require("../../libraries/mainController");
-//const mail_view = require("./view/mail");
+const mail_view = require("./view/mail");
 const moment = require('moment');
 const axios = require('axios');
 const shortid = require('shortid');
@@ -115,9 +115,7 @@ module.exports.buy = async function (req, res) {
 	req.custom.clean_filter.sku = {
 		'$in': prods
 	};
-	console.log('use cart top: ', user.cart);
-	const up_cart = user.cart;
-	console.log('upcart top: ', up_cart);
+	const up_cart = { ...user.cart };
 	req.custom.limit = 0;
 	mainController.list(req, res, 'product', {
 		"_id": 1,
@@ -172,7 +170,6 @@ module.exports.buy = async function (req, res) {
 		const user_city_id = data.user_data && data.user_data.address && data.user_data.address.city_id ?
 			data.user_data.address.city_id.toString() :
 			req.custom.authorizationObject.city_id.toString();
-		console.log("this is user city id: ", user_city_id);
 		const city_collection = req.custom.db.client().collection('city');
 		const cityObj = await city_collection
 			.findOne({
@@ -432,25 +429,23 @@ module.exports.buy = async function (req, res) {
 		await req.custom.cache.set(req.custom.token, req.custom.authorizationObject, req.custom.config.cache.life_time.token);
 
 		// Copy to client
-		/* if (data.user_data.email) {
+		if (data.user_data.email) {
 			await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], data.user_data.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch(() => null);
 		}
 
 		// Copy to admin
-		await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], req.custom.settings.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch(() => null); */
+		await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], req.custom.settings.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch(() => null);
 
-		//try {
-		const token = await get_remote_token(req);//.catch(() => null);
-		//console.log('this is token: ', token);
+		try {
+			const token = await get_remote_token(req);//.catch(() => null);
 
-		if (true) {
-			// Update quantities
-			console.log('cart before: ', up_cart);
-			update_quantities(req, up_products, up_cart, token);//.catch(() => null);
-		}
-		/* } catch (err) {
+			if (token) {
+				// Update quantities
+				await update_quantities(req, up_products, up_cart, token);//.catch(() => null);
+			}
+		} catch (err) {
 			console.log('Error: ', err);
-		} */
+		}
 
 
 		res.out(order_data);
@@ -1018,94 +1013,84 @@ function getRoundedDate(minutes, d = null) {
 }
 
 function update_quantities(req, the_products, cart, token) {
-	try {
-		console.log("cart after: ", cart);
-		console.log('the function is being called...');
-		const collection = req.custom.db.client().collection('product');
-		let promises = [];
-		console.log('cart keys: ', Object.keys(cart));
-		for (const p_n_c of Object.keys(cart)) {
+	const collection = req.custom.db.client().collection('product');
+	let promises = [];
 
-			const p = the_products.find((my_prod) => p_n_c.includes(my_prod.sku))
+	for (const p_n_c of Object.keys(cart)) {
 
-			const quantity = parseInt(cart[p_n_c]);
-			let store_id = req.custom.authorizationObject.store_id.toString();
+		const p = the_products.find((my_prod) => p_n_c.includes(my_prod.sku))
 
-			const remote_product = {
-				store_id: store_id,
-				quantity: 0,
-				soft_code: p_n_c,
-			};
+		const quantity = parseInt(cart[p_n_c]);
+		let store_id = req.custom.authorizationObject.store_id.toString();
 
-			if (p_n_c.includes('-')) {
+		const remote_product = {
+			store_id: store_id,
+			quantity: 0,
+			soft_code: p_n_c,
+		};
 
-				let variant = p.variants.find((i) => i.sku == p_n_c);
-				let prod_n_storeArr = [];
-				console.log('old prod: ', variant.prod_n_storeArr);
-				if (variant.prod_n_storeArr) {
-					for (const i of variant.prod_n_storeArr) {
-						if (i.store_id.toString() == store_id) {
-							i.quantity -= quantity;
-							i.quantity = i.quantity >= 0 ? i.quantity : 0
-						}
-						i.store_id = ObjectID(i.store_id.toString());
-						prod_n_storeArr.push(i);
+		if (p_n_c.includes('-')) {
+
+			let variant = p.variants.find((i) => i.sku == p_n_c);
+			let prod_n_storeArr = [];
+			if (variant.prod_n_storeArr) {
+				for (const i of variant.prod_n_storeArr) {
+					if (i.store_id.toString() == store_id) {
+						i.quantity -= quantity;
+						i.quantity = i.quantity >= 0 ? i.quantity : 0
 					}
+					i.store_id = ObjectID(i.store_id.toString());
+					prod_n_storeArr.push(i);
 				}
-				console.log('new stores: ', prod_n_storeArr);
-				let variants = p.variants.map((v) => {
-					if (v.sku == p_n_c) {
-						return variant;
-					}
-					return v;
-				})
-				const update = collection.updateOne({
-					_id: ObjectID(p._id.toString())
-				}, {
-					$set: { variants: variants }
-				}).catch(() => null);
-				promises.push(update);
-
-			} else {
-				let prod_n_storeArr = [];
-				console.log('new produ dtores: ', p.prod_n_storeArr);
-				if (p.prod_n_storeArr) {
-					for (const i of p.prod_n_storeArr) {
-						if (i.feed_from_store_id) {
-							const temp_store = p.prod_n_storeArr.find((pi) => pi.store_id.toString() == i.feed_from_store_id.toString());
-							i.quantity = temp_store.quantity;
-							p.prod_n_storeArr = p.prod_n_storeArr.map((pi) => {
-								if (pi.store_id.toString() == temp_store.store_id.toString()) {
-									pi.quantity -= quantity;
-									pi.quantity = pi.quantity >= 0 ? pi.quantity : 0;
-								}
-								return pi;
-							});
-						} else if (i.store_id.toString() == store_id) {
-							i.quantity -= quantity;
-							i.quantity = i.quantity >= 0 ? i.quantity : 0
-						}
-						i.store_id = ObjectID(i.store_id.toString());
-						prod_n_storeArr.push(i);
-					}
-				}
-				console.log('new produ dtores: ', prod_n_storeArr);
-				const update = collection.updateOne({
-					_id: ObjectID(p._id.toString())
-				}, {
-					$set: { prod_n_storeArr: prod_n_storeArr }
-				}).catch(() => null);
-				promises.push(update);
-				remote_product.quantity = quantity;
-				if (token) promises.push(update_remote_quantity(req, remote_product, token));
 			}
+			let variants = p.variants.map((v) => {
+				if (v.sku == p_n_c) {
+					return variant;
+				}
+				return v;
+			})
+			const update = collection.updateOne({
+				_id: ObjectID(p._id.toString())
+			}, {
+				$set: { variants: variants }
+			}).catch(() => null);
+			promises.push(update);
 
+		} else {
+			let prod_n_storeArr = [];
+			if (p.prod_n_storeArr) {
+				for (const i of p.prod_n_storeArr) {
+					if (i.feed_from_store_id) {
+						const temp_store = p.prod_n_storeArr.find((pi) => pi.store_id.toString() == i.feed_from_store_id.toString());
+						i.quantity = temp_store.quantity;
+						p.prod_n_storeArr = p.prod_n_storeArr.map((pi) => {
+							if (pi.store_id.toString() == temp_store.store_id.toString()) {
+								pi.quantity -= quantity;
+								pi.quantity = pi.quantity >= 0 ? pi.quantity : 0;
+							}
+							return pi;
+						});
+					} else if (i.store_id.toString() == store_id) {
+						i.quantity -= quantity;
+						i.quantity = i.quantity >= 0 ? i.quantity : 0
+					}
+					i.store_id = ObjectID(i.store_id.toString());
+					prod_n_storeArr.push(i);
+				}
+			}
+			const update = collection.updateOne({
+				_id: ObjectID(p._id.toString())
+			}, {
+				$set: { prod_n_storeArr: prod_n_storeArr }
+			}).catch(() => null);
+			promises.push(update);
+			remote_product.quantity = quantity;
+			promises.push(update_remote_quantity(req, remote_product, token));
 		}
 
-		return Promise.all(promises);
-	} catch (err) {
-		console.log('quantity error: ', err);
 	}
+
+	return Promise.all(promises);
 }
 
 function get_remote_token(req) {
