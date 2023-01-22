@@ -443,6 +443,7 @@ module.exports.buy = async function (req, res) {
 
 			if (true) {
 				// Update quantities
+				console.log('this should be called!');
 				await update_quantities(req, up_products, up_cart, token);//.catch(() => null);
 			}
 		} catch (err) {
