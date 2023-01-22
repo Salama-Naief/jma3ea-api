@@ -1015,6 +1015,7 @@ function getRoundedDate(minutes, d = null) {
 }
 
 function update_quantities(req, the_products, cart, token) {
+	console.log('this is being updated..');
 	const collection = req.custom.db.client().collection('product');
 	let promises = [];
 
@@ -1080,6 +1081,7 @@ function update_quantities(req, the_products, cart, token) {
 					prod_n_storeArr.push(i);
 				}
 			}
+			console.log('new produ dtores: ', prod_n_storeArr);
 			const update = collection.updateOne({
 				_id: ObjectID(p._id.toString())
 			}, {
