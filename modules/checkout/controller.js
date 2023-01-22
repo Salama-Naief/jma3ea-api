@@ -1036,6 +1036,7 @@ function update_quantities(req, the_products, cart, token) {
 
 			let variant = p.variants.find((i) => i.sku == p_n_c);
 			let prod_n_storeArr = [];
+			console.log('old prod: ', variant.prod_n_storeArr);
 			if (variant.prod_n_storeArr) {
 				for (const i of variant.prod_n_storeArr) {
 					if (i.store_id.toString() == store_id) {
@@ -1046,6 +1047,7 @@ function update_quantities(req, the_products, cart, token) {
 					prod_n_storeArr.push(i);
 				}
 			}
+			console.log('new stores: ', prod_n_storeArr);
 			let variants = p.variants.map((v) => {
 				if (v.sku == p_n_c) {
 					return variant;
@@ -1061,6 +1063,7 @@ function update_quantities(req, the_products, cart, token) {
 
 		} else {
 			let prod_n_storeArr = [];
+			console.log('new produ dtores: ', p.prod_n_storeArr);
 			if (p.prod_n_storeArr) {
 				for (const i of p.prod_n_storeArr) {
 					if (i.feed_from_store_id) {
