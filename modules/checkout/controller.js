@@ -1,12 +1,12 @@
 // Checkout Controller
 const enums_payment_methods = require('../../enums/payment_methods');
 const common = require('../../libraries/common');
-const mail = require('../../libraries/mail');
+//const mail = require('../../libraries/mail');
 const ObjectID = require("../../types/object_id");
 const status_message = require('../../enums/status_message');
 const { v4: uuid } = require('uuid');
 const mainController = require("../../libraries/mainController");
-const mail_view = require("./view/mail");
+//const mail_view = require("./view/mail");
 const moment = require('moment');
 const axios = require('axios');
 const shortid = require('shortid');
@@ -432,16 +432,16 @@ module.exports.buy = async function (req, res) {
 		// Copy to client
 		/* if (data.user_data.email) {
 			await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], data.user_data.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch(() => null);
-		} */
+		}
 
 		// Copy to admin
-		/* await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], req.custom.settings.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch(() => null); */
+		await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], req.custom.settings.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch(() => null); */
 
 		try {
-			const token = await get_remote_token(req);//.catch(() => null);
-			console.log('this is token: ', token);
+			//const token = await get_remote_token(req);//.catch(() => null);
+			//console.log('this is token: ', token);
 
-			if (token) {
+			if (true) {
 				// Update quantities
 				await update_quantities(req, up_products, up_cart, token);//.catch(() => null);
 			}
@@ -1015,7 +1015,6 @@ function getRoundedDate(minutes, d = null) {
 }
 
 function update_quantities(req, the_products, cart, token) {
-	console.log('this is being updated..');
 	const collection = req.custom.db.client().collection('product');
 	let promises = [];
 
@@ -1089,7 +1088,7 @@ function update_quantities(req, the_products, cart, token) {
 			}).catch(() => null);
 			promises.push(update);
 			remote_product.quantity = quantity;
-			promises.push(update_remote_quantity(req, remote_product, token));
+			if (token) promises.push(update_remote_quantity(req, remote_product, token));
 		}
 
 	}
