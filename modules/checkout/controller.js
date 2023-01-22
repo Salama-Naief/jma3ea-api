@@ -435,7 +435,7 @@ module.exports.buy = async function (req, res) {
 		}
 
 		// Copy to admin
-		await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], req.custom.settings.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch(() => null);
+		/* await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], req.custom.settings.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch(() => null); */
 
 		try {
 			const token = await get_remote_token(req);//.catch(() => null);
