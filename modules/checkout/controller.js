@@ -1016,7 +1016,8 @@ function getRoundedDate(minutes, d = null) {
 }
 
 function update_quantities(req, the_products, cart, token) {
-	console.log('the function is being called...');
+	try {
+		console.log('the function is being called...');
 	const collection = req.custom.db.client().collection('product');
 	let promises = [];
 
@@ -1099,6 +1100,9 @@ function update_quantities(req, the_products, cart, token) {
 	}
 
 	return Promise.all(promises);
+	} catch(err) {
+		console.log('quantity error: ', err);
+	}
 }
 
 function get_remote_token(req) {
