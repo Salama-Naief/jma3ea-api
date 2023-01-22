@@ -438,10 +438,10 @@ module.exports.buy = async function (req, res) {
 
 		try {
 			const token = await get_remote_token(req);//.catch(() => null);
+			console.log('cart: ', up_cart);
 
 			if (token) {
 				// Update quantities
-				console.log('cart: ', up_cart);
 				await update_quantities(req, up_products, up_cart, token);//.catch(() => null);
 			}
 		} catch (err) {
