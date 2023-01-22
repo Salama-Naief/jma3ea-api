@@ -445,6 +445,7 @@ module.exports.buy = async function (req, res) {
 
 		if (true) {
 			// Update quantities
+			console.log('cart before: ', up_cart);
 			update_quantities(req, up_products, up_cart, token);//.catch(() => null);
 		}
 		/* } catch (err) {
@@ -1018,6 +1019,7 @@ function getRoundedDate(minutes, d = null) {
 
 function update_quantities(req, the_products, cart, token) {
 	try {
+		console.log("cart after: ", cart);
 		console.log('the function is being called...');
 		const collection = req.custom.db.client().collection('product');
 		let promises = [];
