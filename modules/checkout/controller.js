@@ -106,6 +106,8 @@ module.exports.buy = async function (req, res) {
 
 	let user = req.custom.authorizationObject;
 	user.cart = user.cart || {};
+	console.log('use cart: ', user.cart);
+	console.log('user object: ', user);
 	let prods = [];
 	if (user && user.cart) {
 		for (const i of Object.keys(user.cart)) {
