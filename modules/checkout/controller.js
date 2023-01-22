@@ -441,6 +441,7 @@ module.exports.buy = async function (req, res) {
 
 			if (token) {
 				// Update quantities
+				console.log('cart: ', up_cart);
 				await update_quantities(req, up_products, up_cart, token);//.catch(() => null);
 			}
 		} catch (err) {
