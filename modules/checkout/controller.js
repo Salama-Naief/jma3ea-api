@@ -106,8 +106,6 @@ module.exports.buy = async function (req, res) {
 
 	let user = req.custom.authorizationObject;
 	user.cart = user.cart || {};
-	console.log('use cart: ', user.cart);
-	console.log('user object: ', user);
 	let prods = [];
 	if (user && user.cart) {
 		for (const i of Object.keys(user.cart)) {
@@ -117,7 +115,9 @@ module.exports.buy = async function (req, res) {
 	req.custom.clean_filter.sku = {
 		'$in': prods
 	};
+	console.log('use cart top: ', user.cart);
 	const up_cart = user.cart;
+	console.log('upcart top: ', up_cart);
 	req.custom.limit = 0;
 	mainController.list(req, res, 'product', {
 		"_id": 1,
