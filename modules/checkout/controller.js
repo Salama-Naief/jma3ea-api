@@ -115,7 +115,7 @@ module.exports.buy = async function (req, res) {
 	req.custom.clean_filter.sku = {
 		'$in': prods
 	};
-	const up_cart = { ...user.cart };
+	const up_cart = user.cart && Object.keys(user.cart).length > 0 ? { ...user.cart } : {};
 	req.custom.limit = 0;
 	mainController.list(req, res, 'product', {
 		"_id": 1,
