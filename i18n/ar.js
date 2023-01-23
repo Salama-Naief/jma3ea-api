@@ -41,6 +41,8 @@ const locals = {
 	no_data_found: 'لا يوجد بيانات',
 	no_enough_points: 'عفواً رصيد النقاط غير كافي',
 	no_enough_wallet: 'لا يوجد رصيد كافي',
+	no_allowed_for_external_suppliers: 'الدفع بالمحفظة غير مسموح به للموردين الخارجيين',
+	payment_method_not_allowed: 'طريقة الدفع غير مسموح بها',
 	no_user_found: 'هذا المستخدم غير مسجل',
 	no_settings: 'لا يوجد إعدادات',
 	no_token: 'لا يوجد مفتاح',

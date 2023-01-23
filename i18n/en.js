@@ -39,6 +39,8 @@ const locals = {
 	no_data_found: 'No data found',
 	no_enough_points: 'Sorry, You don\'t have enough points',
 	no_enough_wallet: 'There is no enough money in your wallet',
+	no_allowed_for_external_suppliers: 'Paying with wallet is not allowed for external suppliers',
+	payment_method_not_allowed: 'Payment method not allowed',
 	no_settings: 'No settings provided.',
 	no_token: 'No token provided.',
 	order_id: 'Order Number',

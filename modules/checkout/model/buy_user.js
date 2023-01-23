@@ -20,7 +20,11 @@ module.exports = {
 		"required": false,
 	}),
 	"delivery_time": new Field({
-		"required": true,
+		"required": false,
+	}),
+	"suppliers": new Field({
+		"type": Array, // [{ supplier_id: ObjectID, delivery_time: String }]
+		"required": false,
 	}),
 	"suppliers": new Field({
 		"type": Array,
