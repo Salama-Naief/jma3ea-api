@@ -11,12 +11,12 @@ module.exports.list = async function (req, res) {
 
     const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
 
-    if (cache_key) {
+    /* if (cache_key) {
         const cached_data = await cache.get(cache_key).catch(() => null);
         if (cached_data) {
             return res.out(cached_data);
         }
-    }
+    } */
 
     mainController.list(req, res, collectionName, {
         "_id": 1,
@@ -30,7 +30,7 @@ module.exports.list = async function (req, res) {
         }
 
         const inventories = [];
-        const supplier_collection = "suppliers";
+        const supplier_collection = "supplier";
         const collection = req.custom.db.client().collection(supplier_collection);
         const pipeline = [
             // Stage 4
@@ -50,7 +50,7 @@ module.exports.list = async function (req, res) {
                     "name": {
                         $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
                     },
-                    "orders": 1,
+                    //"orders": 1,
                     "picture": 1
                 }
             }
@@ -61,17 +61,10 @@ module.exports.list = async function (req, res) {
         };
 
         for (let inventory of out.data) {
-            req.custom.clean_filter = {
-                "is_external": true,
-                "inventory_id": ObjectID(inventory._id),
-                "cities": ObjectID(cityid)
-            }
-
-            pipeline.push({ $match: req.custom.clean_filter });
-
+            req.custom.clean_filter = { inventory_id: ObjectID(inventory._id), cities: ObjectID(cityid), is_external: true }
 
             inventory.suppliers = await new Promise((resolve, reject) => {
-                collection.aggregate(pipeline, options).toArray((err, results) => {
+                collection.aggregate([{ $match: req.custom.clean_filter }, ...pipeline], options).toArray((err, results) => {
                     if (err) {
                         reject(err);
                     }
@@ -81,7 +74,6 @@ module.exports.list = async function (req, res) {
                     resolve(results);
                 });
             }).catch(() => null);
-            //inventory.suppliers = results.data;
             inventories.push(inventory);
         }
 
