@@ -60,7 +60,7 @@ module.exports.list = function (req, res) {
 		req.custom.clean_sort = { score: { $meta: 'textScore' } };
 
 	} else {
-		req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
+		//req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
 	}
 
 	if (req.query) {
@@ -110,9 +110,12 @@ module.exports.list = function (req, res) {
 	}, (data) => {
 		if (data.total == 0) {
 			req.custom.clean_filter['$or'] = [
+				{ "barcode": { $regex: new RegExp(`${name}`, "i") } },
 				{ "name.ar": { $regex: new RegExp(`${name}|${names_array.join('|')}|${newNames.join('|')}`, "i") } },
-				{ "name.en": { $regex: new RegExp(`${name}|${names_array.join('|')}|${newNames.join('|')}`, "i") } }
+				{ "name.en": { $regex: new RegExp(`${name}|${names_array.join('|')}|${newNames.join('|')}`, "i") } },
 			];
+
+			console.log(req.custom.clean_filter['$or']);
 
 			if (delete req.custom.clean_filter.hasOwnProperty('$text'))
 				delete req.custom.clean_filter['$text'];

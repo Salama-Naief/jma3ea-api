@@ -50,6 +50,9 @@ module.exports.list = async function (req, res) {
                     "name": {
                         $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
                     },
+                    "description": {
+                        $ifNull: [`$description.${req.custom.lang}`, `$description.${req.custom.config.local}`]
+                    },
                     //"orders": 1,
                     "picture": 1
                 }
