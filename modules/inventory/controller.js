@@ -1,6 +1,7 @@
 // inventory Controller
 
 // Load required modules
+const { filter_internal_suppliers_by_city } = require("../../libraries/common");
 const mainController = require("../../libraries/mainController");
 const ObjectID = require("../../types/object_id");
 const collectionName = 'inventory';
@@ -63,8 +64,9 @@ module.exports.list = async function (req, res) {
             "allowDiskUse": true
         };
 
+        req.custom.clean_filter = await filter_internal_suppliers_by_city(req, true);
         for (let inventory of out.data) {
-            req.custom.clean_filter = { inventory_id: ObjectID(inventory._id), cities: ObjectID(cityid), is_external: true }
+            req.custom.clean_filter['inventory_id'] = ObjectID(inventory._id);
 
             inventory.suppliers = await new Promise((resolve, reject) => {
                 collection.aggregate([{ $match: req.custom.clean_filter }, ...pipeline], options).toArray((err, results) => {
