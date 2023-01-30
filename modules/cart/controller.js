@@ -69,26 +69,7 @@ module.exports.add = function (req, res) {
 					};
 
 				}
-
-				for (const store of selected_product.prod_n_storeArr) {
-					if (store.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
-						if (store.feed_from_store_id) {
-							const temp_store = selected_product.prod_n_storeArr.find((i) => i.store_id.toString() == store.feed_from_store_id.toString());
-							store.quantity = temp_store.quantity;
-						}
-						if (store.quantity < data.quantity || (selected_product.max_quantity_cart && selected_product.max_quantity_cart < data.quantity)) {
-							return res.out({
-								'message': req.custom.local.cart_product_exceeded_allowed
-							}, status_message.VALIDATION_ERROR);
-						}
-						if (store.status == false) {
-							return res.out({
-								'message': req.custom.local.cart_product_unavailable
-							}, status_message.VALIDATION_ERROR);
-						}
-						break;
-					}
-				}
+				
 
 				user.cart[data.sku] = data.quantity;
 
@@ -158,6 +139,29 @@ module.exports.add = function (req, res) {
 						const product = products.find((p) => p.sku.toString() === i.toString());
 						if (product) {
 							total_prices += product.price * user.cart[i];
+						}
+					}
+
+					for (const store of selected_product.prod_n_storeArr) {
+						if (store.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
+							if (store.feed_from_store_id) {
+								const temp_store = selected_product.prod_n_storeArr.find((i) => i.store_id.toString() == store.feed_from_store_id.toString());
+								store.quantity = temp_store.quantity;
+							}
+							if (store.quantity < data.quantity || (selected_product.max_quantity_cart && selected_product.max_quantity_cart < data.quantity)) {
+								return res.out({
+									'message': req.custom.local.cart_product_exceeded_allowed,
+									total_products: total_products,
+									total_quantities: total_quantities,
+									total_prices: common.getRoundedPrice(total_prices),
+								}, status_message.VALIDATION_ERROR);
+							}
+							if (store.status == false) {
+								return res.out({
+									'message': req.custom.local.cart_product_unavailable
+								}, status_message.VALIDATION_ERROR);
+							}
+							break;
 						}
 					}
 
