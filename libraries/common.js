@@ -75,7 +75,7 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 		const cache = req.custom.cache;
 		const cache_key = `supplier_all_solid`;
 		all_suppliers = await cache.get(cache_key).catch(() => null);
-		if (!all_suppliers) {
+		if (true) {
 			const supplier_collection = req.custom.db.client().collection('supplier');
 			all_suppliers = await supplier_collection.find({}).toArray() || [];
 			if (all_suppliers) {
