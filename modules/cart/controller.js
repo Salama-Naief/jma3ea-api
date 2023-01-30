@@ -69,8 +69,8 @@ module.exports.add = function (req, res) {
 					};
 
 				}
-				
 
+				const old_quantity = user.cart[data.sku] ? user.cart[data.sku] : 0;
 				user.cart[data.sku] = data.quantity;
 
 				if (!data.quantity) {
@@ -149,11 +149,12 @@ module.exports.add = function (req, res) {
 								store.quantity = temp_store.quantity;
 							}
 							if (store.quantity < data.quantity || (selected_product.max_quantity_cart && selected_product.max_quantity_cart < data.quantity)) {
+								const curr_product = products.find((p) => p.sku.toString() === data.sku.toString());
 								return res.out({
 									'message': req.custom.local.cart_product_exceeded_allowed,
 									total_products: total_products,
-									total_quantities: total_quantities,
-									total_prices: common.getRoundedPrice(total_prices),
+									total_quantities: old_quantity,
+									total_prices: common.getRoundedPrice(total_prices - parseFloat(curr_product.price) * (total_quantities - old_quantity)),
 								}, status_message.VALIDATION_ERROR);
 							}
 							if (store.status == false) {
