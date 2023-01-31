@@ -769,6 +769,7 @@ module.exports.list = async function (req, res) {
 						sup.supplier.isOpen = true;
 					}
 				} catch (err) {
+					console.log(moment().format('d'), sup.supplier.working_times);
 					console.log(err);
 				}
 
