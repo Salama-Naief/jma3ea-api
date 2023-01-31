@@ -55,7 +55,8 @@ module.exports.list = async function (req, res) {
                         $ifNull: [`$description.${req.custom.lang}`, `$description.${req.custom.config.local}`]
                     },
                     //"orders": 1,
-                    "picture": 1
+                    "picture": 1,
+                    "working_times": 1
                 }
             }
         ];
