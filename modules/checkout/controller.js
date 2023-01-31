@@ -761,7 +761,7 @@ module.exports.list = async function (req, res) {
 					// earliest_date_of_delivery = common.getDate(moment().add(earliest_date_of_delivery, 'minutes'));
 				}
 
-				if (sup.supplier.working_times) {
+				if (sup.supplier.working_times && sup.supplier.working_times.length > 0) {
 					const isOpen = sup.supplier.working_times[moment().format('d')].from <= common.getDate().getHours() && sup.supplier.working_times[moment().format('d')].to >= common.getDate().getHours();
 					sup.supplier.isOpen = isOpen;
 				} else {
