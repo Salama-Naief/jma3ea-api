@@ -64,9 +64,9 @@ module.exports.list = async function (req, res) {
             "allowDiskUse": true
         };
 
-        req.custom.clean_filter = await filter_internal_suppliers_by_city(req, true);
+        //req.custom.clean_filter = await filter_internal_suppliers_by_city(req, true);
         for (let inventory of out.data) {
-            req.custom.clean_filter['inventory_id'] = ObjectID(inventory._id);
+            req.custom.clean_filter = { inventory_id: ObjectID(inventory._id), cities: ObjectID(cityid), is_external: true };
 
             inventory.suppliers = await new Promise((resolve, reject) => {
                 collection.aggregate([{ $match: req.custom.clean_filter }, ...pipeline], options).toArray((err, results) => {

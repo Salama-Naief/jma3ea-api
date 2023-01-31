@@ -27,7 +27,7 @@ module.exports.getDecimalPrice = function (price) {
 module.exports.getDate = function (date = null, local = 'en') {
 	moment.updateLocale(local, {});
 	return new Date(date ? moment(date).add(parseInt(process.env.DATE_UTC), 'hours') : moment().add(parseInt(process.env.DATE_UTC), 'hours'));
-}
+};
 
 module.exports.group_products_by_suppliers = (products, req) => {
 	return products.reduce((prod, curr) => {
@@ -87,7 +87,7 @@ module.exports.filter_internal_suppliers_by_city = async function (req, force = 
 
 		if (all_suppliers.length > 0) {
 			const internalSuppliersIds = all_suppliers.filter(sup => {
-				if (!sup.is_external || (sup.cities && sup.cities.findIndex(c => c.toString() == city_id.toString()) > -1 && sup.working_times && sup.working_times[moment().format('d')].from <= new Date().getHours() && sup.working_times[moment().format('d')].to >= new Date().getHours())) {
+				if (!sup.is_external || (sup.cities && sup.cities.findIndex(c => c.toString() == city_id.toString()) > -1/*  && sup.working_times && sup.working_times[moment().format('d')].from <= getDate().getHours() && sup.working_times[moment().format('d')].to >= getDate().getHours() */)) {
 					return sup;
 				}
 			}).map(s => {
