@@ -66,11 +66,11 @@ module.exports.transform_word_begins_with_alif_letter = (text) => {
 
 
 
-module.exports.filter_internal_suppliers_by_city = async function (req, force = false) {
+module.exports.filter_internal_suppliers_by_city = async function (req/* , force = false */) {
 	try {
-		if (!force && req.custom.isProducts != true) {
+		/* if (!force && req.custom.isProducts != true) {
 			return req.custom.clean_filter;
-		}
+		} */
 
 		const cache = req.custom.cache;
 		const cache_key = `supplier_all_solid`;

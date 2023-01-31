@@ -608,7 +608,6 @@ module.exports.list = async function (req, res) {
 
 				const supplier_min_value = sup.supplier.min_value && parseInt(sup.supplier.min_value) > 0 ? parseInt(sup.supplier.min_value) : (req.custom.settings.orders.min_value ? parseInt(req.custom.settings.orders.min_value) : 0)
 				sup.purchase_possibility = supplier_min_value > 0 && supplier_products_total < supplier_min_value ? false : true;
-				console.log("possibility: ", supplier_min_value, supplier_products_total, sup.purchase_possibility);
 				if (purchase_possibility && !sup.purchase_possibility) {
 					purchase_possibility = false;
 				}
@@ -762,10 +761,16 @@ module.exports.list = async function (req, res) {
 					// earliest_date_of_delivery = common.getDate(moment().add(earliest_date_of_delivery, 'minutes'));
 				}
 
+				if (sup.supplier.working_times) {
+					const isOpen = sup.supplier.working_times[moment().format('d')].from <= common.getDate().getHours() && sup.supplier.working_times[moment().format('d')].to >= common.getDate().getHours();
+					sup.supplier.isOpen = isOpen;
+				} else {
+					sup.supplier.isOpen = true;
+				}
+
 				earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
 				sup.earliest_date_of_delivery = earliest_date_of_delivery;
 				sup.delivery_times = delivery_times;
-
 				supplier_products_total += supplier_shipping_cost;
 				sup.shipping_cost = supplier_shipping_cost;
 				sup.total = common.getRoundedPrice(supplier_products_total);
@@ -1105,7 +1110,8 @@ async function products_to_save(products, user, req, to_display = false) {
 			min_delivery_time: supplier.delivery_time,
 			min_value: supplier.min_order,
 			allow_cod: supplier.allow_cod,
-			delivery_time_text: supplier.delivery_time_text
+			delivery_time_text: supplier.delivery_time_text,
+			working_times: supplier.is_external ? moment.weekdays().map((i, idx) => ({ ...supplier.working_times[idx], text: i })) : undefined
 		} : to_display ? {
 			_id: req.custom.settings['site_id'],
 			name: {
