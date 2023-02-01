@@ -761,18 +761,14 @@ module.exports.list = async function (req, res) {
 					// earliest_date_of_delivery = common.getDate(moment().add(earliest_date_of_delivery, 'minutes'));
 				}
 
-				try {
-					const dayOfWeek = moment().format('d');
-					if (sup.supplier.working_times && sup.supplier.working_times.length > 0 && dayOfWeek <= sup.supplier.working_times.length) {
-						const dayHours = common.getDate().getHours();
-						const isOpen = sup.supplier.working_times[dayOfWeek].from <= dayHours && sup.supplier.working_times[dayOfWeek].to >= dayHours;
-						sup.supplier.isOpen = isOpen;
-						console.log('this is being triggered: ', dayOfWeek, dayHours, sup.supplier.working_times[dayOfWeek], isOpen);
-					} else {
-						sup.supplier.isOpen = true;
-					}
-				} catch (err) {
-					console.log(err);
+				const dayOfWeek = moment().format('d');
+				const dayHours = common.getDate().getHours();
+				console.log('this is being triggered: ', dayOfWeek, dayHours, sup.supplier.working_times[dayOfWeek]);
+				if (sup.supplier.working_times && sup.supplier.working_times.length > 0 && dayOfWeek <= sup.supplier.working_times.length) {
+					const isOpen = sup.supplier.working_times[dayOfWeek].from <= dayHours && sup.supplier.working_times[dayOfWeek].to >= dayHours;
+					sup.supplier.isOpen = isOpen;
+				} else {
+					sup.supplier.isOpen = true;
 				}
 
 				earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
@@ -1129,7 +1125,6 @@ async function products_to_save(products, user, req, to_display = false) {
 			min_value: req.custom.settings.orders.min_value,
 			delivery_time_text: ""
 		} : null;
-		console.log("working times: ", supplier && supplier.working_times ? supplier.working_times : "undefined");
 		prod.delivery_time = supplier ? supplier.delivery_time : req.body.delivery_time;
 
 		return prod;
