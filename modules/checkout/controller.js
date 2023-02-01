@@ -760,7 +760,7 @@ module.exports.list = async function (req, res) {
 					earliest_date_of_delivery += parseInt(req.custom.settings.orders.min_delivery_time || 0);
 					// earliest_date_of_delivery = common.getDate(moment().add(earliest_date_of_delivery, 'minutes'));
 				}
-				
+
 				try {
 					const dayOfWeek = moment().format('d');
 					if (sup.supplier.working_times && sup.supplier.working_times.length > 0 && dayOfWeek <= sup.supplier.working_times.length) {
@@ -1129,7 +1129,7 @@ async function products_to_save(products, user, req, to_display = false) {
 			min_value: req.custom.settings.orders.min_value,
 			delivery_time_text: ""
 		} : null;
-
+		console.log("working times: ", supplier.working_times);
 		prod.delivery_time = supplier ? supplier.delivery_time : req.body.delivery_time;
 
 		return prod;
