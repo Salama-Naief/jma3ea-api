@@ -761,6 +761,7 @@ module.exports.list = async function (req, res) {
 					// earliest_date_of_delivery = common.getDate(moment().add(earliest_date_of_delivery, 'minutes'));
 				}
 
+				moment.updateLocale('en', {});
 				const dayOfWeek = moment().format('d');
 				const dayHours = common.getDate().getHours();
 				console.log('this is being triggered: ', dayOfWeek, dayHours, sup.supplier.working_times[dayOfWeek]);
