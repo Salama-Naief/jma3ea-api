@@ -762,14 +762,14 @@ module.exports.list = async function (req, res) {
 				}
 
 				try {
-					if (sup.supplier.working_times && sup.supplier.working_times.length > 0) {
+					if (sup.supplier.working_times && sup.supplier.working_times.length > 0/*  && moment().format('d') <= sup.supplier.working_times.length */) {
+						console.log(moment().format('d'), sup.supplier.working_times, sup.supplier.working_times[moment().format('d')]);
 						const isOpen = sup.supplier.working_times[moment().format('d')].from <= common.getDate().getHours() && sup.supplier.working_times[moment().format('d')].to >= common.getDate().getHours();
 						sup.supplier.isOpen = isOpen;
 					} else {
 						sup.supplier.isOpen = true;
 					}
 				} catch (err) {
-					console.log(moment().format('d'), sup.supplier.working_times);
 					console.log(err);
 				}
 
