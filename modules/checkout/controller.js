@@ -762,9 +762,10 @@ module.exports.list = async function (req, res) {
 				}
 				
 				try {
-					console.log(moment().format('d'), sup.supplier.working_times, sup.supplier.working_times[moment().format('d')]);
-					if (sup.supplier.working_times && sup.supplier.working_times.length > 0 && moment().format('d') <= sup.supplier.working_times.length) {
-						const isOpen = sup.supplier.working_times[moment().format('d')].from <= common.getDate().getHours() && sup.supplier.working_times[moment().format('d')].to >= common.getDate().getHours();
+					const dayOfWeek = moment().format('d');
+					console.log(dayOfWeek, sup.supplier.working_times, sup.supplier.working_times[dayOfWeek], sup.supplier.working_times[3]);
+					if (sup.supplier.working_times && sup.supplier.working_times.length > 0 && dayOfWeek <= sup.supplier.working_times.length) {
+						const isOpen = sup.supplier.working_times[dayOfWeek].from <= common.getDate().getHours() && sup.supplier.working_times[dayOfWeek].to >= common.getDate().getHours();
 						sup.supplier.isOpen = isOpen;
 					} else {
 						sup.supplier.isOpen = true;
