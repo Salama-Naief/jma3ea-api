@@ -764,10 +764,10 @@ module.exports.list = async function (req, res) {
 				try {
 					const dayOfWeek = moment().format('d');
 					if (sup.supplier.working_times && sup.supplier.working_times.length > 0 && dayOfWeek <= sup.supplier.working_times.length) {
-						console.log('this is being triggered: ', dayOfWeek, dayHours, sup.supplier.working_times[dayOfWeek]);
 						const dayHours = common.getDate().getHours();
 						const isOpen = sup.supplier.working_times[dayOfWeek].from <= dayHours && sup.supplier.working_times[dayOfWeek].to >= dayHours;
 						sup.supplier.isOpen = isOpen;
+						console.log('this is being triggered: ', dayOfWeek, dayHours, sup.supplier.working_times[dayOfWeek], isOpen);
 					} else {
 						sup.supplier.isOpen = true;
 					}
