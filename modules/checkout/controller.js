@@ -1129,7 +1129,7 @@ async function products_to_save(products, user, req, to_display = false) {
 			min_value: req.custom.settings.orders.min_value,
 			delivery_time_text: ""
 		} : null;
-		console.log("working times: ", supplier.working_times);
+		console.log("working times: ", supplier && supplier.working_times ? supplier.working_times : "undefined");
 		prod.delivery_time = supplier ? supplier.delivery_time : req.body.delivery_time;
 
 		return prod;
