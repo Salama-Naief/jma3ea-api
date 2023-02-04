@@ -439,10 +439,10 @@ module.exports.buy = async function (req, res) {
 		try {
 			const token = await get_remote_token(req);//.catch(() => null);
 
-			if (token) {
+			//if (token) {
 				// Update quantities
 				await update_quantities(req, up_products, up_cart, token);//.catch(() => null);
-			}
+			//}
 		} catch (err) {
 			console.log('Error: ', err);
 		}
@@ -1048,11 +1048,32 @@ function update_quantities(req, the_products, cart, token) {
 					return variant;
 				}
 				return v;
-			})
+			});
+
+			let parent_prod_n_storeArr = [];
+			for (const i of p.prod_n_storeArr) {
+				if (i.feed_from_store_id) {
+					const temp_store = p.prod_n_storeArr.find((pi) => pi.store_id.toString() == i.feed_from_store_id.toString());
+					i.quantity = temp_store.quantity;
+					p.prod_n_storeArr = p.prod_n_storeArr.map((pi) => {
+						if (pi.store_id.toString() == temp_store.store_id.toString()) {
+							pi.quantity -= quantity;
+							pi.quantity = pi.quantity >= 0 ? pi.quantity : 0;
+						}
+						return pi;
+					});
+				} else if (i.store_id.toString() == store_id) {
+					i.quantity -= quantity;
+					i.quantity = i.quantity >= 0 ? i.quantity : 0
+				}
+				i.store_id = ObjectID(i.store_id.toString());
+				parent_prod_n_storeArr.push(i);
+			}
+
 			const update = collection.updateOne({
 				_id: ObjectID(p._id.toString())
 			}, {
-				$set: { variants: variants }
+				$set: { variants: variants, prod_n_storeArr: parent_prod_n_storeArr }
 			}).catch(() => null);
 			promises.push(update);
 
@@ -1085,7 +1106,9 @@ function update_quantities(req, the_products, cart, token) {
 			}).catch(() => null);
 			promises.push(update);
 			remote_product.quantity = quantity;
-			promises.push(update_remote_quantity(req, remote_product, token));
+			if (token) {
+				promises.push(update_remote_quantity(req, remote_product, token));
+			}
 		}
 
 	}
