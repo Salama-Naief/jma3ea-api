@@ -544,7 +544,18 @@ module.exports.list = async function (req, res) {
 			}, status_message.NO_DATA);
 		}
 
-		const products = await products_to_save(out.data, user, req, true);
+		let products = await products_to_save(out.data, user, req, true);
+
+		if (req.query.suppliers) {
+			if (req.query.suppliers.length > 0) {
+				const suppliers_to_buy = req.query.suppliers;
+				products = products.filter(p => suppliers_to_buy.includes(p.supplier._id.toString()));
+			} else {
+				return res.out({
+					message: "No supplier selected"
+				}, status_message.VALIDATION_ERROR);
+			}
+		}
 
 		const should_be_gifted = products.findIndex(p => p.categories.findIndex(c => FLOWERS_CATEGORIES_IDS.includes(c._id.toString())) > -1) > -1;
 
