@@ -83,7 +83,7 @@ const locals = {
 		"7": 'Confirmed',
 		"8": 'Returned',
 		"9": 'Request reversed',
-		"10": 'Return part of the amount',
+		"10": 'Driver is on the way',
 		"11": 'Full refund',
 		"12": 'Ready to pick',
 		"13": 'Time is up',

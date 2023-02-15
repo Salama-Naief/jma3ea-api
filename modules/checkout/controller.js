@@ -436,18 +436,12 @@ module.exports.buy = async function (req, res) {
 			// Copy to admin
 			await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], req.custom.settings.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch(() => null);
 
-			try {
-				const token = await get_remote_token(req);//.catch(() => null);
+			const token = await get_remote_token(req);//.catch(() => null);
 
-				if (token) {
-					// Update quantities
-					await update_quantities(req, up_products, up_cart, token);//.catch(() => null);
-				}
-			} catch (err) {
-				console.log('Error: ', err);
-			}
-
-
+			//if (token) {
+			// Update quantities
+			await update_quantities(req, up_products, up_cart, token);//.catch(() => null);
+			//}
 			res.out(order_data);
 		} catch (err) {
 			console.log('err: ', err);
@@ -548,7 +542,18 @@ module.exports.list = async function (req, res) {
 				}, status_message.NO_DATA);
 			}
 
-			const products = await products_to_save(out.data, user, req, true);
+			let products = await products_to_save(out.data, user, req, true);
+
+			if (req.query.suppliers) {
+				if (req.query.suppliers.length > 0) {
+					const suppliers_to_buy = req.query.suppliers;
+					products = products.filter(p => suppliers_to_buy.includes(p.supplier._id.toString()));
+				} else {
+					return res.out({
+						message: "No supplier selected"
+					}, status_message.VALIDATION_ERROR);
+				}
+			}
 
 			const should_be_gifted = products.findIndex(p => p.categories.findIndex(c => FLOWERS_CATEGORIES_IDS.includes(c._id.toString())) > -1) > -1;
 
@@ -1196,11 +1201,32 @@ function update_quantities(req, the_products, cart, token) {
 					return variant;
 				}
 				return v;
-			})
+			});
+
+			let parent_prod_n_storeArr = [];
+			for (const i of p.prod_n_storeArr) {
+				if (i.feed_from_store_id) {
+					const temp_store = p.prod_n_storeArr.find((pi) => pi.store_id.toString() == i.feed_from_store_id.toString());
+					i.quantity = temp_store.quantity;
+					p.prod_n_storeArr = p.prod_n_storeArr.map((pi) => {
+						if (pi.store_id.toString() == temp_store.store_id.toString()) {
+							pi.quantity -= quantity;
+							pi.quantity = pi.quantity >= 0 ? pi.quantity : 0;
+						}
+						return pi;
+					});
+				} else if (i.store_id.toString() == store_id) {
+					i.quantity -= quantity;
+					i.quantity = i.quantity >= 0 ? i.quantity : 0
+				}
+				i.store_id = ObjectID(i.store_id.toString());
+				parent_prod_n_storeArr.push(i);
+			}
+
 			const update = collection.updateOne({
 				_id: ObjectID(p._id.toString())
 			}, {
-				$set: { variants: variants }
+				$set: { variants: variants, prod_n_storeArr: parent_prod_n_storeArr }
 			}).catch(() => null);
 			promises.push(update);
 
@@ -1233,7 +1259,9 @@ function update_quantities(req, the_products, cart, token) {
 			}).catch(() => null);
 			promises.push(update);
 			remote_product.quantity = quantity;
-			promises.push(update_remote_quantity(req, remote_product, token));
+			if (token) {
+				promises.push(update_remote_quantity(req, remote_product, token));
+			}
 		}
 
 	}

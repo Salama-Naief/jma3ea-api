@@ -29,6 +29,8 @@ module.exports.list = function (req, res) {
 		"created": 1,
 		"status": 1,
 		"evaluation": 1,
+		"driver_name": 1,
+		"driver_mobile": 1
 	}, (results) => {
 		results.data = results.data.map((i) => {
 			i.status = req.custom.local.order_status_list[i.status];
@@ -83,7 +85,9 @@ module.exports.read = function (req, res) {
 					return p;
 				});
 			}
+			order['status_number'] = order.status;
 			order.status = req.custom.local.order_status_list[order.status];
+			order['all_statuses'] = req.custom.local.order_status_list;
 			res.out(order);
 		})
 		.catch((err) => res.out({
