@@ -15,6 +15,7 @@ const locals = {
 	cart_product_removed: 'تم حذف المنتج',
 	cart_product_unavailable: 'المنتج غير متاح',
 	cart_repeated: 'تم إضافة منتجات الطلب إلى السلة بنجاح',
+	cart_cleared: 'تم مسح منتجات العربة بنجاح',
 	choose_city_first: 'إختر المدينة أولاً',
 	city_is_not_exists: 'المدينة غير موجودة',
 	convert2wallet_closed: 'تحويل النقاط إلى رصيد غير متاح حالياً',

@@ -10,9 +10,8 @@ const mail_view = require("./view/mail");
 const moment = require('moment');
 const axios = require('axios');
 const shortid = require('shortid');
-const { mergeDeliveryTimes, cleanProduct, groupBySupplier } = require('./utils');
+const { mergeDeliveryTimes, cleanProduct, groupBySupplier, getAvailableOffer } = require('./utils');
 shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-');
-const Sentry = require("@sentry/node");
 
 
 const FLOWERS_CATEGORIES_IDS = [
@@ -557,7 +556,7 @@ module.exports.list = async function (req, res) {
 
 			const should_be_gifted = products.findIndex(p => p.categories.findIndex(c => FLOWERS_CATEGORIES_IDS.includes(c._id.toString())) > -1) > -1;
 
-			const total_prods = parseFloat(products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
+			let total_prods = parseFloat(products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
 
 			let purchase_possibility = req.custom.settings.orders && req.custom.settings.orders.min_value && parseInt(req.custom.settings.orders.min_value) > 0 && total_prods < parseInt(req.custom.settings.orders.min_value) ? false : true;
 
@@ -786,13 +785,27 @@ module.exports.list = async function (req, res) {
 				sup.gift_note = sup.products.findIndex(p => p.categories.findIndex(c => FLOWERS_CATEGORIES_IDS.includes(c._id.toString())) > -1) > -1;
 			}
 
-
 			const out_coupon = {
 				code: general_coupon ? general_coupon.code : null,
 				value: general_coupon ? common.getFixedPrice(general_coupon.percent_value ? (parseFloat(total_prods) * general_coupon.percent_value) / 100 : general_coupon.discount_value) : common.getFixedPrice(total_coupon_value),
 				suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
 			};
 
+			/* let offer = null;
+			if (user.offer && user.offer.offer_id) {
+				offer = await getAvailableOffer(req, total_prods, user.offer.offer_id);
+				if (offer) {
+					if (offer.discount_amount && offer.discount_amount > 0) {
+						total_prods -= parseFloat(offer.discount_amount);
+					}
+
+					if (offer.product_sku) {
+						
+					}
+				}
+			} else {
+				offer = await getAvailableOffer(req, total_prods);
+			} */
 
 			let total = parseFloat(total_prods) + parseFloat(shipping_cost) - parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
 			total = total > 0 ? total : 0;
@@ -971,6 +984,7 @@ module.exports.list = async function (req, res) {
 				payment_methods: productsGroupedBySupplier.find(s => s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
 				earliest_date_of_delivery: earliest_date_of_delivery,
 				delivery_times: delivery_times,
+				//offer: offer,
 				data: productsGroupedBySupplier.map((data) => {
 					data.payment_methods = data.supplier.allow_cod === false ? payment_methods.filter(p => p.id !== 'cod') : payment_methods;
 					data.products = data.products.map(p => {

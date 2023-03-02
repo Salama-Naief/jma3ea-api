@@ -1,3 +1,5 @@
+const ObjectID = require("../../types/object_id");
+
 /**
  * This functions is used to merge the delivery times of settings and city in a specific day
  * @param {Array} settingTimes - The delivery times in settings
@@ -142,7 +144,6 @@ module.exports.cleanProduct = async function (req, cart) {
     }
 }
 
-
 module.exports.groupBySupplier = (products) => {
     const newProducts = [];
     for (let p of products) {
@@ -155,4 +156,26 @@ module.exports.groupBySupplier = (products) => {
     }
 
     return newProducts;
+}
+
+
+module.exports.getAvailableOffer = async (req, total, offer_id) => {
+    const collection = req.custom.db.client().collection('offer');
+    const query = {
+        status: true,
+        min_amount: { $lte: total },
+        target_amount: { $gte: total }
+    };
+
+    if (offer_id) {
+        query['_id'] = ObjectID(offer_id.toString());
+    }
+
+    const options = {
+        sort: { target_amount: 1 }
+    };
+
+    const offer = await collection.findOne(query, options);
+
+    return offer;
 }

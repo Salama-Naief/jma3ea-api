@@ -15,6 +15,7 @@ const locals = {
 	cart_product_removed: 'Product has been removed',
 	cart_product_unavailable: 'Product is unavailable',
 	cart_repeated: 'Order has been repeated',
+	cart_cleared: 'Cart has been cleared',
 	choose_city_first: 'Choose city first',
 	city_is_not_exists: 'City is not exists',
 	convert2wallet_closed: 'Convert points to wallet is not available now',

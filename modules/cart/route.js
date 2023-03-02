@@ -23,4 +23,14 @@ router.post('/coupon', controller.coupon);
  */
 router.delete('/:Id', controller.remove);
 
+/**
+ * POST /cart/clear
+ */
+router.post('/clear', controller.clear);
+
+/**
+ * POST /cart/offer
+ */
+router.post('/offer', controller.offer);
+
 module.exports = router;

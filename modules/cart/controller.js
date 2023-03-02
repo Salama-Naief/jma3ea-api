@@ -282,6 +282,31 @@ module.exports.remove = function (req, res) {
 };
 
 /**
+ * Clear the cart
+ * @param {Object} req 
+ * @param {Object} res 
+ * @returns 
+ */
+module.exports.clear = function (req, res) {
+	if (req.custom.isAuthorized === false) {
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+	}
+
+	let user = req.custom.authorizationObject;
+	user.cart = {};
+	user.hash = null;
+
+	req.custom.cache.set(req.custom.token, user)
+		.then((response) => res.out({
+			message: req.custom.local.cart_cleared
+		}, status_message.DELETED))
+		.catch((error) => res.out({
+			'message': error.message
+		}, status_message.UNEXPECTED_ERROR));
+
+}
+
+/**
  * List all products in Cart
  * @param {Object} req
  * @param {Object} res
@@ -603,3 +628,42 @@ module.exports.coupon = function (req, res) {
 			'message': error.message
 		}, status_message.UNEXPECTED_ERROR));
 };
+
+
+/**
+ * Claim the offer
+ */
+module.exports.offer = function (req, res) {
+	if (req.custom.isAuthorized === false) {
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+	}
+
+	let user = req.custom.authorizationObject;
+
+	const data = req.body;
+
+	if (!data.offer_id) {
+		return res.out({
+			"offer_id": req.custom.local.errors.required('offer')
+		}, status_message.VALIDATION_ERROR);
+	}
+
+	user.offer = {
+		offer_id: null
+	};
+
+	const collection = req.custom.db.client().collection('offer');
+
+	collection.findOne({ _id: ObjectID(data.offer_id), status: true }).then((offer) => {
+		user.offer.offer_id = data.offer_id;
+		req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
+			.then((response) => res.out({
+				message: req.custom.local.cart_coupon_added
+			}, status_message.CREATED))
+			.catch((error) => res.out({
+				'message': error.message
+			}, status_message.UNEXPECTED_ERROR));
+	}).catch((error) => res.out({
+		'message': error.message
+	}, status_message.UNEXPECTED_ERROR));
+}
