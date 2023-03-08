@@ -633,7 +633,7 @@ module.exports.coupon = function (req, res) {
 /**
  * Claim the offer
  */
-module.exports.offer = function (req, res) {
+module.exports.offer = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -643,9 +643,7 @@ module.exports.offer = function (req, res) {
 	const data = req.body;
 
 	if (!data.offer_id) {
-		return res.out({
-			"offer_id": req.custom.local.errors.required('offer')
-		}, status_message.VALIDATION_ERROR);
+		return res.out({}, status_message.VALIDATION_ERROR);
 	}
 
 	user.offer = {
@@ -654,16 +652,39 @@ module.exports.offer = function (req, res) {
 
 	const collection = req.custom.db.client().collection('offer');
 
-	collection.findOne({ _id: ObjectID(data.offer_id), status: true }).then((offer) => {
+	try {
+		const offer = await collection.findOne({ _id: ObjectID(data.offer_id), status: true });
+		if (!offer) {
+			return res.out({
+				//"code": req.custom.local.cart_coupon_unavailable
+			}, status_message.VALIDATION_ERROR);
+		}
+
+		if (offer.type == 'giveaway') {
+			if (!user.member_id) {
+				return res.out({
+					message: "Please login or create an account to claim the offer",
+				});
+			}
+			const giveaway_entries_collection = req.custom.db.client().collection('giveaway_entries');
+
+			await giveaway_entries_collection.insertOne({
+				offer_id: ObjectID(data.offer_id),
+				member_id: ObjectID(user.member_id.toString()),
+				entry_date: common.getDate()
+			});
+		}
 		user.offer.offer_id = data.offer_id;
-		req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
-			.then((response) => res.out({
-				message: req.custom.local.cart_coupon_added
-			}, status_message.CREATED))
-			.catch((error) => res.out({
-				'message': error.message
-			}, status_message.UNEXPECTED_ERROR));
-	}).catch((error) => res.out({
-		'message': error.message
-	}, status_message.UNEXPECTED_ERROR));
+	} catch (err) {
+		res.out({
+			'message': err.message
+		}, status_message.UNEXPECTED_ERROR)
+	}
+	req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
+		.then((response) => res.out({
+			message: req.custom.local.cart_coupon_added
+		}, status_message.CREATED))
+		.catch((error) => res.out({
+			'message': error.message
+		}, status_message.UNEXPECTED_ERROR));
 }

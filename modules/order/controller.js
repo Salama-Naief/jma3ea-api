@@ -30,7 +30,8 @@ module.exports.list = function (req, res) {
 		"status": 1,
 		"evaluation": 1,
 		"driver_name": 1,
-		"driver_mobile": 1
+		"driver_mobile": 1,
+		"driver_track_id": 1
 	}, (results) => {
 		results.data = results.data.map((i) => {
 			i.status = req.custom.local.order_status_list[i.status];

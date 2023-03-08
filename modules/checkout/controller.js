@@ -790,22 +790,50 @@ module.exports.list = async function (req, res) {
 				value: general_coupon ? common.getFixedPrice(general_coupon.percent_value ? (parseFloat(total_prods) * general_coupon.percent_value) / 100 : general_coupon.discount_value) : common.getFixedPrice(total_coupon_value),
 				suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
 			};
-
-			/* let offer = null;
-			if (user.offer && user.offer.offer_id) {
-				offer = await getAvailableOffer(req, total_prods, user.offer.offer_id);
-				if (offer) {
-					if (offer.discount_amount && offer.discount_amount > 0) {
-						total_prods -= parseFloat(offer.discount_amount);
-					}
-
-					if (offer.product_sku) {
-						
+			const offer = await getAvailableOffer(req, total_prods, user.offer && user.offer.offer_id ? user.offer.offer_id : null);
+			if (offer) {
+				if (offer.product_sku) {
+					const product_collection = req.custom.db.client().collection('product');
+					const product = await product_collection.findOne({ sku: offer.product_sku });
+					if (product) {
+						offer.product = product;
+						console.log(offer.type);
+						if (offer.type == 'product' && offer.isClaimed) {
+							const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
+							if (jm3eiaProductIndex > -1) {
+								productsGroupedBySupplier[jm3eiaProductIndex].products.push(product);
+							} else {
+								productsGroupedBySupplier.push({
+									supplier: {
+										_id: req.custom.settings['site_id'],
+										name: {
+											ar: req.custom.settings['site_name']['ar'],
+											en: req.custom.settings['site_name']['en'],
+										},
+										min_delivery_time: req.custom.settings.orders.min_delivery_time,
+										min_value: req.custom.settings.orders.min_value,
+										delivery_time_text: ""
+									},
+									products: [product]
+								});
+							}
+							products.push({
+								...product, supplier: {
+									_id: req.custom.settings['site_id'],
+									name: {
+										ar: req.custom.settings['site_name']['ar'],
+										en: req.custom.settings['site_name']['en'],
+									},
+									min_delivery_time: req.custom.settings.orders.min_delivery_time,
+									min_value: req.custom.settings.orders.min_value,
+									delivery_time_text: ""
+								}
+							})
+						}
 					}
 				}
-			} else {
-				offer = await getAvailableOffer(req, total_prods);
-			} */
+
+			}
 
 			let total = parseFloat(total_prods) + parseFloat(shipping_cost) - parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
 			total = total > 0 ? total : 0;
@@ -984,7 +1012,7 @@ module.exports.list = async function (req, res) {
 				payment_methods: productsGroupedBySupplier.find(s => s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
 				earliest_date_of_delivery: earliest_date_of_delivery,
 				delivery_times: delivery_times,
-				//offer: offer,
+				offer: offer,
 				data: productsGroupedBySupplier.map((data) => {
 					data.payment_methods = data.supplier.allow_cod === false ? payment_methods.filter(p => p.id !== 'cod') : payment_methods;
 					data.products = data.products.map(p => {
