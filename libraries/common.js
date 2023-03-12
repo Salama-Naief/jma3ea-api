@@ -66,11 +66,9 @@ module.exports.transform_word_begins_with_alif_letter = (text) => {
 
 
 
-module.exports.filter_internal_suppliers_by_city = async function (req/* , force = false */) {
+module.exports.filter_internal_suppliers_by_city = async function (req) {
 	try {
-		/* if (!force && req.custom.isProducts != true) {
-			return req.custom.clean_filter;
-		} */
+
 
 		const cache = req.custom.cache;
 		const cache_key = `supplier_all_solid`;
@@ -95,6 +93,10 @@ module.exports.filter_internal_suppliers_by_city = async function (req/* , force
 					return new ObjectID(s._id);
 				}
 			});
+
+			if (req.query.fast_shipping && req.query.fast_shipping == true) {
+				req.custom.clean_filter['fast_shipping'] = true;
+			}
 
 			if (req.custom.clean_filter.hasOwnProperty('$or')) {
 				if (req.custom.clean_filter.hasOwnProperty('$and')) {

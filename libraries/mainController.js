@@ -197,6 +197,10 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 								}, status_message.UNEXPECTED_ERROR)));
 							}
 
+							if (i.fast_shipping && i.fast_shipping == true && i.fast_shipping_cost > 0) {
+								i.price += parseFloat(i.fast_shipping_cost);
+							}
+
 							i.price = common.getFixedPrice(i.price);
 							i.old_price = common.getFixedPrice(i.old_price || 0);
 

@@ -264,6 +264,62 @@ module.exports.buy = async function (req, res) {
 				suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
 			};
 
+			const offer = await getAvailableOffer(req, total_prods, user.offer && user.offer.offer_id ? user.offer.offer_id : null);
+			if (offer) {
+				if (offer.product_sku) {
+					const product_collection = req.custom.db.client().collection('product');
+					const product = await product_collection.findOne({ sku: offer.product_sku });
+					if (product) {
+						offer.product = product;
+						if (offer.type == 'product' && offer.isClaimed) {
+							const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
+							if (jm3eiaProductIndex > -1) {
+								productsGroupedBySupplier[jm3eiaProductIndex].products.push(product);
+								products2save.push({
+									...product, supplier: {
+										_id: req.custom.settings['site_id'],
+										name: {
+											ar: req.custom.settings['site_name']['ar'],
+											en: req.custom.settings['site_name']['en'],
+										},
+										min_delivery_time: req.custom.settings.orders.min_delivery_time,
+										min_value: req.custom.settings.orders.min_value,
+										delivery_time_text: ""
+									}
+								});
+							} else {
+								productsGroupedBySupplier.push({
+									supplier: {
+										_id: req.custom.settings['site_id'],
+										name: {
+											ar: req.custom.settings['site_name']['ar'],
+											en: req.custom.settings['site_name']['en'],
+										},
+										min_delivery_time: req.custom.settings.orders.min_delivery_time,
+										min_value: req.custom.settings.orders.min_value,
+										delivery_time_text: ""
+									},
+									products: [product]
+								});
+							}
+							products2save.push({
+								...product, supplier: {
+									_id: req.custom.settings['site_id'],
+									name: {
+										ar: req.custom.settings['site_name']['ar'],
+										en: req.custom.settings['site_name']['en'],
+									},
+									min_delivery_time: req.custom.settings.orders.min_delivery_time,
+									min_value: req.custom.settings.orders.min_value,
+									delivery_time_text: ""
+								}
+							});
+						}
+					}
+				}
+
+			}
+
 
 			let total = parseFloat(total_prods) + parseFloat(shipping_cost) - parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
 
@@ -424,6 +480,8 @@ module.exports.buy = async function (req, res) {
 				code: null,
 				value: 0,
 			};
+
+			req.custom.authorizationObject.offer = {};
 
 			await req.custom.cache.set(req.custom.token, req.custom.authorizationObject, req.custom.config.cache.life_time.token);
 
@@ -797,7 +855,6 @@ module.exports.list = async function (req, res) {
 					const product = await product_collection.findOne({ sku: offer.product_sku });
 					if (product) {
 						offer.product = product;
-						console.log(offer.type);
 						if (offer.type == 'product' && offer.isClaimed) {
 							const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
 							if (jm3eiaProductIndex > -1) {
