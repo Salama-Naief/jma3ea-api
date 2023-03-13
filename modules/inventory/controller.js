@@ -85,7 +85,8 @@ module.exports.list = async function (req, res) {
         //req.custom.clean_filter = await filter_internal_suppliers_by_city(req, true);
         for (let inventory of out.data) {
             req.custom.clean_filter = { inventory_id: ObjectID(inventory._id), cities: ObjectID(cityid), is_external: true, status: true };
-
+            inventory.min_value = inventory.min_order;
+            inventory.min_delivery_time = inventory.delivery_time;
             inventory.suppliers = await new Promise((resolve, reject) => {
                 collection.aggregate([{ $match: req.custom.clean_filter }, ...pipeline], options).toArray((err, results) => {
                     if (err) {
