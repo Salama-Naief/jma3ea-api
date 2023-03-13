@@ -264,7 +264,7 @@ module.exports.buy = async function (req, res) {
 				suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
 			};
 
-			const offer = await getAvailableOffer(req, total_prods, user.offer && user.offer.offer_id ? user.offer.offer_id : null);
+			/* const offer = await getAvailableOffer(req, total_prods, user.offer && user.offer.offer_id ? user.offer.offer_id : null);
 			if (offer) {
 				if (offer.product_sku) {
 					const product_collection = req.custom.db.client().collection('product');
@@ -318,7 +318,7 @@ module.exports.buy = async function (req, res) {
 					}
 				}
 
-			}
+			} */
 
 
 			let total = parseFloat(total_prods) + parseFloat(shipping_cost) - parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
@@ -481,7 +481,7 @@ module.exports.buy = async function (req, res) {
 				value: 0,
 			};
 
-			req.custom.authorizationObject.offer = {};
+			//req.custom.authorizationObject.offer = {};
 
 			await req.custom.cache.set(req.custom.token, req.custom.authorizationObject, req.custom.config.cache.life_time.token);
 
@@ -867,7 +867,7 @@ module.exports.list = async function (req, res) {
 				value: general_coupon ? common.getFixedPrice(general_coupon.percent_value ? (totalToApplyCoupon * general_coupon.percent_value) / 100 : general_coupon.discount_value) : common.getFixedPrice(total_coupon_value),
 				suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
 			};
-			const offer = await getAvailableOffer(req, total_prods, user.offer && user.offer.offer_id ? user.offer.offer_id : null);
+			/* const offer = await getAvailableOffer(req, total_prods, user.offer && user.offer.offer_id ? user.offer.offer_id : null);
 			if (offer) {
 				if (offer.product_sku) {
 					const product_collection = req.custom.db.client().collection('product');
@@ -909,7 +909,7 @@ module.exports.list = async function (req, res) {
 					}
 				}
 
-			}
+			} */
 
 			let total = parseFloat(total_prods) + parseFloat(shipping_cost) - parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
 			total = total > 0 ? total : 0;
@@ -1088,7 +1088,7 @@ module.exports.list = async function (req, res) {
 				payment_methods: productsGroupedBySupplier.find(s => s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
 				earliest_date_of_delivery: earliest_date_of_delivery,
 				delivery_times: delivery_times,
-				offer: offer,
+				//offer: offer,
 				data: productsGroupedBySupplier.map((data) => {
 					data.payment_methods = data.supplier.allow_cod === false ? payment_methods.filter(p => p.id !== 'cod') : payment_methods;
 					data.products = data.products.map(p => {
