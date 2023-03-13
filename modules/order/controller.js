@@ -73,7 +73,7 @@ module.exports.read = function (req, res) {
 
 					supplier_products_total += supplier_shipping_cost;
 					sup.shipping_cost = supplier_shipping_cost;
-					sup.total = common.getRoundedPrice(supplier_products_total);
+					sup.total = common.getFixedPrice(supplier_products_total);
 				}
 
 				order.data = productsGroupedBySupplier;

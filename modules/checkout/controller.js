@@ -253,7 +253,7 @@ module.exports.buy = async function (req, res) {
 
 				supplier_products_total += supplier_shipping_cost;
 				sup.shipping_cost = supplier_shipping_cost;
-				sup.total = common.getRoundedPrice(supplier_products_total);
+				sup.total = common.getFixedPrice(supplier_products_total);
 				sup.delivery_time = delivery_time;
 			}
 
@@ -324,7 +324,7 @@ module.exports.buy = async function (req, res) {
 			let total = parseFloat(total_prods) + parseFloat(shipping_cost) - parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
 
 			total = total > 0 ? total : 0;
-			total = parseFloat(common.getRoundedPrice(total));
+			total = parseFloat(common.getFixedPrice(total));
 
 			const wallet2money = user_wallet <= parseFloat(total) ? user_wallet : (user_info ? parseFloat(total) : 0);
 
@@ -392,8 +392,8 @@ module.exports.buy = async function (req, res) {
 						delete p.preparation_time;
 						return p;
 					});
-					data.subtotal = common.getRoundedPrice(data.subtotal);
-					data.total = common.getRoundedPrice(data.total);
+					data.subtotal = common.getFixedPrice(data.subtotal);
+					data.total = common.getFixedPrice(data.total);
 					data.shipping_cost = common.getFixedPrice(data.shipping_cost);
 					if (data.coupon && data.coupon.code)
 						data.coupon.value = common.getFixedPrice(data.coupon.value);
@@ -460,10 +460,10 @@ module.exports.buy = async function (req, res) {
 			});
 
 			order_data.products = products2view;
-			order_data.subtotal = common.getRoundedPrice(order_data.subtotal);
+			order_data.subtotal = common.getFixedPrice(order_data.subtotal);
 			order_data.shipping_cost = common.getFixedPrice(order_data.shipping_cost);
 			order_data.coupon.value = common.getFixedPrice(order_data.coupon.value);
-			order_data.total = common.getRoundedPrice(order_data.total);
+			order_data.total = common.getFixedPrice(order_data.total);
 			order_data.delivery_time = moment(req.body.delivery_time).format(req.custom.config.date.format).toString();
 
 			const products_to_remove_from_cart = products2save.map(p => p.sku);
@@ -582,6 +582,7 @@ module.exports.list = async function (req, res) {
 		"categories": "$prod_n_categoryArr",
 		"picture": 1,
 		"price": 1,
+		"old_price": 1,
 		"uom": 1,
 		"barcode": 1,
 		"weight": 1,
@@ -687,9 +688,16 @@ module.exports.list = async function (req, res) {
 				if (!general_coupon && suppliers_coupons && suppliers_coupons.length > 0) {
 					const supplier_coupon = suppliers_coupons.find(c => c.supplier_id.toString() == sup.supplier._id.toString());
 					if (supplier_coupon) {
+						let totalWithNoDiscount = 0;
+						sup.products.map(i => {
+							if (!i.old_price || i.old_price <= 0) {
+								totalWithNoDiscount += i.price * i.quantity;
+							}
+						});
+
 						sup.coupon = {
 							code: supplier_coupon.code,
-							value: common.getFixedPrice(supplier_coupon.percent_value ? (parseFloat(supplier_products_total) * supplier_coupon.percent_value) / 100 : supplier_coupon.discount_value)
+							value: common.getFixedPrice(supplier_coupon.percent_value ? (totalToApplyCoupon * supplier_coupon.percent_value) / 100 : supplier_coupon.discount_value)
 						}
 						supplier_products_total -= parseFloat(sup.coupon.value || 0);
 						total_coupon_value += parseFloat(sup.coupon.value || 0);
@@ -839,13 +847,22 @@ module.exports.list = async function (req, res) {
 				sup.delivery_times = delivery_times;
 				supplier_products_total += supplier_shipping_cost;
 				sup.shipping_cost = supplier_shipping_cost;
-				sup.total = common.getRoundedPrice(supplier_products_total);
+				sup.total = common.getFixedPrice(supplier_products_total);
 				sup.gift_note = sup.products.findIndex(p => p.categories.findIndex(c => FLOWERS_CATEGORIES_IDS.includes(c._id.toString())) > -1) > -1;
 			}
 
+			let totalWithNoDiscount = 0;
+			products.map(i => {
+				if (!i.old_price || i.old_price <= 0) {
+					totalWithNoDiscount += i.price * i.quantity;
+				}
+			});
+
+
+
 			const out_coupon = {
 				code: general_coupon ? general_coupon.code : null,
-				value: general_coupon ? common.getFixedPrice(general_coupon.percent_value ? (parseFloat(total_prods) * general_coupon.percent_value) / 100 : general_coupon.discount_value) : common.getFixedPrice(total_coupon_value),
+				value: general_coupon ? common.getFixedPrice(general_coupon.percent_value ? (totalToApplyCoupon * general_coupon.percent_value) / 100 : general_coupon.discount_value) : common.getFixedPrice(total_coupon_value),
 				suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
 			};
 			const offer = await getAvailableOffer(req, total_prods, user.offer && user.offer.offer_id ? user.offer.offer_id : null);
@@ -1056,12 +1073,12 @@ module.exports.list = async function (req, res) {
 			earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
 
 			res.out({
-				subtotal: common.getRoundedPrice(total_prods),
+				subtotal: common.getFixedPrice(total_prods),
 				shipping_cost: common.getFixedPrice(shipping_cost),
 				coupon: out_coupon,
-				discount_by_wallet: common.getRoundedPrice(user_wallet),
-				discount_by_wallet_value: common.getRoundedPrice(wallet2money || 0),
-				total: common.getRoundedPrice(total),
+				discount_by_wallet: common.getFixedPrice(user_wallet),
+				discount_by_wallet_value: common.getFixedPrice(wallet2money || 0),
+				total: common.getFixedPrice(total),
 				purchase_possibility: productsGroupedBySupplier.length > 1 ? true : purchase_possibility,
 				message: productsGroupedBySupplier.length > 1 ? null : message,
 				addresses: addresses,

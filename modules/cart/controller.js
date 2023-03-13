@@ -154,7 +154,7 @@ module.exports.add = function (req, res) {
 									'message': req.custom.local.cart_product_exceeded_allowed,
 									total_products: total_products,
 									total_quantities: old_quantity,
-									total_prices: common.getRoundedPrice(total_prices - parseFloat(curr_product.price) * (total_quantities - old_quantity)),
+									total_prices: common.getFixedPrice(total_prices - parseFloat(curr_product.price) * (total_quantities - old_quantity)),
 								}, status_message.VALIDATION_ERROR);
 							}
 							if (store.status == false) {
@@ -171,7 +171,7 @@ module.exports.add = function (req, res) {
 							message: req.custom.local.cart_product_added,
 							total_products: total_products,
 							total_quantities: total_quantities,
-							total_prices: common.getRoundedPrice(total_prices),
+							total_prices: common.getFixedPrice(total_prices),
 						}, status_message.CREATED))
 						.catch((error) => res.out({
 							'message': error.message
@@ -270,7 +270,7 @@ module.exports.remove = function (req, res) {
 						message: req.custom.local.cart_product_removed,
 						total_products: total_products,
 						total_quantities: total_quantities,
-						total_prices: common.getRoundedPrice(total_prices),
+						total_prices: common.getFixedPrice(total_prices),
 					}, status_message.DELETED))
 					.catch((error) => res.out({
 						'message': error.message
@@ -453,6 +453,7 @@ module.exports.list = function (req, res) {
 					status: true,
 				}).then((coupon) => {
 					let totalToApplyCoupon = coupon.apply_on_discounted_products ? out.subtotal : totalWithNoDiscount;
+					// let totalToApplyCoupon = totalWithNoDiscount;
 					out.coupon = {
 						code: coupon ? coupon.code : null,
 						value: coupon ? (coupon.percent_value ? (totalToApplyCoupon * coupon.percent_value) / 100 : coupon.discount_value) : 0
