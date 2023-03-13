@@ -695,6 +695,8 @@ module.exports.list = async function (req, res) {
 							}
 						});
 
+						const totalToApplyCoupon = supplier_coupon.apply_on_discounted_products ? parseFloat(supplier_products_total) : totalWithNoDiscount;
+
 						sup.coupon = {
 							code: supplier_coupon.code,
 							value: common.getFixedPrice(supplier_coupon.percent_value ? (totalToApplyCoupon * supplier_coupon.percent_value) / 100 : supplier_coupon.discount_value)
@@ -858,7 +860,7 @@ module.exports.list = async function (req, res) {
 				}
 			});
 
-
+			const totalToApplyCoupon = general_coupon ? (general_coupon.apply_on_discounted_products ? parseFloat(total_prods) : totalWithNoDiscount) : 0;
 
 			const out_coupon = {
 				code: general_coupon ? general_coupon.code : null,
