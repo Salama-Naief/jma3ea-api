@@ -12,14 +12,14 @@ module.exports.list = async function (req, res) {
 
     const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
 
-    /* if (cache_key) {
+    if (cache_key) {
         const cached_data = await cache.get(cache_key).catch(() => null);
         if (cached_data) {
-            return res.out(cached_data);
+            return res.out({ count: cached_data.length, inventories: cached_data });
         }
-    } */
+    }
 
-    mainController.list(req, res, collectionName, {
+    mainController.list_all(req, res, collectionName, {
         "_id": 1,
         "name": {
             $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
@@ -34,6 +34,21 @@ module.exports.list = async function (req, res) {
         const supplier_collection = "supplier";
         const collection = req.custom.db.client().collection(supplier_collection);
         const pipeline = [
+            {
+                $lookup: {
+                    from: 'product',
+                    localField: '_id',
+                    foreignField: 'supplier_id',
+                    as: 'products'
+                }
+            },
+            {
+                $match: {
+                    products: {
+                        $ne: []
+                    }
+                }
+            },
             // Stage 4
             {
                 $sort: {
@@ -54,9 +69,11 @@ module.exports.list = async function (req, res) {
                     "description": {
                         $ifNull: [`$description.${req.custom.lang}`, `$description.${req.custom.config.local}`]
                     },
-                    //"orders": 1,
                     "picture": 1,
-                    "working_times": 1
+                    "working_times": 1,
+                    "delivery_time": 1,
+                    "delivery_time_text": 1,
+                    "min_order": 1
                 }
             }
         ];
@@ -67,7 +84,7 @@ module.exports.list = async function (req, res) {
 
         //req.custom.clean_filter = await filter_internal_suppliers_by_city(req, true);
         for (let inventory of out.data) {
-            req.custom.clean_filter = { inventory_id: ObjectID(inventory._id), cities: ObjectID(cityid), is_external: true };
+            req.custom.clean_filter = { inventory_id: ObjectID(inventory._id), cities: ObjectID(cityid), is_external: true, status: true };
 
             inventory.suppliers = await new Promise((resolve, reject) => {
                 collection.aggregate([{ $match: req.custom.clean_filter }, ...pipeline], options).toArray((err, results) => {
@@ -75,13 +92,17 @@ module.exports.list = async function (req, res) {
                         reject(err);
                     }
 
-                    results.unshift({ _id: req.custom.settings.site_name['en'], name: req.custom.settings.site_name[req.custom.lang || req.custom.config.local], picture: "https://jm3eia.com/assets/img/logo.png" });
+                    //results.unshift({ _id: req.custom.settings.site_name['en'], name: req.custom.settings.site_name[req.custom.lang || req.custom.config.local], picture: "https://jm3eia.com/assets/img/logo.png" });
 
                     resolve(results);
                 });
             }).catch(() => null);
-            inventories.push(inventory);
+            if (inventory.suppliers.length > 0) {
+                inventories.push(inventory);
+            }
         }
+
+        out.data = inventories;
 
         if (cache_key && inventories.length > 0) {
             cache.set(cache_key, inventories, req.custom.config.cache.life_time).catch(() => null);
