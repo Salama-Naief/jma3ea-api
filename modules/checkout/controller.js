@@ -144,7 +144,6 @@ module.exports.buy = async function (req, res) {
 			const up_products = JSON.parse(JSON.stringify(out.data));
 
 			let products2save = await products_to_save(out.data, user, req, true);
-			console.log('products to save: ', products2save);
 
 			const payment_method = enums_payment_methods(req).find((pm) => pm.id == data.payment_method);
 
@@ -152,6 +151,7 @@ module.exports.buy = async function (req, res) {
 				if (req.body.suppliers.length > 0) {
 					const suppliers_to_buy = req.body.suppliers.map(s => s.supplier_id);
 					products2save = products2save.filter(p => suppliers_to_buy.includes(p.supplier._id.toString()));
+					console.log('filtered products: ', products2save);
 				} else {
 					return res.out({
 						message: "No supplier selected"
@@ -160,6 +160,8 @@ module.exports.buy = async function (req, res) {
 			}
 
 			const total_prods = parseFloat(products2save.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0));
+
+			console.log('products to sae 2: ', products2save);
 
 			if (user_info) {
 				data.user_data._id = user_info._id;
@@ -500,7 +502,6 @@ console.log('prods: ', products2save);
 			// Update quantities
 			await update_quantities(req, up_products, up_cart, token);//.catch(() => null);
 			//}
-			console.log('this is orde rdata: ', order_data);
 			res.out(order_data);
 		} catch (err) {
 			console.log('err: ', err);
