@@ -146,12 +146,11 @@ module.exports.buy = async function (req, res) {
 			let products2save = await products_to_save(out.data, user, req, true);
 
 			const payment_method = enums_payment_methods(req).find((pm) => pm.id == data.payment_method);
-
+console.log('suppliers: ', req.body.suppliers);
 			if (req.body.suppliers) {
 				if (req.body.suppliers.length > 0) {
 					const suppliers_to_buy = req.body.suppliers.map(s => s.supplier_id);
 					products2save = products2save.filter(p => suppliers_to_buy.includes(p.supplier._id.toString()));
-					console.log('filtered products: ', products2save);
 				} else {
 					return res.out({
 						message: "No supplier selected"
