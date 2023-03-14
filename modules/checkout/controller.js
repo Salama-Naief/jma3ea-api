@@ -408,7 +408,7 @@ module.exports.buy = async function (req, res) {
 					return p;
 				}),
 				hash: req.body.hash,
-				//delivery_time: common.getDate(req.body.delivery_time),
+				delivery_time: req.body.delivery_time ? common.getDate(req.body.delivery_time) : null,
 				discount_by_wallet: req.body.discount_by_wallet,
 				discount_by_wallet_value: discount_by_wallet_value,
 				store_id: ObjectID(req.custom.authorizationObject.store_id),
