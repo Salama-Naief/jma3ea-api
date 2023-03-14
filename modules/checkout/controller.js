@@ -500,6 +500,7 @@ console.log('prods: ', products2save);
 			// Update quantities
 			await update_quantities(req, up_products, up_cart, token);//.catch(() => null);
 			//}
+			console.log('this is orde rdata: ', order_data);
 			res.out(order_data);
 		} catch (err) {
 			console.log('err: ', err);
