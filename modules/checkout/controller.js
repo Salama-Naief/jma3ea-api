@@ -144,6 +144,7 @@ module.exports.buy = async function (req, res) {
 			const up_products = JSON.parse(JSON.stringify(out.data));
 
 			let products2save = await products_to_save(out.data, user, req, true);
+			console.log('products to save: ', products2save);
 
 			const payment_method = enums_payment_methods(req).find((pm) => pm.id == data.payment_method);
 
@@ -374,7 +375,7 @@ module.exports.buy = async function (req, res) {
 			// Fix delivery time
 			req.body.delivery_time = moment(req.body.delivery_time).isValid() ?
 				req.body.delivery_time : moment(common.getDate()).format(req.custom.config.date.format).toString();
-
+console.log('prods: ', products2save);
 			const order_data = {
 				order_id: (user_info ? 'u' : 'v') + '_' + shortid.generate(),
 				payment_method: payment_method,
