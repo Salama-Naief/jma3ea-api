@@ -37,6 +37,7 @@ module.exports.list = function (req, res) {
 			"featured": 1
 		};
 	}
+
 	mainController.list_all(req, res, collectionName, {
 		"_id": 1,
 		"parent_id": 1,
@@ -49,22 +50,29 @@ module.exports.list = function (req, res) {
 		"picture": {
 			$ifNull: [`$picture_lang.${req.custom.lang}`, `$picture`]
 		},
-	}, (out) => {
+	}, async (out) => {
+		let filteredCategories = [];
 		let rows = [];
 		let childs = [];
 		if (out.data && out.data.length > 0) {
-			for (const i of out.data) {
-				if (!i.parent_id) {
-					rows.push(i);
-				} else {
-					childs.push(i);
-				}
+			const productCollection = req.custom.db.client().collection('product');
+			const categoriesWithProducts = await Promise.all(out.data.map(async category => {
+				const hasProducts = await productCollection.findOne({ 'prod_n_categoryArr.category_id': ObjectID(category._id.toString()), status: true });
+				return hasProducts ? category : null;
+			}));
+			filteredCategories = categoriesWithProducts.filter(category => category !== null);
+		}
+		for (const i of filteredCategories) {
+			if (!i.parent_id) {
+				rows.push(i);
+			} else {
+				childs.push(i);
 			}
 		}
 		rows.map((i) => {
 			i.children = childs.filter((c) => c.parent_id.toString() === i._id.toString());
 		});
-		const message = out.data.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
+		const message = filteredCategories.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
 
 		if (req.custom.cache_key && rows.length > 0) {
 			req.custom.cache.set(req.custom.cache_key, {
