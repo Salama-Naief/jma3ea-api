@@ -241,7 +241,7 @@ module.exports.buy = async function (req, res) {
 					}
 				}
 
-				const supplier_delivery_time = req.body.suppliers.find(s => s.supplier_id == sup.supplier._id).delivery_time;
+				const supplier_delivery_time = req.body.suppliers.length > 0 && typeof req.body.suppliers[0] == 'object' ? req.body.suppliers.find(s => s.supplier_id == sup.supplier._id).delivery_time : req.body.delivery_time;
 				const delivery_time = moment(supplier_delivery_time).isValid() ?
 					supplier_delivery_time : moment(common.getDate()).format(req.custom.config.date.format).toString();
 
@@ -376,7 +376,7 @@ module.exports.buy = async function (req, res) {
 			// Fix delivery time
 			req.body.delivery_time = moment(req.body.delivery_time).isValid() ?
 				req.body.delivery_time : moment(common.getDate()).format(req.custom.config.date.format).toString();
-console.log('prods: ', products2save);
+			console.log('prods: ', products2save);
 			const order_data = {
 				order_id: (user_info ? 'u' : 'v') + '_' + shortid.generate(),
 				payment_method: payment_method,
