@@ -144,14 +144,14 @@ module.exports.cleanProduct = async function (req, cart) {
     }
 }
 
-module.exports.groupBySupplier = (products) => {
+module.exports.groupBySupplier = (products, suppliers = []) => {
     const newProducts = [];
     for (let p of products) {
         const foundSupplierIndex = newProducts.findIndex(np => np.supplier._id.toString() == p.supplier_id.toString());
         if (foundSupplierIndex > -1) {
             newProducts[foundSupplierIndex].products.push(p);
         } else {
-            newProducts.push({ supplier: p.supplier, products: [p] });
+            newProducts.push({ supplier: p.supplier, products: [p], isSelected: suppliers.length > 0 ? suppliers.includes(p.supplier._id.toString()) : true });
         }
     }
 

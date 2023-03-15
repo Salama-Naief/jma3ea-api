@@ -610,27 +610,25 @@ module.exports.list = async function (req, res) {
 				if (req.query.suppliers.length > 0) {
 					const suppliers_to_buy = req.query.suppliers;
 					products = products.filter(p => suppliers_to_buy.includes(p.supplier._id.toString()));
-					allProducts = allProducts.map(p => {
+					/* allProducts = allProducts.map(p => {
 						if (suppliers_to_buy.includes(p.supplier._id.toString()))
 							p.isSelected = true;
 						else
 							p.isSelected = false;
 
 						return p;
-					})
+					}) */
 				} else {
 					return res.out({
 						message: "No supplier selected"
 					}, status_message.VALIDATION_ERROR);
 				}
-			} else {
+			}/*  else {
 				allProducts = allProducts.map(p => {
 					p.isSelected = true;
 					return p;
 				});
-			}
-
-			console.log('all products: ', allProducts.map(p => p.isSelected));
+			} */
 
 			const should_be_gifted = products.findIndex(p => p.categories.findIndex(c => FLOWERS_CATEGORIES_IDS.includes(c._id.toString())) > -1) > -1;
 
@@ -659,7 +657,7 @@ module.exports.list = async function (req, res) {
 			const city_shipping_cost = parseFloat(cityObj.shipping_cost);
 			let shipping_cost = 0;
 
-			const productsGroupedBySupplier = groupBySupplier(allProducts);
+			const productsGroupedBySupplier = groupBySupplier(allProducts, req.query.suppliers);
 			const coupon_collection = req.custom.db.client().collection('coupon');
 			const coupons = user.coupon && (user.coupon.code || user.coupon.suppliers_coupons) ? (await coupon_collection.find({
 				code: user.coupon.code ? user.coupon.code : { $in: user.coupon.suppliers_coupons.map(c => c.code) },
