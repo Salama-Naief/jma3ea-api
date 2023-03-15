@@ -52,6 +52,7 @@ module.exports.list = function (req, res) {
 		let filteredCategories = [];
 		let rows = [];
 		let childs = [];
+		console.log('categories before: ', out.data.length);
 		if (out.data && out.data.length > 0) {
 			const productCollection = req.custom.db.client().collection('product');
 			const categoriesWithProducts = await Promise.all(out.data.map(async category => {
@@ -60,6 +61,7 @@ module.exports.list = function (req, res) {
 			}));
 			filteredCategories = categoriesWithProducts.filter(category => category !== null);
 		}
+		console.log('categories after: ', filteredCategories.length);
 		for (const i of filteredCategories) {
 			if (!i.parent_id) {
 				rows.push(i);

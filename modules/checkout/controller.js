@@ -624,15 +624,13 @@ module.exports.list = async function (req, res) {
 					}, status_message.VALIDATION_ERROR);
 				}
 			} else {
-				products = products.map(p => {
-					p.isSelected = true;
-					return p;
-				});
 				allProducts = allProducts.map(p => {
 					p.isSelected = true;
 					return p;
 				});
 			}
+
+			console.log('all products: ', allProducts.map(p => p.isSelected));
 
 			const should_be_gifted = products.findIndex(p => p.categories.findIndex(c => FLOWERS_CATEGORIES_IDS.includes(c._id.toString())) > -1) > -1;
 
@@ -680,6 +678,7 @@ module.exports.list = async function (req, res) {
 			let total_coupon_value = 0;
 
 			for (let sup of productsGroupedBySupplier) {
+				console.log("sup: ", sup.isSelected);
 				let supplier_products_total = parseFloat(sup.products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
 
 				sup.subtotal = supplier_products_total;
