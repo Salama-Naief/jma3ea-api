@@ -16,7 +16,7 @@ module.exports.list = function (req, res) {
 		"category_n_storeArr.sorting": 1
 	};
 
-	req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
+	//req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
 
 	if (req.query && req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
 		req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
