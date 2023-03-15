@@ -604,11 +604,20 @@ module.exports.list = async function (req, res) {
 			}
 
 			let products = await products_to_save(out.data, user, req, true);
+			let allProducts = [...products];
 
 			if (req.query.suppliers) {
 				if (req.query.suppliers.length > 0) {
 					const suppliers_to_buy = req.query.suppliers;
 					products = products.filter(p => suppliers_to_buy.includes(p.supplier._id.toString()));
+					allProducts = allProducts.map(p => {
+						if (suppliers_to_buy.includes(p.supplier._id.toString()))
+							p.isSelected = true;
+						else
+							p.isSelected = false;
+
+						return p;
+					})
 				} else {
 					return res.out({
 						message: "No supplier selected"
@@ -643,7 +652,7 @@ module.exports.list = async function (req, res) {
 			const city_shipping_cost = parseFloat(cityObj.shipping_cost);
 			let shipping_cost = 0;
 
-			const productsGroupedBySupplier = groupBySupplier(products);
+			const productsGroupedBySupplier = groupBySupplier(allProducts);
 			const coupon_collection = req.custom.db.client().collection('coupon');
 			const coupons = user.coupon && (user.coupon.code || user.coupon.suppliers_coupons) ? (await coupon_collection.find({
 				code: user.coupon.code ? user.coupon.code : { $in: user.coupon.suppliers_coupons.map(c => c.code) },
@@ -670,7 +679,10 @@ module.exports.list = async function (req, res) {
 				if (sup.supplier._id.toString() == req.custom.settings['site_id'] && sup.products.findIndex(p => p.free_shipping) > -1) {
 					supplier_shipping_cost = 0;
 				}
-				shipping_cost += supplier_shipping_cost;
+
+				if (sup.isSelected) {
+					shipping_cost += supplier_shipping_cost;
+				}
 
 				const supplier_min_value = sup.supplier.min_value && parseInt(sup.supplier.min_value) > 0 ? parseInt(sup.supplier.min_value) : (req.custom.settings.orders.min_value ? parseInt(req.custom.settings.orders.min_value) : 0)
 				sup.purchase_possibility = supplier_min_value > 0 && supplier_products_total < supplier_min_value ? false : true;
