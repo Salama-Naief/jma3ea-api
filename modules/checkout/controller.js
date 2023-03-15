@@ -722,8 +722,11 @@ module.exports.list = async function (req, res) {
 							code: supplier_coupon.code,
 							value: common.getFixedPrice(supplier_coupon.percent_value ? (totalToApplyCoupon * supplier_coupon.percent_value) / 100 : supplier_coupon.discount_value)
 						}
-						supplier_products_total -= parseFloat(sup.coupon.value || 0);
-						total_coupon_value += parseFloat(sup.coupon.value || 0);
+						if (supplier_products_total > parseFloat(sup.coupon.value || 0)) {
+							supplier_products_total -= parseFloat(sup.coupon.value || 0);
+							if (sup.isSelected)
+								total_coupon_value += parseFloat(sup.coupon.value || 0);
+						}
 					}
 				}
 
@@ -932,7 +935,10 @@ module.exports.list = async function (req, res) {
 
 			} */
 
-			let total = parseFloat(total_prods) + parseFloat(shipping_cost) - parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
+			let total = parseFloat(total_prods) + parseFloat(shipping_cost);
+			if (general_coupon && parseFloat(total_prods) > out_coupon.value) {
+				total -= parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
+			}
 			total = total > 0 ? total : 0;
 
 			const user_collection = req.custom.db.client().collection('member');
@@ -971,6 +977,8 @@ module.exports.list = async function (req, res) {
 					}
 					return false;
 				});
+			console.log('payment methods: ', payment_methods);
+
 
 			let delivery_times = [];
 
@@ -1094,8 +1102,6 @@ module.exports.list = async function (req, res) {
 			}
 
 			earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
-
-			console.log('payment methods: ', payment_methods);
 
 			res.out({
 				subtotal: common.getFixedPrice(total_prods),
