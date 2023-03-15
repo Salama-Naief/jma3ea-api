@@ -626,9 +626,11 @@ module.exports.list = async function (req, res) {
 			} else {
 				products = products.map(p => {
 					p.isSelected = true;
+					return p;
 				});
 				allProducts = allProducts.map(p => {
 					p.isSelected = true;
+					return p;
 				});
 			}
 
