@@ -52,26 +52,32 @@ module.exports.list = function (req, res) {
 		let filteredCategories = [];
 		let rows = [];
 		let childs = [];
-		console.log('categories before: ', out.data.length);
 		if (out.data && out.data.length > 0) {
-			const productCollection = req.custom.db.client().collection('product');
-			const categoriesWithProducts = await Promise.all(out.data.map(async category => {
-				const hasProducts = await productCollection.findOne({ 'prod_n_categoryArr.category_id': ObjectID(category._id.toString()), status: true });
-				return hasProducts ? category : null;
-			}));
-			filteredCategories = categoriesWithProducts.filter(category => category !== null);
-		}
-		console.log('categories after: ', filteredCategories.length);
-		for (const i of filteredCategories) {
-			if (!i.parent_id) {
-				rows.push(i);
-			} else {
-				childs.push(i);
+			for (const i of out.data) {
+				if (!i.parent_id) {
+					rows.push(i);
+				} else {
+					childs.push(i);
+				}
 			}
 		}
+		const productCollection = req.custom.db.client().collection('product');
+		const categoriesWithProducts = await Promise.all(childs.map(async category => {
+			const hasProducts = await productCollection.findOne({ 'prod_n_categoryArr.category_id': ObjectID(category._id.toString()), status: true });
+			return hasProducts ? category : null;
+		}));
+		childs = categoriesWithProducts.filter(category => category !== null);
+
+		console.log('rows before: ', rows.length);
 		rows.map((i) => {
 			i.children = childs.filter((c) => c.parent_id.toString() === i._id.toString());
 		});
+
+		rows = rows.filter(i => i.children && i.children.length > 0);
+
+		console.log('rows after: ', rows.length);
+
+		//console.log('categories after: ', filteredCategories.length);
 		const message = filteredCategories.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
 
 		if (req.custom.cache_key && rows.length > 0) {

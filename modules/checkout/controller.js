@@ -1095,6 +1095,8 @@ module.exports.list = async function (req, res) {
 
 			earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
 
+			console.log('payment methods: ', payment_methods);
+
 			res.out({
 				subtotal: common.getFixedPrice(total_prods),
 				shipping_cost: common.getFixedPrice(shipping_cost),
@@ -1106,7 +1108,7 @@ module.exports.list = async function (req, res) {
 				message: productsGroupedBySupplier.length > 1 ? null : message,
 				addresses: addresses,
 				gift_note: should_be_gifted,
-				payment_methods: productsGroupedBySupplier.find(s => s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
+				payment_methods: productsGroupedBySupplier.find(s => s.isSelected && s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
 				earliest_date_of_delivery: earliest_date_of_delivery,
 				delivery_times: delivery_times,
 				//offer: offer,
