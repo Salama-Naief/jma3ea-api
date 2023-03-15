@@ -623,6 +623,13 @@ module.exports.list = async function (req, res) {
 						message: "No supplier selected"
 					}, status_message.VALIDATION_ERROR);
 				}
+			} else {
+				products = products.map(p => {
+					p.isSelected = true;
+				});
+				allProducts = allProducts.map(p => {
+					p.isSelected = true;
+				});
 			}
 
 			const should_be_gifted = products.findIndex(p => p.categories.findIndex(c => FLOWERS_CATEGORIES_IDS.includes(c._id.toString())) > -1) > -1;

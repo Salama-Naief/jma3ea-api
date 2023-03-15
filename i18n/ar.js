@@ -6,7 +6,7 @@ const locals = {
 	can_not_delete_default_address: 'لا يمكنك حذف العنوان الأساسي',
 	cart_has_not_products: 'السلة لا تحتوي على منتجات',
 	cart_coupon_added: 'تم إضافة الكوبون',
-	cart_coupon_only_no_discounted_products: 'هذا الكوبون يطبق فقط على المنتجات بدون خصم',
+	cart_coupon_only_no_discounted_products: 'عفوا هذا الكوبون لايشمل المنتجات المخفضة',
 	cart_coupon_unavailable: 'الكوبون غير متاح',
 	cart_product_added: 'تم إضافة المنتج إلى السلة',
 	cart_product_exceeded_allowed: 'عفوا هذه الكمية أكبر من المسموح به لهذا المنتج',

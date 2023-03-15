@@ -5,7 +5,7 @@ const locals = {
 	address_name_exists: 'Address name is already exists',
 	can_not_delete_default_address: 'You cannot delete the primary address',
 	cart_coupon_added: 'Coupon has been added',
-	cart_coupon_only_no_discounted_products: 'This coupon applies only to products with no discount',
+	cart_coupon_only_no_discounted_products: 'Sorry, this coupon does not include discounted products',
 	cart_coupon_unavailable: 'Coupon is unavailable',
 	cart_has_not_products: 'Your cart has no products',
 	cart_product_added: 'Product has been added to cart',
