@@ -611,7 +611,9 @@ module.exports.coupon = function (req, res) {
 
 							req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
 								.then((response) => res.out({
-									message: req.custom.local.cart_coupon_added
+									message: req.custom.local.cart_coupon_added,
+									note: req.custom.local.cart_coupon_only_no_discounted_products,
+									apply_on_discounted_products: coupon.apply_on_discounted_products,
 								}, status_message.CREATED))
 								.catch((error) => res.out({
 									'message': error.message
