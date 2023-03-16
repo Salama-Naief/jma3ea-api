@@ -10,14 +10,14 @@ module.exports.list = async function (req, res) {
     const cache = req.custom.cache;
     const cityid = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 
-    //const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
+    const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
 
-    /* if (cache_key) {
+    if (cache_key) {
         const cached_data = await cache.get(cache_key).catch(() => null);
         if (cached_data) {
             return res.out({ count: cached_data.length, inventories: cached_data });
         }
-    } */
+    }
 
     mainController.list_all(req, res, collectionName, {
         "_id": 1,
@@ -83,7 +83,6 @@ module.exports.list = async function (req, res) {
         };
 
         //req.custom.clean_filter = await filter_internal_suppliers_by_city(req, true);
-        console.log('city: ', cityid);
         for (let inventory of out.data) {
             req.custom.clean_filter = { inventory_id: ObjectID(inventory._id.toString()), cities: ObjectID(cityid), is_external: true, status: true };
             inventory.min_value = inventory.min_order;
@@ -110,9 +109,9 @@ module.exports.list = async function (req, res) {
         out.data = inventories;
         out.count = inventories.length;
 
-        /* if (cache_key && inventories.length > 0) {
+        if (cache_key && inventories.length > 0) {
             cache.set(cache_key, inventories, req.custom.config.cache.life_time).catch(() => null);
-        } */
+        }
 
         return res.out(out);
 
