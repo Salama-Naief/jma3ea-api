@@ -10,9 +10,9 @@ module.exports.list = async function (req, res) {
     const cache = req.custom.cache;
     const cityid = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 
-    const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
+    //const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
 
-    if (cache_key) {
+    if (/* cache_key */false) {
         const cached_data = await cache.get(cache_key).catch(() => null);
         if (cached_data) {
             return res.out({ count: cached_data.length, inventories: cached_data });
@@ -83,6 +83,7 @@ module.exports.list = async function (req, res) {
         };
 
         //req.custom.clean_filter = await filter_internal_suppliers_by_city(req, true);
+        console.log('out data: ', out.data);
         for (let inventory of out.data) {
             req.custom.clean_filter = { inventory_id: ObjectID(inventory._id), cities: ObjectID(cityid), is_external: true, status: true };
             inventory.min_value = inventory.min_order;
@@ -99,7 +100,10 @@ module.exports.list = async function (req, res) {
                 });
             }).catch(() => null);
             if (inventory.suppliers.length > 0) {
+                console.log('yes');
                 inventories.push(inventory);
+            } else {
+                console.log('no: ', inventory.suppliers);
             }
         }
 
