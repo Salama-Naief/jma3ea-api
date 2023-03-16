@@ -61,12 +61,12 @@ module.exports.list = function (req, res) {
 				}
 			}
 		}
-		const productCollection = req.custom.db.client().collection('product');
+		/* const productCollection = req.custom.db.client().collection('product');
 		const categoriesWithProducts = await Promise.all(childs.map(async category => {
 			const hasProducts = await productCollection.findOne({ 'prod_n_categoryArr.category_id': ObjectID(category._id.toString()), status: true });
 			return hasProducts ? category : null;
 		}));
-		childs = categoriesWithProducts.filter(category => category !== null);
+		childs = categoriesWithProducts.filter(category => category !== null); */
 
 		console.log('rows before: ', rows.length);
 		rows.map((i) => {
@@ -78,7 +78,7 @@ module.exports.list = function (req, res) {
 		console.log('rows after: ', rows.length);
 
 		//console.log('categories after: ', filteredCategories.length);
-		const message = filteredCategories.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
+		const message = rows.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
 
 		if (req.custom.cache_key && rows.length > 0) {
 			req.custom.cache.set(req.custom.cache_key, {
