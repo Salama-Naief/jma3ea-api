@@ -20,14 +20,14 @@ module.exports.list = function (req, res) {
 
 	if (req.query && req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
 		req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
-		req.custom.cache_key = `${collectionName}_${req.custom.lang}_supplier_${req.query.supplier_id}`;
-		req.custom.cache_key += `__supplier_id_${req.query.supplier_id}`;
+		/* req.custom.cache_key = `${collectionName}_${req.custom.lang}_supplier_${req.query.supplier_id}`;
+		req.custom.cache_key += `__supplier_id_${req.query.supplier_id}`; */
 	} else {
 		req.custom.clean_filter['supplier_id'] = { $exists: false };
 	}
 
 	if (req.query.featured == 'true') {
-		req.custom.cache_key = `${collectionName}_${req.custom.lang}__features`;
+		//req.custom.cache_key = `${collectionName}_${req.custom.lang}__features`;
 		req.custom.clean_filter['featured'] = {
 			$gt: 0
 		};
