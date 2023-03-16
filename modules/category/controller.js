@@ -36,6 +36,7 @@ module.exports.list = function (req, res) {
 		};
 	}
 
+	req.custom.cache_key = undefined;
 	mainController.list_all(req, res, collectionName, {
 		"_id": 1,
 		"parent_id": 1,
