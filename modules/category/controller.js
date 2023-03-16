@@ -79,7 +79,7 @@ module.exports.list = function (req, res) {
 		console.log('rows after: ', rows.length);
 
 		//console.log('categories after: ', filteredCategories.length);
-		const message = filteredCategories.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
+		const message = rows.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
 
 		if (req.custom.cache_key && rows.length > 0) {
 			req.custom.cache.set(req.custom.cache_key, {
