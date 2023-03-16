@@ -62,19 +62,19 @@ module.exports.list = function (req, res) {
 				}
 			}
 		}
-		/* const productCollection = req.custom.db.client().collection('product');
+		const productCollection = req.custom.db.client().collection('product');
 		const categoriesWithProducts = await Promise.all(childs.map(async category => {
 			const hasProducts = await productCollection.findOne({ 'prod_n_categoryArr.category_id': ObjectID(category._id.toString()), status: true });
 			return hasProducts ? category : null;
 		}));
-		childs = categoriesWithProducts.filter(category => category !== null); */
+		childs = categoriesWithProducts.filter(category => category !== null);
 
 		console.log('rows before: ', rows.length);
 		rows.map((i) => {
 			i.children = childs.filter((c) => c.parent_id.toString() === i._id.toString());
 		});
 
-		//rows = rows.filter(i => i.children && i.children.length > 0);
+		rows = rows.filter(i => i.children && i.children.length > 0);
 
 		console.log('rows after: ', rows.length);
 
