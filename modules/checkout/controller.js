@@ -417,6 +417,8 @@ module.exports.buy = async function (req, res) {
 				status: 1
 			};
 
+			console.log("delivery rime: ", order_data.delivery_time);
+
 			const cache = req.custom.cache;
 			const day = moment(req.body.delivery_time).format('d');
 			const hour = moment(req.body.delivery_time).format('H');
@@ -433,6 +435,7 @@ module.exports.buy = async function (req, res) {
 						message: error.message
 					}
 				});
+
 
 			if (data.user_data && data.user_data._id && (parseFloat(discount_by_wallet_value) > 0 || req.body.payment_method == 'wallet')) {
 				const paid_wallet_value = parseFloat(req.body.payment_method == 'wallet' ? total : discount_by_wallet_value);
