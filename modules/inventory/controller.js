@@ -1,7 +1,6 @@
 // inventory Controller
 
 // Load required modules
-const { filter_internal_suppliers_by_city } = require("../../libraries/common");
 const mainController = require("../../libraries/mainController");
 const ObjectID = require("../../types/object_id");
 const collectionName = 'inventory';
@@ -15,7 +14,7 @@ module.exports.list = async function (req, res) {
     if (cache_key) {
         const cached_data = await cache.get(cache_key).catch(() => null);
         if (cached_data) {
-            return res.out({ count: cached_data.length, inventories: cached_data });
+            return res.out({ count: cached_data.length, data: cached_data });
         }
     }
 
