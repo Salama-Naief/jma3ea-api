@@ -85,12 +85,11 @@ module.exports.login = function (req, res) {
 		// create a token
 		const cityid = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 
-
-		if (!req.custom.config.auto_load_city && !ObjectID.isValid(cityid)) {
+		/* if (!req.custom.config.auto_load_city && !ObjectID.isValid(cityid)) {
 			return res.out({
 				'message': req.custom.local.choose_city_first
 			}, status_message.CITY_REQUIRED);
-		}
+		} */
 
 		fix_user_data(req, theuser, cityid);
 		if (req.body.device_token) { updateDeviceToken(theuser, req.body.device_token, req); }
