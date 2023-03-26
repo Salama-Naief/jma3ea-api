@@ -70,8 +70,6 @@ module.exports.list = function (req, res) {
 		}));
 		childs = categoriesWithProducts.filter(category => category !== null);
 
-		console.log('found category in rows: ', rows.find(c => c._id.toString() == '5d383cab83545d0366ac42c4'));
-		console.log('found category in childs: ', childs.find(c => c._id.toString() == '5d383cab83545d0366ac42c4'));
 		rows.map((i) => {
 			i.children = childs.filter((c) => c.parent_id.toString() === i._id.toString());
 		});
