@@ -18,20 +18,22 @@ module.exports.list = async function (req, res) {
         }
     } */
 
-    req.custom.cache_key = undefined;
+    req.custom.cache_key = false;
     mainController.list_all(req, res, collectionName, {
         "_id": 1,
         "name": {
             $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
         },
         "picture": {
-			$ifNull: [`$picture.${req.custom.lang}`, `$picture.${req.custom.config.local}`]
+			$ifNull: [`$picture.${req.custom.lang}`, `$picture`]
 		},
         //"picture": 1,
     }, async (out) => {
         if (out.data && out.data.length < 1) {
             return res.out(out);
         }
+
+        console.log('inventory: ', out.data[0]);
 
         const inventories = [];
         const supplier_collection = "supplier";
@@ -72,10 +74,10 @@ module.exports.list = async function (req, res) {
                     "description": {
                         $ifNull: [`$description.${req.custom.lang}`, `$description.${req.custom.config.local}`]
                     },
-                    /* "picture": {
-                        $ifNull: [`$picture.${req.custom.lang}`, `$picture.${req.custom.config.local}`]
-                    }, */
-                    "picture": 1,
+                    "picture": {
+                        $ifNull: [`$picture.${req.custom.lang}`, `$picture`]
+                    },
+                    //"picture": 1,
                     "working_times": 1,
                     "delivery_time": 1,
                     "delivery_time_text": 1,
