@@ -61,7 +61,9 @@ module.exports.list = function (req, res) {
 					childs.push(i);
 				}
 			}
+			console.log('found category: ', out.data.find(c => c._id.toString() == '5d383cab83545d0366ac42c4'));
 		}
+		
 		const productCollection = req.custom.db.client().collection('product');
 		const categoriesWithProducts = await Promise.all(childs.map(async category => {
 			const hasProducts = await productCollection.findOne({ 'prod_n_categoryArr.category_id': ObjectID(category._id.toString()), status: true });
@@ -76,7 +78,7 @@ module.exports.list = function (req, res) {
 
 		//rows = rows.filter(i => i.children && i.children.length > 0);
 
-		console.log('rows after: ', rows.length);
+		//console.log('rows after: ', rows.length);
 
 		//console.log('categories after: ', filteredCategories.length);
 		const message = rows.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;

@@ -87,8 +87,11 @@ module.exports.list = async function (req, res) {
             "allowDiskUse": true
         };
 
+        console.log('this is the city: ', cityid);
+
         //req.custom.clean_filter = await filter_internal_suppliers_by_city(req, true);
         for (let inventory of out.data) {
+            console.log('inventory_id: ', inventory._id.toString());
             req.custom.clean_filter = { inventory_id: ObjectID(inventory._id.toString()), cities: ObjectID(cityid), is_external: true, status: true };
             inventory.min_value = inventory.min_order;
             inventory.min_delivery_time = inventory.delivery_time;
