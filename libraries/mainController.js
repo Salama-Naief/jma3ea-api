@@ -72,8 +72,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 		}
 
 		const collection = req.custom.db.client().collection(collectionName);
-		//const filter = req.custom.isProducts != true ? req.custom.clean_filter : await common.filter_internal_suppliers_by_city(req);
-		const filter = req.custom.clean_filter;
+		const filter = req.custom.isProducts != true ? req.custom.clean_filter : await common.filter_internal_suppliers_by_city(req);
 
 		if (req.custom.all_status != true) {
 			filter.status = req.custom.clean_filter.status || true;
