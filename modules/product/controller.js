@@ -175,7 +175,7 @@ module.exports.listByCategory = function (req, res) {
 	}
 
 	if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
-		req.custom.clean_filter['supplier_id'] = new ObjectID(req.query.supplier_id);
+		req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
 		if (req.custom.cache_key) {
 			req.custom.cache_key += `_supplier_${req.query.supplier_id}`;
 		}
