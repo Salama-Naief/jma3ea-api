@@ -10,14 +10,13 @@ module.exports.list = async function (req, res) {
     const cityid = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 
     //const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
-    const cache_key = undefined;
 
-    if (cache_key) {
+    /* if (cache_key) {
         const cached_data = await cache.get(cache_key).catch(() => null);
         if (cached_data) {
             return res.out({ count: cached_data.length, data: cached_data });
         }
-    }
+    } */
 
     mainController.list_all(req, res, collectionName, {
         "_id": 1,
@@ -118,9 +117,9 @@ module.exports.list = async function (req, res) {
         out.data = inventories;
         out.count = inventories.length;
 
-        if (cache_key && inventories.length > 0) {
+        /* if (cache_key && inventories.length > 0) {
             cache.set(cache_key, inventories, req.custom.config.cache.life_time).catch(() => null);
-        }
+        } */
 
         return res.out(out);
 
