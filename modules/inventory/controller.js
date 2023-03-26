@@ -9,7 +9,8 @@ module.exports.list = async function (req, res) {
     const cache = req.custom.cache;
     const cityid = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 
-    const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
+    //const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
+    const cache_key = undefined;
 
     if (cache_key) {
         const cached_data = await cache.get(cache_key).catch(() => null);
