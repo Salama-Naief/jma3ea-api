@@ -182,6 +182,7 @@ module.exports.listByCategory = function (req, res) {
 	}
 
 	req.custom.cache_key = undefined;
+	console.log('filter: ', req.custom.clean_filter);
 
 	mainController.list(req, res, collectionName, {
 		"_id": 0,
