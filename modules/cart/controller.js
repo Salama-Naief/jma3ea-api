@@ -48,7 +48,8 @@ module.exports.add = function (req, res) {
 
 				if (!prod) {
 					return res.out({
-						'message': req.custom.local.cart_product_unavailable
+						'message': req.custom.local.cart_product_unavailable,
+						cart_products: user.cart
 					}, status_message.VALIDATION_ERROR);
 				}
 
@@ -58,7 +59,8 @@ module.exports.add = function (req, res) {
 
 					if (!variant) {
 						return res.out({
-							'message': req.custom.local.cart_product_unavailable
+							'message': req.custom.local.cart_product_unavailable,
+							cart_products: user.cart
 						}, status_message.VALIDATION_ERROR);
 					}
 
@@ -155,11 +157,13 @@ module.exports.add = function (req, res) {
 									total_products: total_products,
 									total_quantities: old_quantity,
 									total_prices: common.getFixedPrice(total_prices - parseFloat(curr_product.price) * (total_quantities - old_quantity)),
+									cart_products: user.cart
 								}, status_message.VALIDATION_ERROR);
 							}
 							if (store.status == false) {
 								return res.out({
-									'message': req.custom.local.cart_product_unavailable
+									'message': req.custom.local.cart_product_unavailable,
+									cart_products: user.cart
 								}, status_message.VALIDATION_ERROR);
 							}
 							break;
@@ -172,6 +176,7 @@ module.exports.add = function (req, res) {
 							total_products: total_products,
 							total_quantities: total_quantities,
 							total_prices: common.getFixedPrice(total_prices),
+							cart_products: user.cart
 						}, status_message.CREATED))
 						.catch((error) => res.out({
 							'message': error.message
