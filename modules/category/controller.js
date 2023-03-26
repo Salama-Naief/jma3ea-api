@@ -74,7 +74,7 @@ module.exports.list = function (req, res) {
 			i.children = childs.filter((c) => c.parent_id.toString() === i._id.toString());
 		});
 
-		rows = rows.filter(i => i.children && i.children.length > 0);
+		//rows = rows.filter(i => i.children && i.children.length > 0);
 
 		console.log('rows after: ', rows.length);
 
