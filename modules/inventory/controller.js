@@ -24,10 +24,10 @@ module.exports.list = async function (req, res) {
         "name": {
             $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
         },
-        "picture": {
+        /* "picture": {
 			$ifNull: [`$picture.${req.custom.lang}`, `$picture`]
-		},
-        //"picture": 1,
+		}, */
+        "picture": 1,
     }, async (out) => {
         if (out.data && out.data.length < 1) {
             return res.out(out);
@@ -74,10 +74,10 @@ module.exports.list = async function (req, res) {
                     "description": {
                         $ifNull: [`$description.${req.custom.lang}`, `$description.${req.custom.config.local}`]
                     },
-                    "picture": {
+                    /* "picture": {
                         $ifNull: [`$picture.${req.custom.lang}`, `$picture`]
-                    },
-                    //"picture": 1,
+                    }, */
+                    "picture": 1,
                     "working_times": 1,
                     "delivery_time": 1,
                     "delivery_time_text": 1,
@@ -110,8 +110,13 @@ module.exports.list = async function (req, res) {
                 });
             }).catch(() => null);
             if (inventory.suppliers.length > 0) {
-                console.log('yes');
                 inventories.push(inventory);
+                inventory.suppliers = inventory.suppliers.map(i => {
+                    if (i.picture && typeof i.picture == 'object') {
+                        i.picture = i.picture.en;
+                    }
+                    return i;
+                })
             } else {
                 console.log('no: ', inventory.suppliers);
             }
