@@ -111,9 +111,10 @@ module.exports.list = async function (req, res) {
             }).catch(() => null);
             if (inventory.suppliers.length > 0) {
                 inventory.suppliers = inventory.suppliers.map(i => {
-                    if (i.picture && typeof i.picture == 'object') {
+                    if (i.picture && typeof i.picture === 'object') {
                         i.picture = i.picture.en;
                     }
+                    i.picture = i.picture && i.picture.includes(req.custom.config.media_url) ? i.picture : (req.custom.config.media_url + i.picture);
                     return i;
                 });
                 inventories.push(inventory);
