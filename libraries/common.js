@@ -137,7 +137,7 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 			}
 
 		}
-console.log('clean filter: ', re.custom.clean_filter);
+console.log('clean filter: ', req.custom.clean_filter);
 		return req.custom.clean_filter;
 	} catch (err) {
 		console.log('ERROR: ', err);
