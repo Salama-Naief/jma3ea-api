@@ -27,7 +27,7 @@ const FLOWERS_CATEGORIES_IDS = [
  * @param {Object} res
  */
 module.exports.buy = async function (req, res) {
-	console.log('body: ', req.body);
+	console.log('Body before the hash: ', req.body);
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -117,6 +117,7 @@ module.exports.buy = async function (req, res) {
 	};
 	const up_cart = Object.assign({}, user.cart);
 	req.custom.limit = 0;
+	console.log('Body after the hash: ', req.body);
 	mainController.list(req, res, 'product', {
 		"_id": 1,
 		"soft_code": 1,
@@ -377,7 +378,7 @@ module.exports.buy = async function (req, res) {
 			// Fix delivery time
 			req.body.delivery_time = moment(req.body.delivery_time).isValid() ?
 				req.body.delivery_time : moment(common.getDate()).format(req.custom.config.date.format).toString();
-			console.log('prods: ', products2save);
+
 			const order_data = {
 				order_id: (user_info ? 'u' : 'v') + '_' + shortid.generate(),
 				payment_method: payment_method,
