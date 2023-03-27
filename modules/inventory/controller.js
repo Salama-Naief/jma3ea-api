@@ -25,8 +25,8 @@ module.exports.list = async function (req, res) {
             $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
         },
         /* "picture": {
-			$ifNull: [`$picture.${req.custom.lang}`, `$picture`]
-		}, */
+            $ifNull: [`$picture.${req.custom.lang}`, `$picture`]
+        }, */
         "picture": 1,
     }, async (out) => {
         if (out.data && out.data.length < 1) {
@@ -111,10 +111,12 @@ module.exports.list = async function (req, res) {
             }).catch(() => null);
             if (inventory.suppliers.length > 0) {
                 inventory.suppliers = inventory.suppliers.map(i => {
-                    if (i.picture && typeof i.picture === 'object') {
-                        i.picture = i.picture.en;
+                    if (i.picture && i.picture != undefined) {
+                        if (typeof i.picture === 'object') {
+                            i.picture = i.picture.en;
+                        }
+                        i.picture = i.picture.includes(req.custom.config.media_url) ? i.picture : (req.custom.config.media_url + i.picture);
                     }
-                    i.picture = i.picture && i.picture.includes(req.custom.config.media_url) ? i.picture : (req.custom.config.media_url + i.picture);
                     return i;
                 });
                 inventories.push(inventory);
