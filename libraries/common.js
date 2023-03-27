@@ -94,6 +94,8 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 				}
 			});
 
+			console.log('inytrnal suppliers ids: ', internalSuppliersIds);
+
 			if (req.query.fast_shipping && req.query.fast_shipping == true) {
 				req.custom.clean_filter['fast_shipping'] = true;
 			}
@@ -135,7 +137,7 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 			}
 
 		}
-
+console.log('clean filter: ', re.custom.clean_filter);
 		return req.custom.clean_filter;
 	} catch (err) {
 		console.log('ERROR: ', err);
