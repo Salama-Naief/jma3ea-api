@@ -110,13 +110,14 @@ module.exports.list = async function (req, res) {
                 });
             }).catch(() => null);
             if (inventory.suppliers.length > 0) {
-                inventories.push(inventory);
                 inventory.suppliers = inventory.suppliers.map(i => {
                     if (i.picture && typeof i.picture == 'object') {
                         i.picture = i.picture.en;
                     }
                     return i;
-                })
+                });
+                inventories.push(inventory);
+                console.log('suppliers: ', inventory.suppliers);
             } else {
                 console.log('no: ', inventory.suppliers);
             }
