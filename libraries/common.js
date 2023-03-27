@@ -85,7 +85,7 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 
 		if (all_suppliers.length > 0) {
 			const internalSuppliersIds = all_suppliers.filter(sup => {
-				if (!sup.is_external || (sup.cities && sup.cities.findIndex(c => c.toString() == city_id.toString()) > -1/*  && sup.working_times && sup.working_times[moment().format('d')].from <= getDate().getHours() && sup.working_times[moment().format('d')].to >= getDate().getHours() */)) {
+				if (!sup.is_external && (sup.cities && sup.cities.findIndex(c => c.toString() == city_id.toString()) > -1/*  && sup.working_times && sup.working_times[moment().format('d')].from <= getDate().getHours() && sup.working_times[moment().format('d')].to >= getDate().getHours() */)) {
 					return sup;
 				}
 			}).map(s => {
@@ -137,7 +137,7 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 			}
 
 		}
-console.log('clean filter: ', req.custom.clean_filter);
+
 		return req.custom.clean_filter;
 	} catch (err) {
 		console.log('ERROR: ', err);
