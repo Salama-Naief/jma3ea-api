@@ -151,18 +151,16 @@ module.exports.buy = async function (req, res) {
 
 			const payment_method = enums_payment_methods(req).find((pm) => pm.id == data.payment_method);
 
-			console.log('body suppliers: ', req.body.suppliers);
-
-			if (req.body.suppliers) {
+			/* if (req.body.suppliers) {
 				if (req.body.suppliers.length > 0) {
-					const suppliers_to_buy = ["Jm3eia"];//req.body.suppliers.map(s => s.supplier_id);
+					const suppliers_to_buy = req.body.suppliers.map(s => s.supplier_id);
 					products2save = products2save.filter(p => suppliers_to_buy.includes(p.supplier._id.toString()));
 				} else {
 					return res.out({
 						message: "No supplier selected"
 					}, status_message.VALIDATION_ERROR);
 				}
-			}
+			} */
 
 			const total_prods = parseFloat(products2save.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0));
 
