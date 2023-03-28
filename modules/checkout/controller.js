@@ -621,6 +621,8 @@ module.exports.list = async function (req, res) {
 				console.log('//////////////////////////////////////// suppliers to buy ////////////////////////////////////////:\n ', req.query.suppliers);
 			} */
 
+			console.log('//////////////////////////////////////// suppliers to buy ////////////////////////////////////////:\n ', req.query.suppliers);
+
 			if (req.query.suppliers) {
 				if (req.query.suppliers.length > 0) {
 					const suppliers_to_buy = req.query.suppliers;
