@@ -68,6 +68,7 @@ module.exports.buy = async function (req, res) {
 	} = await req.custom.getValidData(req);
 
 	if (error) {
+		console.log('VALIDATION ERROR HERE: ', error);
 		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
