@@ -27,7 +27,8 @@ const FLOWERS_CATEGORIES_IDS = [
  * @param {Object} res
  */
 module.exports.buy = async function (req, res) {
-	console.log('Body before the hash: ', req.body);
+	try {
+		console.log('Body before the hash: ', req.body.payment_method, req.body.suppliers);
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -138,7 +139,6 @@ module.exports.buy = async function (req, res) {
 		"free_shipping": 1,
 		"discount_price_valid_until": 1
 	}, async (out) => {
-		try {
 			if (out.data.length === 0) {
 				save_failed_payment(req, 'NO_PRODUCTS_IN_CART');
 				return res.out({
@@ -250,7 +250,7 @@ module.exports.buy = async function (req, res) {
 				const delivery_time = moment(supplier_delivery_time).isValid() ?
 					supplier_delivery_time : moment(common.getDate()).format(req.custom.config.date.format).toString();
 
-				if (sup.supplier._id.toString() == req.custom.settings['site_id'] ) {
+				if (sup.supplier._id.toString() == req.custom.settings['site_id']) {
 					req.body.delivery_time = supplier_delivery_time;
 				} else if (!moment(req.body.delivery_time).isValid() && supplier_delivery_time && moment(supplier_delivery_time).isValid()) {
 					req.body.delivery_time = supplier_delivery_time;
@@ -516,10 +516,10 @@ module.exports.buy = async function (req, res) {
 			await update_quantities(req, up_products, up_cart, token);//.catch(() => null);
 			//}
 			res.out(order_data);
-		} catch (err) {
-			console.log('err: ', err);
-		}
 	});
+	} catch(err) {
+		console.log('BUY ERROR: ', err);
+	}
 
 };
 
@@ -550,66 +550,67 @@ module.exports.list = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
-	const mainController = require("../../libraries/mainController");
-	const ObjectID = require("../../types/object_id");
+	try {
+		const mainController = require("../../libraries/mainController");
+		const ObjectID = require("../../types/object_id");
 
-	let user = req.custom.authorizationObject;
-	const profile = require('../profile/controller');
-	let user_info = await profile.getInfo(req, {
-		_id: 1,
-		fullname: 1,
-		email: 1,
-		mobile: 1,
-		address: 1,
-		addresses: 1,
-		points: 1,
-		wallet: 1,
-		device_token: 1,
-	}).catch(() => null);
+		let user = req.custom.authorizationObject;
+		const profile = require('../profile/controller');
+		let user_info = await profile.getInfo(req, {
+			_id: 1,
+			fullname: 1,
+			email: 1,
+			mobile: 1,
+			address: 1,
+			addresses: 1,
+			points: 1,
+			wallet: 1,
+			device_token: 1,
+		}).catch(() => null);
 
-	let data = {};
-	if (user_info) {
-		data.user_data = user_info;
-		user_info.addresses = user_info.addresses || [];
-		const address = user_info.addresses.find((i) => i.id == req.query.address_id);
-		if (address) {
-			data.user_data.address = address;
+		let data = {};
+		if (user_info) {
+			data.user_data = user_info;
+			user_info.addresses = user_info.addresses || [];
+			const address = user_info.addresses.find((i) => i.id == req.query.address_id);
+			if (address) {
+				data.user_data.address = address;
+			}
+			delete data.user_data.addresses;
 		}
-		delete data.user_data.addresses;
-	}
 
-	let prods = [];
-	if (user && user.cart) {
-		for (const i of Object.keys(user.cart)) {
-			prods.push(i.split('-')[0]);
+		let prods = [];
+		if (user && user.cart) {
+			for (const i of Object.keys(user.cart)) {
+				prods.push(i.split('-')[0]);
+			}
 		}
-	}
-	req.custom.clean_filter.sku = {
-		'$in': prods
-	};
-	req.custom.limit = 0;
-	mainController.list(req, res, 'product', {
-		"_id": 1,
-		"sku": 1,
-		"soft_code": 1,
-		"name": {
-			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
-		},
-		"categories": "$prod_n_categoryArr",
-		"picture": 1,
-		"price": 1,
-		"old_price": 1,
-		"uom": 1,
-		"barcode": 1,
-		"weight": 1,
-		"prod_n_storeArr": 1,
-		"supplier_id": 1,
-		"variants": 1,
-		"preparation_time": 1,
-		"free_shipping": 1,
-		"discount_price_valid_until": 1
-	}, async (out) => {
-		try {
+		req.custom.clean_filter.sku = {
+			'$in': prods
+		};
+		req.custom.limit = 0;
+		mainController.list(req, res, 'product', {
+			"_id": 1,
+			"sku": 1,
+			"soft_code": 1,
+			"name": {
+				$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+			},
+			"categories": "$prod_n_categoryArr",
+			"picture": 1,
+			"price": 1,
+			"old_price": 1,
+			"uom": 1,
+			"barcode": 1,
+			"weight": 1,
+			"prod_n_storeArr": 1,
+			"supplier_id": 1,
+			"variants": 1,
+			"preparation_time": 1,
+			"free_shipping": 1,
+			"discount_price_valid_until": 1
+		}, async (out) => {
+
 			if (out.data.length === 0) {
 				return res.out({
 					products: req.custom.local.cart_has_not_products
@@ -1116,6 +1117,8 @@ module.exports.list = async function (req, res) {
 
 			earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
 
+			console.log('total: ', common.getFixedPrice(total));
+
 			res.out({
 				subtotal: common.getFixedPrice(total_prods),
 				shipping_cost: common.getFixedPrice(shipping_cost),
@@ -1147,10 +1150,10 @@ module.exports.list = async function (req, res) {
 				}),
 
 			});
-		} catch (err) {
-			console.log('er: ', err);
-		}
-	});
+		});
+	} catch (err) {
+		console.log('ERROR FOUND: ', err);
+	}
 };
 
 async function products_to_save(products, user, req, to_display = false) {
