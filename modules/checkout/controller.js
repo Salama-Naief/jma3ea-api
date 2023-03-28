@@ -1120,6 +1120,8 @@ module.exports.list = async function (req, res) {
 				console.log('//////////////////////////////////////// total ////////////////////////////////////////:\n ', common.getFixedPrice(total));
 			}
 
+			console.log('//////////////////////////////////////// payment methods: //////////////////////////////////////// \n ', payment_methods);
+
 			res.out({
 				subtotal: common.getFixedPrice(total_prods),
 				shipping_cost: common.getFixedPrice(shipping_cost),
