@@ -27,6 +27,7 @@ const FLOWERS_CATEGORIES_IDS = [
  * @param {Object} res
  */
 module.exports.buy = async function (req, res) {
+	console.log('//////////////////////////////////////// suppliers to buy ////////////////////////////////////////:\n ', req.body.suppliers);
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -620,8 +621,6 @@ module.exports.list = async function (req, res) {
 			/* if (req.query.test) {
 				console.log('//////////////////////////////////////// suppliers to buy ////////////////////////////////////////:\n ', req.query.suppliers);
 			} */
-
-			console.log('//////////////////////////////////////// suppliers to buy ////////////////////////////////////////:\n ', req.query.suppliers);
 
 			if (req.query.suppliers) {
 				if (req.query.suppliers.length > 0) {
