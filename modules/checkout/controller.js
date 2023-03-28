@@ -117,7 +117,7 @@ module.exports.buy = async function (req, res) {
 	};
 	const up_cart = Object.assign({}, user.cart);
 	req.custom.limit = 0;
-	console.log('Body after the hash: ', req.body);
+
 	mainController.list(req, res, 'product', {
 		"_id": 1,
 		"soft_code": 1,
@@ -151,7 +151,7 @@ module.exports.buy = async function (req, res) {
 
 			if (req.body.suppliers) {
 				if (req.body.suppliers.length > 0) {
-					const suppliers_to_buy = req.body.suppliers.map(s => typeof s == 'object' ? s.supplier_id : s);
+					const suppliers_to_buy = req.body.suppliers.map(s => s.supplier_id);
 					products2save = products2save.filter(p => suppliers_to_buy.includes(p.supplier._id.toString()));
 				} else {
 					return res.out({
@@ -161,8 +161,6 @@ module.exports.buy = async function (req, res) {
 			}
 
 			const total_prods = parseFloat(products2save.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0));
-
-			console.log('products to sae 2: ', products2save);
 
 			if (user_info) {
 				data.user_data._id = user_info._id;
@@ -246,6 +244,12 @@ module.exports.buy = async function (req, res) {
 				const supplier_delivery_time = req.body.suppliers.length > 0 && typeof req.body.suppliers[0] == 'object' ? req.body.suppliers.find(s => s.supplier_id == sup.supplier._id).delivery_time : req.body.delivery_time;
 				const delivery_time = moment(supplier_delivery_time).isValid() ?
 					supplier_delivery_time : moment(common.getDate()).format(req.custom.config.date.format).toString();
+
+				if (sup.supplier._id.toString() == req.custom.settings['site_id'] ) {
+					req.body.delivery_time = supplier_delivery_time;
+				} else if (!moment(req.body.delivery_time).isValid() && supplier_delivery_time && moment(supplier_delivery_time).isValid()) {
+					req.body.delivery_time = supplier_delivery_time;
+				}
 
 				const cache = req.custom.cache;
 				const day = moment(supplier_delivery_time).format('d');
