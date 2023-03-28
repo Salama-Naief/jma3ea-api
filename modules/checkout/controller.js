@@ -118,6 +118,7 @@ module.exports.buy = async function (req, res) {
 	const up_cart = Object.assign({}, user.cart);
 	req.custom.limit = 0;
 
+	console.log('Body after the hash: ', req.body);
 	mainController.list(req, res, 'product', {
 		"_id": 1,
 		"soft_code": 1,
@@ -148,6 +149,8 @@ module.exports.buy = async function (req, res) {
 			let products2save = await products_to_save(out.data, user, req, true);
 
 			const payment_method = enums_payment_methods(req).find((pm) => pm.id == data.payment_method);
+
+			console.log('body suppliers: ', req.body.suppliers);
 
 			if (req.body.suppliers) {
 				if (req.body.suppliers.length > 0) {
@@ -613,6 +616,8 @@ module.exports.list = async function (req, res) {
 
 			let products = await products_to_save(out.data, user, req, true);
 			let allProducts = [...products];
+
+			console.log('suppliers to buy: ', req.query.suppliers);
 
 			if (req.query.suppliers) {
 				if (req.query.suppliers.length > 0) {
