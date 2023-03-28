@@ -691,7 +691,6 @@ module.exports.list = async function (req, res) {
 			let total_coupon_value = 0;
 
 			for (let sup of productsGroupedBySupplier) {
-				console.log("sup: ", sup.isSelected);
 				let supplier_products_total = parseFloat(sup.products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
 
 				sup.subtotal = supplier_products_total;
@@ -992,7 +991,6 @@ module.exports.list = async function (req, res) {
 					}
 					return false;
 				});
-			console.log('payment methods: ', payment_methods);
 
 
 			let delivery_times = [];
