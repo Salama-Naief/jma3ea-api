@@ -151,7 +151,7 @@ module.exports.buy = async function (req, res) {
 
 			const payment_method = enums_payment_methods(req).find((pm) => pm.id == data.payment_method);
 
-			/* if (req.body.suppliers) {
+			if (req.body.suppliers) {
 				if (req.body.suppliers.length > 0) {
 					const suppliers_to_buy = req.body.suppliers.map(s => s.supplier_id);
 					products2save = products2save.filter(p => suppliers_to_buy.includes(p.supplier._id.toString()));
@@ -160,7 +160,7 @@ module.exports.buy = async function (req, res) {
 						message: "No supplier selected"
 					}, status_message.VALIDATION_ERROR);
 				}
-			} */
+			}
 
 			const total_prods = parseFloat(products2save.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0));
 
@@ -546,7 +546,6 @@ module.exports.error = async function (req, res) {
 module.exports.list = async function (req, res) {
 	if (req.query.test) {
 		console.log('//////////////////////////////////////// suppliers to buy in LIST ////////////////////////////////////////:\n ', req.query.suppliers);
-		req.query.suppliers = ['Jm3eia'];
 	}
 
 
