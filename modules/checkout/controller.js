@@ -617,9 +617,9 @@ module.exports.list = async function (req, res) {
 			let products = await products_to_save(out.data, user, req, true);
 			let allProducts = [...products];
 
-			if (req.query.test) {
+			/* if (req.query.test) {
 				console.log('//////////////////////////////////////// suppliers to buy ////////////////////////////////////////:\n ', req.query.suppliers);
-			}
+			} */
 
 			if (req.query.suppliers) {
 				if (req.query.suppliers.length > 0) {
@@ -1115,12 +1115,6 @@ module.exports.list = async function (req, res) {
 			}
 
 			earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
-
-			if (req.query.test) {
-				console.log('//////////////////////////////////////// total ////////////////////////////////////////:\n ', common.getFixedPrice(total));
-			}
-
-			console.log('//////////////////////////////////////// payment methods: //////////////////////////////////////// \n ', productsGroupedBySupplier.find(s => s.isSelected && s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods);
 
 			res.out({
 				subtotal: common.getFixedPrice(total_prods),
