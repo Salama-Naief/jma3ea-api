@@ -27,7 +27,7 @@ const FLOWERS_CATEGORIES_IDS = [
  * @param {Object} res
  */
 module.exports.buy = async function (req, res) {
-	//console.log('//////////////////////////////////////// suppliers to buy IN BUY ////////////////////////////////////////:\n ', req.body.suppliers);
+	console.log('//////////////////////////////////////// suppliers to buy IN BUY ////////////////////////////////////////:\n ', req.body.suppliers);
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -155,7 +155,7 @@ module.exports.buy = async function (req, res) {
 
 			if (req.body.suppliers) {
 				if (req.body.suppliers.length > 0) {
-					const suppliers_to_buy = req.body.suppliers.map(s => s.supplier_id);
+					const suppliers_to_buy = ["Jm3eia"];//req.body.suppliers.map(s => s.supplier_id);
 					products2save = products2save.filter(p => suppliers_to_buy.includes(p.supplier._id.toString()));
 				} else {
 					return res.out({
