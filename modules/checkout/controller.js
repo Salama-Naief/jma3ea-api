@@ -518,7 +518,7 @@ module.exports.buy = async function (req, res) {
 			res.out(order_data);
 		});
 	} catch (err) {
-		console.log('BUY ERROR: ', err);
+		console.log('//////////////////////////////////////// BUY ERROR: ////////////////////////////////////////\n ', err);
 	}
 
 };
@@ -547,9 +547,6 @@ module.exports.error = async function (req, res) {
  * @param {Object} res
  */
 module.exports.list = async function (req, res) {
-	if (req.query.test && req.query.error) {
-		console.log('PHP ERROR: ', req.query.error);
-	}
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -624,7 +621,7 @@ module.exports.list = async function (req, res) {
 			let allProducts = [...products];
 
 			if (req.query.test) {
-				console.log('suppliers to buy: ', req.query.suppliers);
+				console.log('//////////////////////////////////////// suppliers to buy ////////////////////////////////////////:\n ', req.query.suppliers);
 			}
 
 			if (req.query.suppliers) {
@@ -1123,7 +1120,7 @@ module.exports.list = async function (req, res) {
 			earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
 
 			if (req.query.test) {
-				console.log('total: ', common.getFixedPrice(total));
+				console.log('//////////////////////////////////////// total ////////////////////////////////////////:\n ', common.getFixedPrice(total));
 			}
 
 			res.out({
@@ -1159,7 +1156,7 @@ module.exports.list = async function (req, res) {
 			});
 		});
 	} catch (err) {
-		console.log('ERROR FOUND: ', err);
+		console.log('//////////////////////////////////////// ERROR FOUND ////////////////////////////////////////:\n ', err);
 	}
 };
 
