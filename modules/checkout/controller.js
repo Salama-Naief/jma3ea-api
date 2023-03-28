@@ -73,6 +73,7 @@ module.exports.buy = async function (req, res) {
 	}
 
 	if (only_validation) {
+		console.log('VALIDATION CORRECT!');
 		return res.out({
 			message: true,
 			hash: hash,

@@ -26,10 +26,6 @@ module.exports = {
 		"type": Array, // [{ supplier_id: ObjectID, delivery_time: String }]
 		"required": false,
 	}),
-	/* "suppliers": new Field({
-		"type": Array,
-		"required": false,
-	}), */
 	"hash": new Field({
 		"unique": true,
 		"collection": 'order'
