@@ -27,7 +27,7 @@ const FLOWERS_CATEGORIES_IDS = [
  * @param {Object} res
  */
 module.exports.buy = async function (req, res) {
-	console.log('//////////////////////////////////////// suppliers to buy IN BUY ////////////////////////////////////////:\n ', req.body.suppliers);
+	//console.log('//////////////////////////////////////// suppliers to buy IN BUY ////////////////////////////////////////:\n ', req.body.suppliers);
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -547,7 +547,12 @@ module.exports.error = async function (req, res) {
  */
 module.exports.list = async function (req, res) {
 	if (req.query.test) {
-		console.log('//////////////////////////////////////// suppliers to buy in LIST TEST ////////////////////////////////////////:\n ', req.query.suppliers);
+		console.log('//////////////////////////////////////// suppliers to buy in LIST ////////////////////////////////////////:\n ', req.query.suppliers);
+		//console.log('//////////////////////////////////////// test_suppliers to buy in LIST TEST ////////////////////////////////////////:\n ', req.query.test_suppliers);
+		if (req.query.supplier.length > 0 && typeof req.query.supplier[0] == "object") {
+			req.query.suppliers = req.query.suppliers.map(s => s.supplier_id);
+			console.log('YES: ', req.query.suppliers);
+		}
 	}
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
