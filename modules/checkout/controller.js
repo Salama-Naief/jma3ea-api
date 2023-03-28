@@ -27,118 +27,116 @@ const FLOWERS_CATEGORIES_IDS = [
  * @param {Object} res
  */
 module.exports.buy = async function (req, res) {
-	try {
-		console.log('Body before the hash: ', req.body.user_data.fullname, req.body.payment_method, req.body.suppliers);
-		if (req.custom.isAuthorized === false) {
-			return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+	if (req.custom.isAuthorized === false) {
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+	}
+	moment.updateLocale('en', {});
+	const only_validation = req.query.validation !== undefined;
+
+	const profile = require('../profile/controller');
+	let user_info = await profile.getInfo(req, {
+		_id: 1,
+		fullname: 1,
+		email: 1,
+		mobile: 1,
+		address: 1,
+		addresses: 1,
+		points: 1,
+		wallet: 1,
+		device_token: 1,
+	}).catch(() => null);
+
+	if (user_info) {
+		req.body.user_data = user_info;
+	}
+
+	let hash = uuid().replace(/-/g, '');
+
+	if (only_validation && !req.body.hash) {
+		req.body.hash = hash;
+
+		req.custom.authorizationObject.hash = hash;
+		await req.custom.cache.set(req.custom.token, req.custom.authorizationObject, req.custom.config.cache.life_time.token);
+
+	}
+
+	req.custom.model = req.custom.model || require(`./model/buy_${user_info ? 'user' : 'visitor'}`);
+	let {
+		data,
+		error
+	} = await req.custom.getValidData(req);
+
+	if (error) {
+		console.log('VALIDATION ERROR HERE: ', error);
+		return res.out(error, status_message.VALIDATION_ERROR);
+	}
+
+	if (only_validation) {
+		console.log('VALIDATION CORRECT!');
+		return res.out({
+			message: true,
+			hash: hash,
+		});
+	}
+
+	if (user_info) {
+		data.user_data = user_info;
+		user_info.addresses = user_info.addresses || [];
+		const address = user_info.addresses.find((i) => i.id == data.address_id);
+		if (address) {
+			data.user_data.address = address;
 		}
-		moment.updateLocale('en', {});
-		const only_validation = req.query.validation !== undefined;
+		delete data.user_data.addresses;
+	}
 
-		const profile = require('../profile/controller');
-		let user_info = await profile.getInfo(req, {
-			_id: 1,
-			fullname: 1,
-			email: 1,
-			mobile: 1,
-			address: 1,
-			addresses: 1,
-			points: 1,
-			wallet: 1,
-			device_token: 1,
-		}).catch(() => null);
+	// TODO: Fix checking hash  *|| req.custom.authorizationObject.hash != data.hash*
+	if (!data.hash) {
+		save_failed_payment(req, !data.hash ? 'NO_HASH' : 'HASH_NOT_VALID');
+		return res.out({
+			message: req.custom.local.hash_error
+		}, status_message.VALIDATION_ERROR);
+	}
 
-		if (user_info) {
-			req.body.user_data = user_info;
+	// TODO: Fix checking track id && req.body.hash != req.body.payment_details.trackid
+	if (req.body.payment_method == 'knet' && req.body.payment_details && !req.body.payment_details.trackid) {
+		save_failed_payment(req, 'TRACK_ID_NOT_VALID');
+		return res.out({
+			message: req.custom.local.hash_error
+		}, status_message.VALIDATION_ERROR);
+	}
+
+	let user = req.custom.authorizationObject;
+	user.cart = user.cart || {};
+	let prods = [];
+	if (user && user.cart) {
+		for (const i of Object.keys(user.cart)) {
+			prods.push(i.split('-')[0]);
 		}
+	}
+	req.custom.clean_filter.sku = {
+		'$in': prods
+	};
+	const up_cart = Object.assign({}, user.cart);
+	req.custom.limit = 0;
 
-		let hash = uuid().replace(/-/g, '');
-
-		if (only_validation && !req.body.hash) {
-			req.body.hash = hash;
-
-			req.custom.authorizationObject.hash = hash;
-			await req.custom.cache.set(req.custom.token, req.custom.authorizationObject, req.custom.config.cache.life_time.token);
-
-		}
-
-		req.custom.model = req.custom.model || require(`./model/buy_${user_info ? 'user' : 'visitor'}`);
-		let {
-			data,
-			error
-		} = await req.custom.getValidData(req);
-
-		if (error) {
-			console.log('VALIDATION ERROR HERE: ', error);
-			return res.out(error, status_message.VALIDATION_ERROR);
-		}
-
-		if (only_validation) {
-			console.log('VALIDATION CORRECT!');
-			return res.out({
-				message: true,
-				hash: hash,
-			});
-		}
-
-		if (user_info) {
-			data.user_data = user_info;
-			user_info.addresses = user_info.addresses || [];
-			const address = user_info.addresses.find((i) => i.id == data.address_id);
-			if (address) {
-				data.user_data.address = address;
-			}
-			delete data.user_data.addresses;
-		}
-
-		// TODO: Fix checking hash  *|| req.custom.authorizationObject.hash != data.hash*
-		if (!data.hash) {
-			save_failed_payment(req, !data.hash ? 'NO_HASH' : 'HASH_NOT_VALID');
-			return res.out({
-				message: req.custom.local.hash_error
-			}, status_message.VALIDATION_ERROR);
-		}
-
-		// TODO: Fix checking track id && req.body.hash != req.body.payment_details.trackid
-		if (req.body.payment_method == 'knet' && req.body.payment_details && !req.body.payment_details.trackid) {
-			save_failed_payment(req, 'TRACK_ID_NOT_VALID');
-			return res.out({
-				message: req.custom.local.hash_error
-			}, status_message.VALIDATION_ERROR);
-		}
-
-		let user = req.custom.authorizationObject;
-		user.cart = user.cart || {};
-		let prods = [];
-		if (user && user.cart) {
-			for (const i of Object.keys(user.cart)) {
-				prods.push(i.split('-')[0]);
-			}
-		}
-		req.custom.clean_filter.sku = {
-			'$in': prods
-		};
-		const up_cart = Object.assign({}, user.cart);
-		req.custom.limit = 0;
-
-		console.log('Body after the hash: ', req.body);
-		mainController.list(req, res, 'product', {
-			"_id": 1,
-			"soft_code": 1,
-			"sku": { $ifNull: [`$sku`, `$soft_code`] }, // TODO: Change to sku
-			"name": 1,
-			"categories": "$prod_n_categoryArr",
-			"picture": 1,
-			"price": 1,
-			"uom": 1,
-			"barcode": 1,
-			"weight": 1,
-			"prod_n_storeArr": 1,
-			"supplier_id": 1,
-			"variants": 1,
-			"free_shipping": 1,
-			"discount_price_valid_until": 1
-		}, async (out) => {
+	mainController.list(req, res, 'product', {
+		"_id": 1,
+		"soft_code": 1,
+		"sku": { $ifNull: [`$sku`, `$soft_code`] }, // TODO: Change to sku
+		"name": 1,
+		"categories": "$prod_n_categoryArr",
+		"picture": 1,
+		"price": 1,
+		"uom": 1,
+		"barcode": 1,
+		"weight": 1,
+		"prod_n_storeArr": 1,
+		"supplier_id": 1,
+		"variants": 1,
+		"free_shipping": 1,
+		"discount_price_valid_until": 1
+	}, async (out) => {
+		try {
 			if (out.data.length === 0) {
 				save_failed_payment(req, 'NO_PRODUCTS_IN_CART');
 				return res.out({
@@ -330,7 +328,7 @@ module.exports.buy = async function (req, res) {
 						}
 					}
 				}
-
+	
 			} */
 
 
@@ -516,10 +514,10 @@ module.exports.buy = async function (req, res) {
 			await update_quantities(req, up_products, up_cart, token);//.catch(() => null);
 			//}
 			res.out(order_data);
-		});
-	} catch (err) {
-		console.log('//////////////////////////////////////// BUY ERROR: ////////////////////////////////////////\n ', err);
-	}
+		} catch (err) {
+			console.log('//////////////////////////////////////// BUY ERROR FOUND ////////////////////////////////////////:\n ', err);
+		}
+	});
 
 };
 
@@ -550,67 +548,66 @@ module.exports.list = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
-	try {
-		const mainController = require("../../libraries/mainController");
-		const ObjectID = require("../../types/object_id");
+	const mainController = require("../../libraries/mainController");
+	const ObjectID = require("../../types/object_id");
 
-		let user = req.custom.authorizationObject;
-		const profile = require('../profile/controller');
-		let user_info = await profile.getInfo(req, {
-			_id: 1,
-			fullname: 1,
-			email: 1,
-			mobile: 1,
-			address: 1,
-			addresses: 1,
-			points: 1,
-			wallet: 1,
-			device_token: 1,
-		}).catch(() => null);
+	let user = req.custom.authorizationObject;
+	const profile = require('../profile/controller');
+	let user_info = await profile.getInfo(req, {
+		_id: 1,
+		fullname: 1,
+		email: 1,
+		mobile: 1,
+		address: 1,
+		addresses: 1,
+		points: 1,
+		wallet: 1,
+		device_token: 1,
+	}).catch(() => null);
 
-		let data = {};
-		if (user_info) {
-			data.user_data = user_info;
-			user_info.addresses = user_info.addresses || [];
-			const address = user_info.addresses.find((i) => i.id == req.query.address_id);
-			if (address) {
-				data.user_data.address = address;
-			}
-			delete data.user_data.addresses;
+	let data = {};
+	if (user_info) {
+		data.user_data = user_info;
+		user_info.addresses = user_info.addresses || [];
+		const address = user_info.addresses.find((i) => i.id == req.query.address_id);
+		if (address) {
+			data.user_data.address = address;
 		}
+		delete data.user_data.addresses;
+	}
 
-		let prods = [];
-		if (user && user.cart) {
-			for (const i of Object.keys(user.cart)) {
-				prods.push(i.split('-')[0]);
-			}
+	let prods = [];
+	if (user && user.cart) {
+		for (const i of Object.keys(user.cart)) {
+			prods.push(i.split('-')[0]);
 		}
-		req.custom.clean_filter.sku = {
-			'$in': prods
-		};
-		req.custom.limit = 0;
-		mainController.list(req, res, 'product', {
-			"_id": 1,
-			"sku": 1,
-			"soft_code": 1,
-			"name": {
-				$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
-			},
-			"categories": "$prod_n_categoryArr",
-			"picture": 1,
-			"price": 1,
-			"old_price": 1,
-			"uom": 1,
-			"barcode": 1,
-			"weight": 1,
-			"prod_n_storeArr": 1,
-			"supplier_id": 1,
-			"variants": 1,
-			"preparation_time": 1,
-			"free_shipping": 1,
-			"discount_price_valid_until": 1
-		}, async (out) => {
-
+	}
+	req.custom.clean_filter.sku = {
+		'$in': prods
+	};
+	req.custom.limit = 0;
+	mainController.list(req, res, 'product', {
+		"_id": 1,
+		"sku": 1,
+		"soft_code": 1,
+		"name": {
+			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+		},
+		"categories": "$prod_n_categoryArr",
+		"picture": 1,
+		"price": 1,
+		"old_price": 1,
+		"uom": 1,
+		"barcode": 1,
+		"weight": 1,
+		"prod_n_storeArr": 1,
+		"supplier_id": 1,
+		"variants": 1,
+		"preparation_time": 1,
+		"free_shipping": 1,
+		"discount_price_valid_until": 1
+	}, async (out) => {
+		try {
 			if (out.data.length === 0) {
 				return res.out({
 					products: req.custom.local.cart_has_not_products
@@ -1154,10 +1151,10 @@ module.exports.list = async function (req, res) {
 				}),
 
 			});
-		});
-	} catch (err) {
-		console.log('//////////////////////////////////////// ERROR FOUND ////////////////////////////////////////:\n ', err);
-	}
+		} catch (err) {
+			console.log('//////////////////////////////////////// ERROR FOUND ////////////////////////////////////////:\n ', err);
+		}
+	});
 };
 
 async function products_to_save(products, user, req, to_display = false) {
