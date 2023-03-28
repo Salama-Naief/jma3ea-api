@@ -1120,7 +1120,7 @@ module.exports.list = async function (req, res) {
 				console.log('//////////////////////////////////////// total ////////////////////////////////////////:\n ', common.getFixedPrice(total));
 			}
 
-			console.log('//////////////////////////////////////// payment methods: //////////////////////////////////////// \n ', payment_methods);
+			console.log('//////////////////////////////////////// payment methods: //////////////////////////////////////// \n ', productsGroupedBySupplier.find(s => s.isSelected && s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods);
 
 			res.out({
 				subtotal: common.getFixedPrice(total_prods),
