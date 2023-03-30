@@ -5,6 +5,7 @@ const mainController = require("../../libraries/mainController");
 const common = require('../../libraries/common');
 const status_message = require('../../enums/status_message');
 const ObjectID = require("../../types/object_id");
+const { getTermLang } = require("./utils");
 
 const collectionName = 'product';
 
@@ -57,7 +58,11 @@ module.exports.list = function (req, res) {
 			// Add the text filter operator
 			req.custom.clean_filter['$text'] = {
 				$search: `${name} ${newNames.join(' ')}`,
-			};
+				$language: getTermLang(name),
+				$caseSensitive: false,
+				$diacriticSensitive: false,
+				$meta: 'textScore'
+			}
 
 			// Set the sort option
 			req.custom.clean_sort = { score: { $meta: 'textScore' } };
