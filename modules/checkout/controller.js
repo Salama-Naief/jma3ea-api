@@ -653,10 +653,10 @@ module.exports.list = async function (req, res) {
 
 			let total_prods = parseFloat(products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
 
-			let purchase_possibility = req.custom.settings.orders && req.custom.settings.orders.min_value && parseInt(req.custom.settings.orders.min_value) > 0 && total_prods < parseInt(req.custom.settings.orders.min_value) ? false : true;
+			let purchase_possibility = (req.query.suppliers ? req.query.suppliers.length > 1 : true) && req.custom.settings.orders && req.custom.settings.orders.min_value && parseInt(req.custom.settings.orders.min_value) > 0 && total_prods < parseInt(req.custom.settings.orders.min_value) ? false : true;
 
 			let message = null;
-			if (req.custom.settings.orders && req.custom.settings.orders.min_value && req.custom.settings.orders.min_value > total_prods) {
+			if ((req.query.suppliers ? req.query.suppliers.length > 1 : true) && req.custom.settings.orders && req.custom.settings.orders.min_value && req.custom.settings.orders.min_value > total_prods) {
 				message = req.custom.local.order_should_be_more_then({
 					value: req.custom.settings.orders.min_value,
 					currency: req.custom.authorizationObject.currency[req.custom.lang]
@@ -879,7 +879,7 @@ module.exports.list = async function (req, res) {
 				const dayOfWeek = moment().format('d');
 				if (sup.supplier.working_times && sup.supplier.working_times.length > 0 && dayOfWeek <= sup.supplier.working_times.length) {
 					const dayHours = common.getDate().getHours();
-					//console.log('this is being triggered: ', dayOfWeek, dayHours, sup.supplier.working_times[dayOfWeek]);
+					console.log('this is being triggered: ', dayOfWeek, dayHours, sup.supplier.working_times[dayOfWeek]);
 					const isOpen = sup.supplier.working_times[dayOfWeek].from <= dayHours && sup.supplier.working_times[dayOfWeek].to >= dayHours;
 					sup.supplier.isOpen = isOpen;
 				} else {
