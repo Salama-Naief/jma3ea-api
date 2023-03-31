@@ -653,16 +653,6 @@ module.exports.list = async function (req, res) {
 
 			let total_prods = parseFloat(products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
 
-			let purchase_possibility = (req.query.suppliers ? req.query.suppliers.length > 1 : true) && req.custom.settings.orders && req.custom.settings.orders.min_value && parseInt(req.custom.settings.orders.min_value) > 0 && total_prods < parseInt(req.custom.settings.orders.min_value) ? false : true;
-
-			let message = null;
-			if ((req.query.suppliers ? req.query.suppliers.length > 1 : true) && req.custom.settings.orders && req.custom.settings.orders.min_value && req.custom.settings.orders.min_value > total_prods) {
-				message = req.custom.local.order_should_be_more_then({
-					value: req.custom.settings.orders.min_value,
-					currency: req.custom.authorizationObject.currency[req.custom.lang]
-				});
-			}
-
 			const user_city_id = req.query.city_id || (user_info && data.user_data && data.user_data.address && data.user_data.address.city_id ?
 				data.user_data.address.city_id.toString() :
 				req.custom.authorizationObject.city_id.toString());
@@ -677,6 +667,17 @@ module.exports.list = async function (req, res) {
 			let shipping_cost = 0;
 
 			const productsGroupedBySupplier = groupBySupplier(allProducts, req.query.suppliers);
+
+			let purchase_possibility = productsGroupedBySupplier.length > 1 && req.custom.settings.orders && req.custom.settings.orders.min_value && parseInt(req.custom.settings.orders.min_value) > 0 && total_prods < parseInt(req.custom.settings.orders.min_value) ? false : true;
+
+			let message = null;
+			if (productsGroupedBySupplier.length > 1 && req.custom.settings.orders && req.custom.settings.orders.min_value && req.custom.settings.orders.min_value > total_prods) {
+				message = req.custom.local.order_should_be_more_then({
+					value: req.custom.settings.orders.min_value,
+					currency: req.custom.authorizationObject.currency[req.custom.lang]
+				});
+			}
+
 			const coupon_collection = req.custom.db.client().collection('coupon');
 			const coupons = user.coupon && (user.coupon.code || user.coupon.suppliers_coupons) ? (await coupon_collection.find({
 				code: user.coupon.code ? user.coupon.code : { $in: user.coupon.suppliers_coupons.map(c => c.code) },
@@ -1128,7 +1129,7 @@ module.exports.list = async function (req, res) {
 				discount_by_wallet_value: common.getFixedPrice(wallet2money || 0),
 				total: common.getFixedPrice(total),
 				purchase_possibility: productsGroupedBySupplier.length > 1 ? true : purchase_possibility,
-				message: productsGroupedBySupplier.length > 1 ? null : message,
+				message: message,
 				addresses: addresses,
 				gift_note: should_be_gifted,
 				payment_methods: productsGroupedBySupplier.find(s => s.isSelected && s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
