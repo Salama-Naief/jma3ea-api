@@ -1220,7 +1220,7 @@ async function products_to_save(products, user, req, to_display = false) {
 
 		const cache = req.custom.cache;
 		const cache_key = `supplier_all_solid`;
-		all_suppliers = false;//await cache.get(cache_key).catch(() => null);
+		all_suppliers = await cache.get(cache_key).catch(() => null);
 		if (!all_suppliers) {
 			const supplier_collection = req.custom.db.client().collection('supplier');
 			all_suppliers = await supplier_collection.find({}).toArray() || [];

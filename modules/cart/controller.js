@@ -292,22 +292,87 @@ module.exports.remove = function (req, res) {
  * @param {Object} res 
  * @returns 
  */
-module.exports.clear = function (req, res) {
+module.exports.clear = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
 	let user = req.custom.authorizationObject;
-	user.cart = {};
+	user.cart = user.cart || {};
 	user.hash = null;
 
-	req.custom.cache.set(req.custom.token, user)
-		.then((response) => res.out({
-			message: req.custom.local.cart_cleared
-		}, status_message.DELETED))
-		.catch((error) => res.out({
-			'message': error.message
-		}, status_message.UNEXPECTED_ERROR));
+	let prods = [];
+	for (const i of Object.keys(user.cart)) {
+		prods.push(i.split('-')[0]);
+	}
+
+	const cache = req.custom.cache;
+	const cache_key = `supplier_all_solid`;
+	all_suppliers = await cache.get(cache_key).catch(() => null);
+	if (!all_suppliers) {
+		const supplier_collection = req.custom.db.client().collection('supplier');
+		all_suppliers = await supplier_collection.find({}).toArray() || [];
+		if (all_suppliers) {
+			cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch(() => null);
+		}
+	}
+
+	if (all_suppliers.length > 0) {
+		const internalSuppliersIds = all_suppliers.filter(sup => {
+			if (!sup.is_external) {
+				return sup;
+			}
+		}).map(s => {
+			if (s._id && ObjectID.isValid(s._id)) {
+				return new ObjectID(s._id);
+			}
+		});
+
+		req.custom.clean_filter['$or'] = [
+			{ "supplier_id": { $exists: false } },
+			{
+				"supplier_id": {
+					$in: internalSuppliersIds
+				}
+			},
+		]
+	}
+
+	req.custom.clean_filter.sku = {
+		'$in': prods
+	};
+
+	req.custom.limit = 1000;
+
+	mainController.list(req, res, 'product', {
+		"_id": 1,
+		"sku": 1,
+		"supplier_id": 1,
+	}, async (out) => {
+		if (out.data.length === 0) {
+			user.cart = {};
+		} else {
+			for (let product of out.data) {
+				const cartKeys = Object.keys(user.cart);
+				for (const i of cartKeys) {
+					const sku = i.split('-')[0];
+					if (sku != product.sku) {
+						delete user.cart[i];
+					}
+				}
+			}
+		}
+
+		req.custom.cache.set(req.custom.token, user)
+			.then((response) => res.out({
+				message: req.custom.local.cart_cleared
+			}, status_message.DELETED))
+			.catch((error) => res.out({
+				'message': error.message
+			}, status_message.UNEXPECTED_ERROR));
+
+
+	});
 
 }
 
