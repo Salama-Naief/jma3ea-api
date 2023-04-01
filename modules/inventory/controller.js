@@ -76,6 +76,7 @@ module.exports.list = async function (req, res) {
                         $ifNull: [`$picture.${req.custom.lang}`, `$picture`]
                     }, */
                     "picture": 1,
+                    "logo": 1,
                     "working_times": 1,
                     "delivery_time": 1,
                     "delivery_time_text": 1,
