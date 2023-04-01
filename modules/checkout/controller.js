@@ -877,7 +877,7 @@ module.exports.list = async function (req, res) {
 				}
 
 				moment.updateLocale('en', {});
-				const dayOfWeek = moment().format('d');
+				const dayOfWeek = moment(common.getDate()).format('d');
 				if (sup.supplier.working_times && sup.supplier.working_times.length > 0 && dayOfWeek <= sup.supplier.working_times.length) {
 					const dayHours = common.getDate().getHours();
 					console.log('this is being triggered: ', dayOfWeek, dayHours, sup.supplier.working_times[dayOfWeek]);
