@@ -114,13 +114,16 @@ module.exports.list = async function (req, res) {
                         }
                         i.picture = i.picture.includes(req.custom.config.media_url) ? i.picture : (req.custom.config.media_url + i.picture);
                     }
+                    if (i.logo && i.logo != undefined) {
+                        i.logo = i.logo.includes(req.custom.config.media_url) ? i.logo : (req.custom.config.media_url + i.logo);
+                    }
                     return i;
                 });
                 inventories.push(inventory);
                 console.log('suppliers: ', inventory.suppliers);
             }
         }
-        
+
         console.log('inventories: ', inventories);
         out.data = inventories;
         out.count = inventories.length;
