@@ -79,7 +79,8 @@ module.exports.list = async function (req, res) {
                     "working_times": 1,
                     "delivery_time": 1,
                     "delivery_time_text": 1,
-                    "min_order": 1
+                    "min_order": 1,
+                    "shipping_cost": 1
                 }
             }
         ];
