@@ -791,11 +791,8 @@ module.exports.list = async function (req, res) {
 						const full_date = today.add(idx, 'hours').format(req.custom.config.date.format);
 						const time = today.format('LT') + ' : ' + today.add(2, 'hours').format('LT');
 
-						const cache_key_dt = `delivery_times_${sup.supplier._id.toString()}_${day}_${idx}`;
+						const cache_key_dt = `delivery_times_${day}_${idx}`;
 						const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
-
-						console.log('cached delivery times: ', cached_delivery_times);
-						console.log('delivery times: ', available_delivery_times[idx]);
 
 						if (available_delivery_times[idx].max_orders > cached_delivery_times) {
 							times.push({
@@ -842,7 +839,7 @@ module.exports.list = async function (req, res) {
 						const full_date = tomorrow.add(idx, 'hours').format(req.custom.config.date.format);
 						const time = tomorrow.format('LT') + ' : ' + tomorrow.add(2, 'hours').format('LT');
 
-						const cache_key_dt = `delivery_times_${sup.supplier._id.toString()}_${day}_${idx}`;
+						const cache_key_dt = `delivery_times_${day}_${idx}`;
 						const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
 						if (tomorrow_available_delivery_times && tomorrow_available_delivery_times[idx] && tomorrow_available_delivery_times[idx].max_orders > cached_delivery_times) {
 							times.push({
@@ -1288,7 +1285,9 @@ async function products_to_save(products, user, req, to_display = false) {
 			min_value: supplier.min_order,
 			allow_cod: supplier.allow_cod,
 			delivery_time_text: supplier.delivery_time_text,
-			working_times: supplier.is_external ? moment.weekdays().map((i, idx) => ({ ...supplier.working_times[idx], text: i })) : undefined
+			working_times: supplier.is_external ? moment.weekdays().map((i, idx) => ({ ...supplier.working_times[idx], text: i })) : undefined,
+			available_delivery_times: supplier.available_delivery_times,
+			is_external: supplier.is_external
 		} : to_display ? {
 			_id: req.custom.settings['site_id'],
 			name: {
