@@ -794,6 +794,9 @@ module.exports.list = async function (req, res) {
 						const cache_key_dt = `delivery_times_${sup.supplier._id.toString()}_${day}_${idx}`;
 						const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
 
+						console.log('cached delivery times: ', cached_delivery_times);
+						console.log('delivery times: ', available_delivery_times[idx]);
+
 						if (available_delivery_times[idx].max_orders > cached_delivery_times) {
 							times.push({
 								'time': time,
