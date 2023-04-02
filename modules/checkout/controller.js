@@ -821,7 +821,7 @@ module.exports.list = async function (req, res) {
 				}
 				//
 				if (sup.supplier.is_external && sup.supplier.available_delivery_times) {
-					tomorrow_available_delivery_times = mergeDeliveryTimes(tomorrow_available_delivery_times, sup.supplier.available_delivery_times[today.format('d')]);
+					tomorrow_available_delivery_times = mergeDeliveryTimes(tomorrow_available_delivery_times, sup.supplier.available_delivery_times[tomorrow.format('d')]);
 
 				}
 				if (tomorrow_available_delivery_times) {
