@@ -771,7 +771,7 @@ module.exports.list = async function (req, res) {
 				}
 
 				if (sup.supplier.is_external && sup.supplier.available_delivery_times) {
-					available_delivery_times = sup.supplier.available_delivery_times[today.format('d')];
+					available_delivery_times = mergeDeliveryTimes(available_delivery_times, sup.supplier.available_delivery_times[today.format('d')]);
 				}
 
 				if (available_delivery_times) {
@@ -791,7 +791,7 @@ module.exports.list = async function (req, res) {
 						const full_date = today.add(idx, 'hours').format(req.custom.config.date.format);
 						const time = today.format('LT') + ' : ' + today.add(2, 'hours').format('LT');
 
-						const cache_key_dt = `delivery_times_${day}_${idx}`;
+						const cache_key_dt = `delivery_times_${sup.supplier._id.toString()}_${day}_${idx}`;
 						const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
 
 						if (available_delivery_times[idx].max_orders > cached_delivery_times) {
@@ -821,7 +821,7 @@ module.exports.list = async function (req, res) {
 				}
 				//
 				if (sup.supplier.is_external && sup.supplier.available_delivery_times) {
-					tomorrow_available_delivery_times = sup.supplier.available_delivery_times[today.format('d')];
+					tomorrow_available_delivery_times = mergeDeliveryTimes(tomorrow_available_delivery_times, sup.supplier.available_delivery_times[today.format('d')]);
 
 				}
 				if (tomorrow_available_delivery_times) {
@@ -839,7 +839,7 @@ module.exports.list = async function (req, res) {
 						const full_date = tomorrow.add(idx, 'hours').format(req.custom.config.date.format);
 						const time = tomorrow.format('LT') + ' : ' + tomorrow.add(2, 'hours').format('LT');
 
-						const cache_key_dt = `delivery_times_${day}_${idx}`;
+						const cache_key_dt = `delivery_times_${sup.supplier._id.toString()}_${day}_${idx}`;
 						const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
 						if (tomorrow_available_delivery_times && tomorrow_available_delivery_times[idx] && tomorrow_available_delivery_times[idx].max_orders > cached_delivery_times) {
 							times.push({
