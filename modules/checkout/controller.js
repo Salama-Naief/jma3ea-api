@@ -127,6 +127,7 @@ module.exports.buy = async function (req, res) {
 		"categories": "$prod_n_categoryArr",
 		"picture": 1,
 		"price": 1,
+		"old_price": 1,
 		"uom": 1,
 		"barcode": 1,
 		"weight": 1,
