@@ -230,13 +230,22 @@ module.exports.buy = async function (req, res) {
 				if (!general_coupon && suppliers_coupons && suppliers_coupons.length > 0) {
 					const supplier_coupon = suppliers_coupons.find(c => c.supplier_id.toString() == sup.supplier._id.toString());
 					if (supplier_coupon) {
+						let totalWithNoDiscount = 0;
+						sup.products.map(i => {
+							if (!i.old_price || i.old_price <= 0) {
+								totalWithNoDiscount += i.price * i.quantity;
+							}
+						});
+
+						const totalToApplyCoupon = supplier_coupon.apply_on_discounted_products ? parseFloat(supplier_products_total) : totalWithNoDiscount;
+
 						sup.coupon = {
 							supplier: {
 								_id: sup.supplier._id,
 								name: sup.supplier.name[req.custom.lang] || sup.supplier.name['en']
 							},
 							code: supplier_coupon.code,
-							value: common.getFixedPrice(supplier_coupon.percent_value ? (parseFloat(supplier_products_total) * supplier_coupon.percent_value) / 100 : supplier_coupon.discount_value)
+							value: common.getFixedPrice(supplier_coupon.percent_value ? (totalToApplyCoupon * supplier_coupon.percent_value) / 100 : supplier_coupon.discount_value)
 						}
 						supplier_products_total -= parseFloat(sup.coupon.value || 0);
 						total_coupon_value += parseFloat(sup.coupon.value || 0);
@@ -267,10 +276,18 @@ module.exports.buy = async function (req, res) {
 				sup.delivery_time = delivery_time;
 			}
 
+			let totalWithNoDiscount = 0;
+			products2save.map(i => {
+				if (!i.old_price || i.old_price <= 0) {
+					totalWithNoDiscount += i.price * i.quantity;
+				}
+			});
+
+			const totalToApplyCoupon = general_coupon ? (general_coupon.apply_on_discounted_products ? parseFloat(total_prods) : totalWithNoDiscount) : 0;
 
 			const out_coupon = {
 				code: general_coupon ? general_coupon.code : null,
-				value: general_coupon ? common.getFixedPrice(general_coupon.percent_value ? (parseFloat(total_prods) * general_coupon.percent_value) / 100 : general_coupon.discount_value) : common.getFixedPrice(total_coupon_value),
+				value: general_coupon ? common.getFixedPrice(general_coupon.percent_value ? (totalToApplyCoupon * general_coupon.percent_value) / 100 : general_coupon.discount_value) : common.getFixedPrice(total_coupon_value),
 				suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
 			};
 
