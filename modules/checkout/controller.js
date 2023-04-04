@@ -27,7 +27,6 @@ const FLOWERS_CATEGORIES_IDS = [
  * @param {Object} res
  */
 module.exports.buy = async function (req, res) {
-	console.log('//////////////////////////////////////// suppliers to buy IN BUY ////////////////////////////////////////:\n ', req.body.suppliers);
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -284,6 +283,9 @@ module.exports.buy = async function (req, res) {
 			});
 
 			const totalToApplyCoupon = general_coupon ? (general_coupon.apply_on_discounted_products ? parseFloat(total_prods) : totalWithNoDiscount) : 0;
+
+			console.log('//////////////////////////////////////// TOTAL WITH NO DISCOUNT ////////////////////////////////////////:\n ', totalWithNoDiscount);
+			console.log('//////////////////////////////////////// TOTAL TO APPLY COUPON ////////////////////////////////////////:\n ', totalToApplyCoupon);
 
 			const out_coupon = {
 				code: general_coupon ? general_coupon.code : null,
@@ -561,9 +563,9 @@ module.exports.error = async function (req, res) {
  * @param {Object} res
  */
 module.exports.list = async function (req, res) {
-	if (req.query.test) {
+	/* if (req.query.test) {
 		console.log('//////////////////////////////////////// suppliers to buy in LIST ////////////////////////////////////////:\n ', req.query.suppliers);
-	}
+	} */
 
 
 	if (req.custom.isAuthorized === false) {
