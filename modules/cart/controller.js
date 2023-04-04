@@ -298,10 +298,18 @@ module.exports.clear = async function (req, res) {
 	}
 
 	let user = req.custom.authorizationObject;
-	user.cart = user.cart || {};
+	user.cart = {};
 	user.hash = null;
 
-	let prods = [];
+	req.custom.cache.set(req.custom.token, user)
+		.then((response) => res.out({
+			message: req.custom.local.cart_cleared
+		}, status_message.DELETED))
+		.catch((error) => res.out({
+			'message': error.message
+		}, status_message.UNEXPECTED_ERROR));
+
+	/* let prods = [];
 	for (const i of Object.keys(user.cart)) {
 		prods.push(i.split('-')[0]);
 	}
@@ -363,16 +371,8 @@ module.exports.clear = async function (req, res) {
 			}
 		}
 
-		req.custom.cache.set(req.custom.token, user)
-			.then((response) => res.out({
-				message: req.custom.local.cart_cleared
-			}, status_message.DELETED))
-			.catch((error) => res.out({
-				'message': error.message
-			}, status_message.UNEXPECTED_ERROR));
 
-
-	});
+	}); */
 
 }
 

@@ -233,11 +233,13 @@ module.exports.featured = async function (req, res) {
 	user.wishlist = Array.isArray(user.wishlist) ? user.wishlist : [];
 
 	const cache = req.custom.cache;
-	let cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_featred__`;
+	let cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_featred`;
 
 	if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
 		req.custom.clean_filter['supplier_id'] = new ObjectID(req.query.supplier_id);
-		cache_key += `_supplier_${req.query.supplier_id}`;
+		cache_key += `__supplier_${req.query.supplier_id}`;
+	} else {
+		req.custom.clean_filter['supplier_id'] = { $exists: false };
 	}
 
 
@@ -270,6 +272,7 @@ module.exports.featured = async function (req, res) {
 	req.custom.clean_sort = {
 		"sorting": 1
 	};
+
 	mainController.list(req, res, collectionFeature, {
 		"_id": 1,
 		"name": {

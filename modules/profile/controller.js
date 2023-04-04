@@ -592,7 +592,25 @@ module.exports.updatecity = function (req, res) {
 						}
 
 						const prod_collection = req.custom.db.client().collection('product');
-						prod_collection.find({ "_id": { $in: prod_ids } }, { projection: { _id: 1, prod_n_storeArr: 1 } }).
+						prod_collection.aggregate([
+							{ $match: { "_id": { $in: prod_ids } } },
+							{
+								$lookup: {
+									from: 'supplier',
+									localField: 'supplier_id',
+									foreignField: '_id',
+									as: 'supplier'
+								}
+							},
+							{
+								$project: {
+									_id: 1,
+									prod_n_storeArr: 1,
+									supplier_id: 1,
+									supplier: { $arrayElemAt: ['$supplier', 0] }
+								}
+							}
+						]).
 							toArray((err, prods) => {
 								if (err) {
 									return res.out({
@@ -602,7 +620,7 @@ module.exports.updatecity = function (req, res) {
 
 								for (const p of Object.keys(cart)) {
 									const product = prods.find((i) => i._id.toString() === p.toString());
-									if (!product) {
+									if (!product || (product.supplier && product.supplier.is_external)) {
 										delete cart[p];
 										continue;
 									}
