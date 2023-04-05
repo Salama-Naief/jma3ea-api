@@ -1,6 +1,7 @@
 // inventory Controller
 
 // Load required modules
+const status_message = require("../../enums/status_message");
 const mainController = require("../../libraries/mainController");
 const ObjectID = require("../../types/object_id");
 const collectionName = 'inventory';
@@ -17,6 +18,13 @@ module.exports.list = async function (req, res) {
             return res.out({ count: cached_data.length, data: cached_data });
         }
     } */
+
+
+    if (!cityid) {
+        return res.out({
+            'message': req.custom.local.choose_city_first
+        }, status_message.CITY_REQUIRED);
+    }
 
     req.custom.cache_key = false;
     mainController.list_all(req, res, collectionName, {
@@ -91,6 +99,7 @@ module.exports.list = async function (req, res) {
             "allowDiskUse": true
         };
 
+
         //req.custom.clean_filter = await filter_internal_suppliers_by_city(req, true);
         for (let inventory of out.data) {
             req.custom.clean_filter = { inventory_id: ObjectID(inventory._id.toString()), cities: ObjectID(cityid), is_external: true, status: true };
@@ -121,11 +130,9 @@ module.exports.list = async function (req, res) {
                     return i;
                 });
                 inventories.push(inventory);
-                console.log('suppliers: ', inventory.suppliers);
             }
         }
 
-        console.log('inventories: ', inventories);
         out.data = inventories;
         out.count = inventories.length;
 

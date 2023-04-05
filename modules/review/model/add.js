@@ -1,5 +1,5 @@
-const ObjectID = require("../../types/object_id");
-const Field = require("../../libraries/field");
+const ObjectID = require("../../../types/object_id");
+const Field = require("../../../libraries/field");
 
 module.exports = {
     "name": new Field({
@@ -20,7 +20,7 @@ module.exports = {
         "required": true
     }),
     "device_token": new Field({
-        "type": Number,
+        "type": String,
         "required": false
     }),
 };
