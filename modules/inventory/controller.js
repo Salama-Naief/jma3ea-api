@@ -86,7 +86,8 @@ module.exports.list = async function (req, res) {
                     "delivery_time": 1,
                     "delivery_time_text": 1,
                     "min_order": 1,
-                    "shipping_cost": 1
+                    "shipping_cost": 1,
+                    "app_delivery_time": 1
                 }
             }
         ];

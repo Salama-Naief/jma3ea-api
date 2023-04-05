@@ -65,6 +65,7 @@ const locals = {
 	wishlist_product_not: "The product is not exists in wishlist",
 	wishlist_product_removed: "The product has been removed successfully",
 	wishlist_product_unavailable: "The product is unavailable",
+	review_added_successfully: "Review added successfully!",
 	error_message: {
 		required: "",
 	},
