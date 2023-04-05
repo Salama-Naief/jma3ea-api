@@ -1,5 +1,3 @@
-const { collectionName } = require('./controller');
-
 /**
  * Set the price to the old price
  * This function is getting triggered when the discount price is expired
@@ -10,7 +8,7 @@ const { collectionName } = require('./controller');
  */
 module.exports.resetPrice = async function (req, sku, old_price) {
   try {
-    const collection = req.custom.db.client().collection(collectionName);
+    const collection = req.custom.db.client().collection("product");
     const response = await collection.updateOne(
       {
         sku,
@@ -30,3 +28,8 @@ module.exports.resetPrice = async function (req, sku, old_price) {
     return false;
   }
 };
+
+module.exports.getTermLang = (term) => {
+  const languageCode = /[\u0600-\u06FF]/.test(term) ? 'ar' : 'en';
+  return languageCode;
+}

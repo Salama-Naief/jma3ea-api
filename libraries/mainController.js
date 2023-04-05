@@ -4,6 +4,7 @@
 const common = require('./common');
 const status_message = require('../enums/status_message');
 const ObjectID = require("../types/object_id");
+const { resetPrice } = require('../modules/product/utils');
 
 /**
  * List all categories
@@ -27,6 +28,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 					if (cached_data) {
 						if (req.custom.isProducts == true) {
+							const promises = [];
 							cached_data.data = cached_data.data.map((i) => {
 								const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id.toString()) > -1;
 								i.cart_status = {
@@ -37,8 +39,20 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 									is_exists: user.wishlist.indexOf(i._id.toString()) > -1
 								};
 
+
+								if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
+									const oldPrice = parseFloat(i.old_price);
+									i.price = oldPrice;
+									promises.push(resetPrice(req, i.sku, oldPrice).catch(() => res.out({
+										message: req.custom.local.unexpected_error
+									}, status_message.UNEXPECTED_ERROR)));
+								}
+
 								return i;
 							});
+							if (promises.length > 0) {
+								Promise.all(promises);
+							}
 						}
 						res.out(cached_data);
 						resolve(true);
@@ -52,16 +66,18 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 		resolve(false);
 	});
 
-	is_cached.then((_is_cached) => {
+	is_cached.then(async (_is_cached) => {
 		if (_is_cached) {
 			return;
 		}
 
 		const collection = req.custom.db.client().collection(collectionName);
-		const filter = req.custom.clean_filter;
+		const filter = req.custom.isProducts != true ? req.custom.clean_filter : await common.filter_internal_suppliers_by_city(req);
+
 		if (req.custom.all_status != true) {
 			filter.status = req.custom.clean_filter.status || true;
 		}
+
 		if (req.custom.isProducts == true) {
 
 			filter.status = true;
@@ -166,11 +182,25 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 						}, status_message.UNEXPECTED_ERROR);
 					}
 
+					const promises = [];
 					results = results ? results.map((i) => {
 						if (i.picture) {
 							i.picture = `${req.custom.config.media_url}${i.picture}`;
 						}
 						if (req.custom.isProducts == true) {
+
+							if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
+								const oldPrice = parseFloat(i.old_price);
+								i.price = oldPrice;
+								promises.push(resetPrice(req, i.sku, oldPrice).catch(() => res.out({
+									message: req.custom.local.unexpected_error
+								}, status_message.UNEXPECTED_ERROR)));
+							}
+
+							if (i.fast_shipping && i.fast_shipping == true && i.fast_shipping_cost > 0) {
+								i.price += parseFloat(i.fast_shipping_cost);
+							}
+
 							i.price = common.getFixedPrice(i.price);
 							i.old_price = common.getFixedPrice(i.old_price || 0);
 
@@ -196,6 +226,10 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 						}
 						return i;
 					}) : [];
+
+					if (req.custom.isProducts == true && promises.length > 0) {
+						Promise.all(promises);
+					}
 
 					const out = {
 						total: total,

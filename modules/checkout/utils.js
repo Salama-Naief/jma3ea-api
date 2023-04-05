@@ -1,3 +1,5 @@
+const ObjectID = require("../../types/object_id");
+
 /**
  * This functions is used to merge the delivery times of settings and city in a specific day
  * @param {Array} settingTimes - The delivery times in settings
@@ -142,17 +144,45 @@ module.exports.cleanProduct = async function (req, cart) {
     }
 }
 
-
-module.exports.groupBySupplier = (products) => {
+module.exports.groupBySupplier = (products, suppliers = []) => {
     const newProducts = [];
     for (let p of products) {
         const foundSupplierIndex = newProducts.findIndex(np => np.supplier._id.toString() == p.supplier_id.toString());
         if (foundSupplierIndex > -1) {
             newProducts[foundSupplierIndex].products.push(p);
         } else {
-            newProducts.push({ supplier: p.supplier, products: [p] });
+            newProducts.push({ supplier: p.supplier, products: [p], isSelected: suppliers.length > 0 ? suppliers.includes(p.supplier._id.toString()) : true });
         }
     }
 
     return newProducts;
+}
+
+
+module.exports.getAvailableOffer = async (req, total, offer_id) => {
+    const collection = req.custom.db.client().collection('offer');
+    const query = {
+        status: true,
+        min_amount: { $lte: total },
+        target_amount: { $gte: total }
+    };
+
+    if (offer_id) {
+        query['_id'] = ObjectID(offer_id.toString());
+    }
+
+    const options = {
+        sort: { target_amount: 1 }
+    };
+
+    const offer = await collection.findOne(query, options);
+
+    if (offer) {
+        if (offer_id)
+            offer.isClaimed = true;
+        else
+            offer.isClaimed = false;
+    }
+
+    return offer;
 }

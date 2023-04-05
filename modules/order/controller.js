@@ -5,6 +5,7 @@ const mainController = require("../../libraries/mainController");
 const common = require('../../libraries/common');
 const status_message = require('../../enums/status_message');
 const ObjectID = require("../../types/object_id");
+const { groupBySupplier, products_to_save } = require("../checkout/utils");
 const collectionName = 'order';
 
 /**
@@ -28,6 +29,9 @@ module.exports.list = function (req, res) {
 		"created": 1,
 		"status": 1,
 		"evaluation": 1,
+		"driver_name": 1,
+		"driver_mobile": 1,
+		"driver_track_id": 1
 	}, (results) => {
 		results.data = results.data.map((i) => {
 			i.status = req.custom.local.order_status_list[i.status];
@@ -56,7 +60,24 @@ module.exports.read = function (req, res) {
 	collection.findOne({
 		_id: ObjectID(req.params.Id),
 	})
-		.then((order) => {
+		.then(async (order) => {
+			if (!order.data) {
+				const productsGroupedBySupplier = groupBySupplier(await reformatOrderSuppliers(order.products, req));
+
+				for (let sup of productsGroupedBySupplier) {
+					let supplier_products_total = parseFloat(sup.products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
+
+					sup.subtotal = supplier_products_total;
+
+					const supplier_shipping_cost = sup.supplier._id == req.custom.settings['site_id'] ? order.shipping_cost : parseFloat(sup.supplier.shipping_cost);
+
+					supplier_products_total += supplier_shipping_cost;
+					sup.shipping_cost = supplier_shipping_cost;
+					sup.total = common.getFixedPrice(supplier_products_total);
+				}
+
+				order.data = productsGroupedBySupplier;
+			}
 			order.products = Array.isArray(order.products) ? common.group_products_by_suppliers(order.products, req) : order.products;
 			let products = [];
 			for (const supplier_key of Object.keys(order.products)) {
@@ -65,7 +86,9 @@ module.exports.read = function (req, res) {
 					return p;
 				});
 			}
+			order['status_number'] = order.status;
 			order.status = req.custom.local.order_status_list[order.status];
+			order['all_statuses'] = req.custom.local.order_status_list;
 			res.out(order);
 		})
 		.catch((err) => res.out({
@@ -171,3 +194,55 @@ module.exports.repeat = function (req, res) {
 			'message': err.message
 		}, status_message.UNEXPECTED_ERROR));
 };
+
+async function reformatOrderSuppliers(products, req) {
+
+	let all_suppliers = [];
+	await (async () => {
+
+		const cache = req.custom.cache;
+		const cache_key = `supplier_all_solid`;
+		all_suppliers = false;//await cache.get(cache_key).catch(() => null);
+		if (!all_suppliers) {
+			const supplier_collection = req.custom.db.client().collection('supplier');
+			all_suppliers = await supplier_collection.find({}).toArray() || [];
+			if (all_suppliers) {
+				cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch(() => null);
+			}
+		}
+
+	})();
+
+	const out_data = products.map((prod) => {
+
+		prod.supplier_id = prod.supplier_id || req.custom.settings['site_id'];
+		const supplier = all_suppliers.find((s) => prod.supplier_id && s._id.toString() == prod.supplier_id.toString());
+		prod.supplier = supplier ? {
+			_id: supplier._id,
+			name: {
+				ar: supplier.name['ar'],
+				en: supplier.name['en'],
+			},
+			shipping_cost: supplier.shipping_cost || 0,
+			min_delivery_time: supplier.delivery_time,
+			min_value: supplier.min_order,
+			allow_cod: supplier.allow_cod,
+			delivery_time_text: supplier.delivery_time_text
+		} : {
+			_id: req.custom.settings['site_id'],
+			name: {
+				ar: req.custom.settings['site_name']['ar'],
+				en: req.custom.settings['site_name']['en'],
+			},
+			min_delivery_time: req.custom.settings.orders.min_delivery_time,
+			min_value: req.custom.settings.orders.min_value,
+			delivery_time_text: "",
+		};
+
+		prod.delivery_time = supplier ? supplier.delivery_time : req.body.delivery_time;
+
+		return prod;
+	});
+
+	return out_data;
+}

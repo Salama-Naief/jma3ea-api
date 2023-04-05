@@ -26,6 +26,15 @@ module.exports.list = function (req, res) {
 		req.custom.clean_filter['features'] = { $eq: null };
 	}
 
+	if (req.query && req.query.supplier_id) {
+		if (ObjectID.isValid(req.query.supplier_id)) {
+			req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
+			req.custom.cache_key = `${collectionName}_${req.custom.lang}_supplier_${req.query.supplier_id}`;
+		} else {
+			req.custom.clean_filter['supplier_id'] = { $exists: false };
+		}
+	}
+
 	mainController.list_all(req, res, collectionName, {
 		"_id": 1,
 		"name": 1,

@@ -48,7 +48,8 @@ module.exports.add = function (req, res) {
 
 				if (!prod) {
 					return res.out({
-						'message': req.custom.local.cart_product_unavailable
+						'message': req.custom.local.cart_product_unavailable,
+						cart_products: user.cart
 					}, status_message.VALIDATION_ERROR);
 				}
 
@@ -58,7 +59,8 @@ module.exports.add = function (req, res) {
 
 					if (!variant) {
 						return res.out({
-							'message': req.custom.local.cart_product_unavailable
+							'message': req.custom.local.cart_product_unavailable,
+							cart_products: user.cart
 						}, status_message.VALIDATION_ERROR);
 					}
 
@@ -70,26 +72,7 @@ module.exports.add = function (req, res) {
 
 				}
 
-				for (const store of selected_product.prod_n_storeArr) {
-					if (store.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
-						if (store.feed_from_store_id) {
-							const temp_store = selected_product.prod_n_storeArr.find((i) => i.store_id.toString() == store.feed_from_store_id.toString());
-							store.quantity = temp_store.quantity;
-						}
-						if (store.quantity < data.quantity || (selected_product.max_quantity_cart && selected_product.max_quantity_cart < data.quantity)) {
-							return res.out({
-								'message': req.custom.local.cart_product_exceeded_allowed
-							}, status_message.VALIDATION_ERROR);
-						}
-						if (store.status == false) {
-							return res.out({
-								'message': req.custom.local.cart_product_unavailable
-							}, status_message.VALIDATION_ERROR);
-						}
-						break;
-					}
-				}
-
+				const old_quantity = user.cart[data.sku] ? user.cart[data.sku] : 0;
 				user.cart[data.sku] = data.quantity;
 
 				if (!data.quantity) {
@@ -129,7 +112,7 @@ module.exports.add = function (req, res) {
 							});
 						}
 
-						
+
 						// Check if the product sku in the cart exists in the main product
 						// Then we check for product variations
 						if (Object.keys(user.cart).indexOf(p.sku) > -1) {
@@ -161,12 +144,39 @@ module.exports.add = function (req, res) {
 						}
 					}
 
+					for (const store of selected_product.prod_n_storeArr) {
+						if (store.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
+							if (store.feed_from_store_id) {
+								const temp_store = selected_product.prod_n_storeArr.find((i) => i.store_id.toString() == store.feed_from_store_id.toString());
+								store.quantity = temp_store.quantity;
+							}
+							if (store.quantity < data.quantity || (selected_product.max_quantity_cart && selected_product.max_quantity_cart < data.quantity)) {
+								const curr_product = products.find((p) => p.sku.toString() === data.sku.toString());
+								return res.out({
+									'message': req.custom.local.cart_product_exceeded_allowed,
+									total_products: total_products,
+									total_quantities: old_quantity,
+									total_prices: common.getFixedPrice(total_prices - parseFloat(curr_product.price) * (total_quantities - old_quantity)),
+									cart_products: user.cart
+								}, status_message.VALIDATION_ERROR);
+							}
+							if (store.status == false) {
+								return res.out({
+									'message': req.custom.local.cart_product_unavailable,
+									cart_products: user.cart
+								}, status_message.VALIDATION_ERROR);
+							}
+							break;
+						}
+					}
+
 					req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
 						.then((response) => res.out({
 							message: req.custom.local.cart_product_added,
 							total_products: total_products,
 							total_quantities: total_quantities,
-							total_prices: common.getRoundedPrice(total_prices),
+							total_prices: common.getFixedPrice(total_prices),
+							cart_products: user.cart
 						}, status_message.CREATED))
 						.catch((error) => res.out({
 							'message': error.message
@@ -265,7 +275,7 @@ module.exports.remove = function (req, res) {
 						message: req.custom.local.cart_product_removed,
 						total_products: total_products,
 						total_quantities: total_quantities,
-						total_prices: common.getRoundedPrice(total_prices),
+						total_prices: common.getFixedPrice(total_prices),
 					}, status_message.DELETED))
 					.catch((error) => res.out({
 						'message': error.message
@@ -275,6 +285,96 @@ module.exports.remove = function (req, res) {
 		}).
 		catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
 };
+
+/**
+ * Clear the cart
+ * @param {Object} req 
+ * @param {Object} res 
+ * @returns 
+ */
+module.exports.clear = async function (req, res) {
+	if (req.custom.isAuthorized === false) {
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+	}
+
+	let user = req.custom.authorizationObject;
+	user.cart = {};
+	user.hash = null;
+
+	req.custom.cache.set(req.custom.token, user)
+		.then((response) => res.out({
+			message: req.custom.local.cart_cleared
+		}, status_message.DELETED))
+		.catch((error) => res.out({
+			'message': error.message
+		}, status_message.UNEXPECTED_ERROR));
+
+	/* let prods = [];
+	for (const i of Object.keys(user.cart)) {
+		prods.push(i.split('-')[0]);
+	}
+
+	const cache = req.custom.cache;
+	const cache_key = `supplier_all_solid`;
+	all_suppliers = await cache.get(cache_key).catch(() => null);
+	if (!all_suppliers) {
+		const supplier_collection = req.custom.db.client().collection('supplier');
+		all_suppliers = await supplier_collection.find({}).toArray() || [];
+		if (all_suppliers) {
+			cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch(() => null);
+		}
+	}
+
+	if (all_suppliers.length > 0) {
+		const internalSuppliersIds = all_suppliers.filter(sup => {
+			if (!sup.is_external) {
+				return sup;
+			}
+		}).map(s => {
+			if (s._id && ObjectID.isValid(s._id)) {
+				return new ObjectID(s._id);
+			}
+		});
+
+		req.custom.clean_filter['$or'] = [
+			{ "supplier_id": { $exists: false } },
+			{
+				"supplier_id": {
+					$in: internalSuppliersIds
+				}
+			},
+		]
+	}
+
+	req.custom.clean_filter.sku = {
+		'$in': prods
+	};
+
+	req.custom.limit = 1000;
+
+	mainController.list(req, res, 'product', {
+		"_id": 1,
+		"sku": 1,
+		"supplier_id": 1,
+	}, async (out) => {
+		if (out.data.length === 0) {
+			user.cart = {};
+		} else {
+			for (let product of out.data) {
+				const cartKeys = Object.keys(user.cart);
+				for (const i of cartKeys) {
+					const sku = i.split('-')[0];
+					if (sku != product.sku) {
+						delete user.cart[i];
+					}
+				}
+			}
+		}
+
+
+	}); */
+
+}
 
 /**
  * List all products in Cart
@@ -423,6 +523,7 @@ module.exports.list = function (req, res) {
 					status: true,
 				}).then((coupon) => {
 					let totalToApplyCoupon = coupon.apply_on_discounted_products ? out.subtotal : totalWithNoDiscount;
+					// let totalToApplyCoupon = totalWithNoDiscount;
 					out.coupon = {
 						code: coupon ? coupon.code : null,
 						value: coupon ? (coupon.percent_value ? (totalToApplyCoupon * coupon.percent_value) / 100 : coupon.discount_value) : 0
@@ -453,7 +554,6 @@ module.exports.coupon = function (req, res) {
 
 	let user = req.custom.authorizationObject;
 
-
 	const data = req.body;
 	let coupon = null;
 
@@ -467,23 +567,49 @@ module.exports.coupon = function (req, res) {
 		code: null,
 		member_id: null,
 		value: 0,
+		suppliers_coupons: user.coupon && user.coupon.suppliers_coupons && Array.isArray(user.coupon.suppliers_coupons) ? user.coupon.suppliers_coupons : []
 	};
+
 	req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
 		.then(() => {
 
 			const collection = req.custom.db.client().collection('coupon');
 			collection.findOne({
-				code:  {'$regex': '^' + data.code + '$',$options:'i'},
+				code: { '$regex': '^' + data.code + '$', $options: 'i' },
 				$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } }],
 				status: true
 			}).
-				then((coupon) => {
+				then(async (coupon) => {
 
 					if (!coupon) {
 						return res.out({
 							"code": req.custom.local.cart_coupon_unavailable
 						}, status_message.VALIDATION_ERROR);
 					}
+
+					// Return error if there's no supplier for this coupon
+					if (coupon.supplier_id) {
+						//const mainController = require("../../libraries/mainController");
+						let prods = [];
+						if (user && user.cart) {
+							for (const i of Object.keys(user.cart)) {
+								prods.push(i.split('-')[0]);
+							}
+						}
+
+						const product_collection = req.custom.db.client().collection('product');
+						const data = await product_collection.find({
+							sku: { $in: prods },
+							status: true
+						}).toArray();
+
+						if (!data || data.length < 0 || data.findIndex(p => p.supplier_id && p.supplier_id.toString() === coupon.supplier_id.toString()) < 0) {
+							return res.out({
+								"code": req.custom.local.cart_coupon_unavailable
+							}, status_message.VALIDATION_ERROR);
+						}
+					}
+
 
 					const coupon_token_collection = req.custom.db.client().collection('coupon_token');
 					coupon_token_collection.findOne({ coupon: coupon.code, token: req.custom.token }).
@@ -503,16 +629,61 @@ module.exports.coupon = function (req, res) {
 								}, status_message.VALIDATION_ERROR);
 							}
 
-							user.coupon = {
-								code: coupon.code || null,
-								member_id: coupon ? (coupon.member_id || null) : null,
-								value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0,
-							};
-
+							if (coupon.supplier_id) {
+								user.coupon.member_id = coupon ? (coupon.member_id || null) : null;
+								const index = user.coupon.suppliers_coupons.findIndex(c => c.code === coupon.code);
+								if (index < 0) {
+									user.coupon.suppliers_coupons.push({
+										supplier_id: coupon.supplier_id,
+										code: coupon.code,
+										value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0
+									});
+								} else {
+									user.coupon.suppliers_coupons.splice(index, 1);
+									user.coupon.suppliers_coupons.push({
+										supplier_id: coupon.supplier_id,
+										code: coupon.code,
+										value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0
+									});
+								}
+							} else if (coupon.only_for_jm3eia) {
+								try {
+									console.log('it is only for jm3eia!');
+									console.log('Before: ', user.coupon);
+									user.coupon.member_id = coupon ? (coupon.member_id || null) : null;
+									const index = user.coupon.suppliers_coupons.findIndex(c => c.code === coupon.code);
+									if (index < 0) {
+										user.coupon.suppliers_coupons.push({
+											supplier_id: req.custom.settings['site_id'],
+											code: coupon.code,
+											value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0
+										});
+									} else {
+										user.coupon.suppliers_coupons.splice(index, 1);
+										user.coupon.suppliers_coupons.push({
+											supplier_id: req.custom.settings['site_id'],
+											code: coupon.code,
+											value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0
+										});
+									}
+									console.log('After: ', user.coupon);
+								} catch (err) {
+									console.log(err);
+								}
+							} else {
+								user.coupon = {
+									code: coupon.code || null,
+									member_id: coupon ? (coupon.member_id || null) : null,
+									value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0,
+									suppliers_coupons: []
+								};
+							}
 
 							req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
 								.then((response) => res.out({
-									message: req.custom.local.cart_coupon_added
+									message: req.custom.local.cart_coupon_added,
+									note: req.custom.local.cart_coupon_only_no_discounted_products,
+									apply_on_discounted_products: coupon.apply_on_discounted_products,
 								}, status_message.CREATED))
 								.catch((error) => res.out({
 									'message': error.message
@@ -530,3 +701,63 @@ module.exports.coupon = function (req, res) {
 			'message': error.message
 		}, status_message.UNEXPECTED_ERROR));
 };
+
+
+/**
+ * Claim the offer
+ */
+module.exports.offer = async function (req, res) {
+	if (req.custom.isAuthorized === false) {
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+	}
+
+	let user = req.custom.authorizationObject;
+
+	const data = req.body;
+
+	if (!data.offer_id) {
+		return res.out({}, status_message.VALIDATION_ERROR);
+	}
+
+	user.offer = {
+		offer_id: null
+	};
+
+	const collection = req.custom.db.client().collection('offer');
+
+	try {
+		const offer = await collection.findOne({ _id: ObjectID(data.offer_id), status: true });
+		if (!offer) {
+			return res.out({
+				//"code": req.custom.local.cart_coupon_unavailable
+			}, status_message.VALIDATION_ERROR);
+		}
+
+		if (offer.type == 'giveaway') {
+			if (!user.member_id) {
+				return res.out({
+					message: "Please login or create an account to claim the offer",
+				});
+			}
+			const giveaway_entries_collection = req.custom.db.client().collection('giveaway_entries');
+
+			await giveaway_entries_collection.insertOne({
+				offer_id: ObjectID(data.offer_id),
+				member_id: ObjectID(user.member_id.toString()),
+				entry_date: common.getDate()
+			});
+		}
+		user.offer.offer_id = data.offer_id;
+	} catch (err) {
+		res.out({
+			'message': err.message
+		}, status_message.UNEXPECTED_ERROR)
+	}
+	req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
+		.then((response) => res.out({
+			message: req.custom.local.cart_coupon_added
+		}, status_message.CREATED))
+		.catch((error) => res.out({
+			'message': error.message
+		}, status_message.UNEXPECTED_ERROR));
+}

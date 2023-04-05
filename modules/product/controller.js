@@ -5,6 +5,7 @@ const mainController = require("../../libraries/mainController");
 const common = require('../../libraries/common');
 const status_message = require('../../enums/status_message');
 const ObjectID = require("../../types/object_id");
+const { getTermLang } = require("./utils");
 
 const collectionName = 'product';
 
@@ -19,47 +20,58 @@ module.exports.list = function (req, res) {
 	req.custom.isProducts = true;
 	const name = common.parseArabicNumbers(req.query.q);
 	const newNames = [];
-	if (name) {
-		let names_array = name.split(' ');
-		for (let item of names_array) {
+	const names_array = name ? name.split(' ') : [];
 
-			// Get the last character of the word
-			const lastCharacter = item.slice(-1);
-
-			// If the last character of teh word contains ه
-			if (/\u0647/.test(lastCharacter)) {
-				// Add new search item for ة
-				newNames.push(item.slice(0, -1) + '\u0629');
-			}
-
-			// If the last character of teh word contains ة
-			if (/\u0629/.test(lastCharacter)) {
-				// Add new search item for ه
-				newNames.push(item.slice(0, -1) + '\u0647');
-			}
-
-			// If the word begins with Alif
-			if (common.begins_with_similar_alif_letters(item)) {
-
-				// Set all different types of Alifs to the search
-				let alif_words = common.transform_word_begins_with_alif_letter(item);
-				alif_words.forEach((alif_word) => {
-					newNames.push(alif_word);
-				});
-			}
-		}
-
-		// Add the text filter operator
-		req.custom.clean_filter['$text'] = {
-			$search: `${name} ${newNames.join(' ')}`,
-		};
-
-		// Set the sort option
-		req.custom.clean_sort = { score: { $meta: 'textScore' } };
-
+	if (/^\d+$/.test(name)) {
+		req.custom.clean_filter["barcode"] = name;
 	} else {
-		req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
+		if (names_array.length > 0) {
+			let names_array = name.split(' ');
+			for (let item of names_array) {
+
+				// Get the last character of the word
+				const lastCharacter = item.slice(-1);
+
+				// If the last character of teh word contains ه
+				if (/\u0647/.test(lastCharacter)) {
+					// Add new search item for ة
+					newNames.push(item.slice(0, -1) + '\u0629');
+				}
+
+				// If the last character of teh word contains ة
+				if (/\u0629/.test(lastCharacter)) {
+					// Add new search item for ه
+					newNames.push(item.slice(0, -1) + '\u0647');
+				}
+
+				// If the word begins with Alif
+				if (common.begins_with_similar_alif_letters(item)) {
+
+					// Set all different types of Alifs to the search
+					let alif_words = common.transform_word_begins_with_alif_letter(item);
+					alif_words.forEach((alif_word) => {
+						newNames.push(alif_word);
+					});
+				}
+			}
+
+			// Add the text filter operator
+			req.custom.clean_filter['$text'] = {
+				$search: `${name} ${newNames.join(' ')}`,
+				$language: getTermLang(name),
+				$caseSensitive: false,
+				$diacriticSensitive: false,
+				$meta: 'textScore'
+			}
+
+			// Set the sort option
+			req.custom.clean_sort = { score: { $meta: 'textScore' } };
+
+		} else {
+			//req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
+		}
 	}
+
 
 	if (req.query) {
 		if (req.query.brand_id && req.query.brand_id !== "all") {
@@ -76,6 +88,14 @@ module.exports.list = function (req, res) {
 				req.custom.clean_sort = { [req.query.sortBy]: parseInt(req.query.sorting) };
 			}
 		}
+
+		if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
+			req.custom.clean_filter['supplier_id'] = new ObjectID(req.query.supplier_id);
+			if (req.custom.cache_key) {
+				req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}__supplier_${req.query.supplier_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
+			}
+		}
+
 	}
 
 	mainController.list(req, res, collectionName, {
@@ -94,15 +114,19 @@ module.exports.list = function (req, res) {
 		"max_quantity_cart": {
 			$ifNull: ["$max_quantity_cart", 0]
 		},
-		"supplier_id": 1
+		"supplier_id": 1,
+		"show_discount_percentage": 1,
+		"discount_price_valid_until": 1
 	}, (data) => {
-		if (data.total == 0) {
-			req.custom.clean_filter = {
-				'$or': [
-					{ "name.ar": { $regex: new RegExp(`${name}${newNames.join('|')}`, "i") } },
-					{ "name.en": { $regex: new RegExp(`${name}${newNames.join('|')}`, "i") } }
-				]
-			};
+		if (data.total == 0 && !/^\d+$/.test(name)) {
+			req.custom.clean_filter['$or'] = [
+				{ "name.ar": { $regex: new RegExp(`${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`, "i") } },
+				{ "name.en": { $regex: new RegExp(`${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`, "i") } },
+			];
+
+			if (delete req.custom.clean_filter.hasOwnProperty('$text'))
+				delete req.custom.clean_filter['$text'];
+
 			req.custom.clean_sort = { name_length: 1 };
 			req.custom.sort_after = true;
 
@@ -125,6 +149,8 @@ module.exports.list = function (req, res) {
 				"name_length": {
 					$strLenCP: { $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`] }
 				},
+				"show_discount_percentage": 1,
+				"discount_price_valid_until": 1
 			});
 		} else {
 			return res.out(data);
@@ -152,6 +178,16 @@ module.exports.listByCategory = function (req, res) {
 	} else {
 		req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_category_${req.params.Id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
 	}
+
+	if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
+		req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
+		if (req.custom.cache_key) {
+			req.custom.cache_key += `_supplier_${req.query.supplier_id}`;
+		}
+	}
+
+	req.custom.cache_key = undefined;
+
 	mainController.list(req, res, collectionName, {
 		"_id": 0,
 		"sku": 1,
@@ -168,7 +204,9 @@ module.exports.listByCategory = function (req, res) {
 		"max_quantity_cart": {
 			$ifNull: ["$max_quantity_cart", 0]
 		},
-		"supplier_id": 1
+		"supplier_id": 1,
+		"show_discount_percentage": 1,
+		"discount_price_valid_until": 1
 	});
 };
 
@@ -195,7 +233,15 @@ module.exports.featured = async function (req, res) {
 	user.wishlist = Array.isArray(user.wishlist) ? user.wishlist : [];
 
 	const cache = req.custom.cache;
-	const cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_featred__25____`;
+	let cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_featred`;
+
+	if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
+		req.custom.clean_filter['supplier_id'] = new ObjectID(req.query.supplier_id);
+		cache_key += `__supplier_${req.query.supplier_id}`;
+	} else {
+		req.custom.clean_filter['supplier_id'] = { $exists: false };
+	}
+
 
 	if (cache_key) {
 		let cached_data = await cache.get(cache_key).catch(() => null);
@@ -226,6 +272,7 @@ module.exports.featured = async function (req, res) {
 	req.custom.clean_sort = {
 		"sorting": 1
 	};
+
 	mainController.list(req, res, collectionFeature, {
 		"_id": 1,
 		"name": {
@@ -257,7 +304,9 @@ module.exports.featured = async function (req, res) {
 				"max_quantity_cart": {
 					$ifNull: ["$max_quantity_cart", 0]
 				},
-				"supplier_id": 1
+				"supplier_id": 1,
+				"show_discount_percentage": 1,
+				"discount_price_valid_until": 1
 			};
 
 			const sort = {
@@ -423,7 +472,9 @@ module.exports.read = async function (req, res) {
 				"prod_n_storeArr": 1,
 				"prod_n_categoryArr": 1,
 				"variants": 1,
-				"supplier_id": 1
+				"supplier_id": 1,
+				"show_discount_percentage": 1,
+				"discount_price_valid_until": 1
 			}, async (results) => {
 				if (!results || !results.sku) {
 					return res.out(results, status_message.NO_DATA);
