@@ -541,7 +541,7 @@ module.exports.buy = async function (req, res) {
 };
 
 /**
- * Save unsuccessfully 
+ * Save unsuccessfully
  * @param {Object} req
  * @param {Object} res
  */

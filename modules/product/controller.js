@@ -224,7 +224,7 @@ module.exports.featured = async function (req, res) {
 		}, status_message.CITY_REQUIRED);
 	}
 
-	req.custom.limit = 9999;
+	req.custom.limit = 999;
 
 	const collectionFeature = 'feature';
 
@@ -326,7 +326,7 @@ module.exports.featured = async function (req, res) {
 				},
 				// Stage 2
 				{
-					$limit: 1000
+					$limit: 25
 				},
 				// Stage 3
 				{
