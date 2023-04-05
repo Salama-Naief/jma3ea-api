@@ -23,12 +23,25 @@ module.exports.add = async (req, res) => {
             return res.out(error, status_message.VALIDATION_ERROR);
         }
 
+        const profile = require('../profile/controller');
+        let user_info = await profile.getInfo(req, {
+            _id: 1,
+            fullname: 1,
+        }).catch(() => null);
+
+        if (user_info) {
+            if (user_info.fullname)
+                data.name = user_info.fullname
+        }
+
+        if (req.custom.authorizationObject.member_id) {
+            data.member_id = req.custom.authorizationObject.member_id;
+        }
+
         const collection = req.custom.db.client().collection(COLLECTION_NAME);
 
         data.created = common.getDate();
-        if (req.custom.authorizationObject.member_id)
-            data.member_id = req.custom.authorizationObject.member_id;
-        //data.status = false;
+        data.status = true;
 
         const review = await collection.insertOne(data);
 
@@ -56,6 +69,12 @@ module.exports.list = (req, res) => {
         return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
     }
 
+    if (!req.query || !req.query.supplier_id || !ObjectID.isValid(req.query.supplier_id)) {
+        return res.out({}, status_message.UNEXPECTED_ERROR);
+    }
+
+    req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
+
     mainController.list(req, res, COLLECTION_NAME, {
         "name": 1,
         "stars": 1,
@@ -63,7 +82,7 @@ module.exports.list = (req, res) => {
         "member_id": 1
     }, async (out) => {
         if (out.data.length === 0) {
-            return res.out({}, status_message.NO_DATA);
+            return res.out(out, status_message.NO_DATA);
         }
 
         const reviewsIds = out.data.filter(m => m.member_id && ObjectID.isValid(m.member_id)).map(m => ObjectID(m.member_id));
