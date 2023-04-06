@@ -591,6 +591,8 @@ module.exports.updatecity = function (req, res) {
 						}
 					}
 
+					console.log('PRODS: ', prods);
+
 					const prod_collection = req.custom.db.client().collection('product');
 					prod_collection.aggregate([
 						{ $match: { "sku": { $in: prods } } },
@@ -624,17 +626,19 @@ module.exports.updatecity = function (req, res) {
 								const product = products.find((i) => i.sku === p);
 
 								if (!product) {
+									console.log('No product!');
 									delete cart[p];
 									continue;
 								}
 
 								if (product.supplier && product.supplier.is_external) {
+									console.log('External supplier!');
 									delete cart[p];
 									continue;
 								}
 
 								if (haveDifferentStores) {
-
+									console.log('Have different stores!');
 									const product_qty = product.prod_n_storeArr.find((i) => i.store_id.toString() === cityObj.store_id.toString());
 									if (!product_qty) {
 										delete cart[p];
