@@ -4,7 +4,7 @@ const Field = require("../../../libraries/field");
 module.exports = {
     "name": new Field({
         "type": String,
-        "required_or": "member_id"
+        "required": true
     }),
     "stars": new Field({
         "type": Number,
