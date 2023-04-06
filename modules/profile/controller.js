@@ -606,6 +606,7 @@ module.exports.updatecity = function (req, res) {
 							$project: {
 								_id: 1,
 								prod_n_storeArr: 1,
+								sku: 1,
 								supplier_id: 1,
 								supplier: { $arrayElemAt: ['$supplier', 0] }
 							}
