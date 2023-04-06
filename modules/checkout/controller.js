@@ -10,7 +10,7 @@ const mail_view = require("./view/mail");
 const moment = require('moment');
 const axios = require('axios');
 const shortid = require('shortid');
-const { mergeDeliveryTimes, cleanProduct, groupBySupplier, getAvailableOffer } = require('./utils');
+const { groupBySupplier, getDeliveryTimes } = require('./utils');
 shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-');
 
 
@@ -67,12 +67,10 @@ module.exports.buy = async function (req, res) {
 	} = await req.custom.getValidData(req);
 
 	if (error) {
-		console.log('VALIDATION ERROR HERE: ', error);
 		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
 	if (only_validation) {
-		console.log('VALIDATION CORRECT!');
 		return res.out({
 			message: true,
 			hash: hash,
@@ -155,6 +153,11 @@ module.exports.buy = async function (req, res) {
 				if (req.body.suppliers.length > 0) {
 					const suppliers_to_buy = req.body.suppliers.map(s => s.supplier_id);
 					products2save = products2save.filter(p => suppliers_to_buy.includes(p.supplier._id.toString()));
+					if (products2save.length < 1) {
+						return res.out({
+							message: "No supplier selected"
+						}, status_message.VALIDATION_ERROR);
+					}
 				} else {
 					return res.out({
 						message: "No supplier selected"
@@ -265,7 +268,7 @@ module.exports.buy = async function (req, res) {
 				const cache = req.custom.cache;
 				const day = moment(supplier_delivery_time).format('d');
 				const hour = moment(supplier_delivery_time).format('H');
-				const cache_key_dt = `delivery_times_${day}_${hour}`;
+				const cache_key_dt = `delivery_times_${sup.supplier.is_external ? sup.supplier._id.toString() : ''}_${day}_${hour}`;
 				const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0) + 1;
 				const expired = 24;
 				await cache.set(cache_key_dt, cached_delivery_times, expired);
@@ -284,9 +287,6 @@ module.exports.buy = async function (req, res) {
 			});
 
 			const totalToApplyCoupon = general_coupon ? (general_coupon.apply_on_discounted_products ? parseFloat(total_prods) : totalWithNoDiscount) : 0;
-
-			console.log('//////////////////////////////////////// TOTAL WITH NO DISCOUNT ////////////////////////////////////////:\n ', totalWithNoDiscount);
-			console.log('//////////////////////////////////////// TOTAL TO APPLY COUPON ////////////////////////////////////////:\n ', totalToApplyCoupon);
 
 			const out_coupon = {
 				code: general_coupon ? general_coupon.code : null,
@@ -428,6 +428,15 @@ module.exports.buy = async function (req, res) {
 					if (data.coupon && data.coupon.code)
 						data.coupon.value = common.getFixedPrice(data.coupon.value);
 
+					if (data.supplier.working_times)
+						delete data.supplier.working_times;
+
+					if (data.supplier.available_delivery_times)
+						delete data.supplier.available_delivery_times;
+
+					if (data.supplier.isOpen)
+						delete data.supplier.isOpen;
+
 					return data;
 				}),
 				products: products2save.map((p) => {
@@ -444,15 +453,13 @@ module.exports.buy = async function (req, res) {
 				status: 1
 			};
 
-			console.log("delivery rime: ", order_data.delivery_time);
-
-			const cache = req.custom.cache;
+			/* const cache = req.custom.cache;
 			const day = moment(req.body.delivery_time).format('d');
 			const hour = moment(req.body.delivery_time).format('H');
 			const cache_key_dt = `delivery_times_${day}_${hour}`;
 			const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0) + 1;
 			const expired = 24;
-			await cache.set(cache_key_dt, cached_delivery_times, expired);
+			await cache.set(cache_key_dt, cached_delivery_times, expired); */
 
 			const order_collection = req.custom.db.client().collection('order');
 			await order_collection.insertOne(order_data)
@@ -769,116 +776,7 @@ module.exports.list = async function (req, res) {
 					}
 				}
 
-				let delivery_times = [];
-				let min_delivery_time_setting = 30;
-				if (parseInt(req.custom.settings.orders.min_delivery_time) > 0) {
-					min_delivery_time_setting = parseInt(req.custom.settings.orders.min_delivery_time);
-				}
-
-				if (sup.supplier.is_external && sup.supplier.min_delivery_time && parseInt(sup.supplier.min_delivery_time) > 0) {
-					min_delivery_time_setting = parseInt(sup.supplier.min_delivery_time);
-				}
-
-				const cache = req.custom.cache;
-				let times = [];
-				moment.updateLocale('en', {});
-				const min_delivery_time = getRoundedDate(60, new Date(moment().add(min_delivery_time_setting, 'minutes').format(req.custom.config.date.format).toString()));
-				const min_hour = parseInt(moment(min_delivery_time).format('H'));
-				let today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-				let available_delivery_times = req.custom.settings.orders.available_delivery_times[today.format('d')];
-				if (cityObj && cityObj.enable_custom_delivery_times) {
-					available_delivery_times = mergeDeliveryTimes(available_delivery_times, cityObj.available_delivery_times[today.format('d')]);
-				}
-
-				if (sup.supplier.is_external && sup.supplier.available_delivery_times) {
-					available_delivery_times = mergeDeliveryTimes(available_delivery_times, sup.supplier.available_delivery_times[today.format('d')]);
-				}
-
-				if (available_delivery_times) {
-					const day = moment().format('d');
-					const min_day = moment(min_delivery_time);
-					for (let idx = min_hour; idx < available_delivery_times.length; idx++) {
-						today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-						if (!available_delivery_times[idx] ||
-							!available_delivery_times[idx].is_available ||
-							!available_delivery_times[idx].max_orders ||
-							min_day.format('d') != moment().format('d') ||
-							(idx < min_hour)
-						) {
-							continue;
-						}
-						moment.updateLocale('en', {});
-						const full_date = today.add(idx, 'hours').format(req.custom.config.date.format);
-						const time = today.format('LT') + ' : ' + today.add(2, 'hours').format('LT');
-
-						const cache_key_dt = `delivery_times_${day}_${idx}`;
-						const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
-
-						if (available_delivery_times[idx].max_orders > cached_delivery_times) {
-							times.push({
-								'time': time,
-								'full_date': full_date,
-								'is_available': true,
-								'text': req.custom.local.delivery_time_available,
-							});
-						}
-
-					}
-				}
-				moment.updateLocale(req.custom.lang, {});
-				today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-				delivery_times.push({
-					'day': today.format('dddd'),
-					'times': times
-				});
-
-				times = [];
-				moment.updateLocale('en', {});
-				let tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-				let tomorrow_available_delivery_times = req.custom.settings.orders.available_delivery_times[tomorrow.format('d')];
-				if (cityObj && cityObj.enable_custom_delivery_times) {
-					tomorrow_available_delivery_times = mergeDeliveryTimes(tomorrow_available_delivery_times, cityObj.available_delivery_times[tomorrow.format('d')])
-				}
-				//
-				if (sup.supplier.is_external && sup.supplier.available_delivery_times) {
-					tomorrow_available_delivery_times = mergeDeliveryTimes(tomorrow_available_delivery_times, sup.supplier.available_delivery_times[tomorrow.format('d')]);
-
-				}
-				if (tomorrow_available_delivery_times) {
-					const day = tomorrow.format('d');
-
-					for (let idx = 0; idx < tomorrow_available_delivery_times.length; idx++) {
-						tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-						if (!tomorrow_available_delivery_times[idx] ||
-							!tomorrow_available_delivery_times[idx].is_available ||
-							!tomorrow_available_delivery_times[idx].max_orders
-						) {
-							continue;
-						}
-						moment.updateLocale('en', {});
-						const full_date = tomorrow.add(idx, 'hours').format(req.custom.config.date.format);
-						const time = tomorrow.format('LT') + ' : ' + tomorrow.add(2, 'hours').format('LT');
-
-						const cache_key_dt = `delivery_times_${day}_${idx}`;
-						const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
-						if (tomorrow_available_delivery_times && tomorrow_available_delivery_times[idx] && tomorrow_available_delivery_times[idx].max_orders > cached_delivery_times) {
-							times.push({
-								'time': time,
-								'full_date': full_date,
-								'is_available': true,
-								'text': req.custom.local.delivery_time_available,
-							});
-						}
-
-					}
-				}
-
-				moment.updateLocale(req.custom.lang, {});
-				tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-				delivery_times.push({
-					'day': tomorrow.format('dddd'),
-					'times': times
-				});
+				const delivery_times = await getDeliveryTimes(req, cityObj, sup.supplier);
 
 				let earliest_date_of_delivery = parseInt(cityObj.preparation_time || 0);
 				for (const p of products) {
@@ -1018,104 +916,7 @@ module.exports.list = async function (req, res) {
 				});
 
 
-			let delivery_times = [];
-
-			let min_delivery_time_setting = 30;
-			if (parseInt(req.custom.settings.orders.min_delivery_time) > 0) {
-				min_delivery_time_setting = parseInt(req.custom.settings.orders.min_delivery_time);
-			}
-
-			const cache = req.custom.cache;
-			let times = [];
-			moment.updateLocale('en', {});
-			const min_delivery_time = getRoundedDate(60, new Date(moment().add(min_delivery_time_setting, 'minutes').format(req.custom.config.date.format).toString()));
-			const min_hour = parseInt(moment(min_delivery_time).format('H'));
-			let today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-			let available_delivery_times = req.custom.settings.orders.available_delivery_times[today.format('d')];
-
-			if (cityObj && cityObj.enable_custom_delivery_times) {
-				available_delivery_times = mergeDeliveryTimes(available_delivery_times, cityObj.available_delivery_times[today.format('d')])
-			}
-			if (available_delivery_times) {
-				const day = moment().format('d');
-				const min_day = moment(min_delivery_time);
-				for (let idx = min_hour; idx < available_delivery_times.length; idx++) {
-					today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-					if (!available_delivery_times[idx] ||
-						!available_delivery_times[idx].is_available ||
-						!available_delivery_times[idx].max_orders ||
-						min_day.format('d') != moment().format('d') ||
-						(idx < min_hour)
-					) {
-						continue;
-					}
-					moment.updateLocale('en', {});
-					const full_date = today.add(idx, 'hours').format(req.custom.config.date.format);
-					const time = today.format('LT') + ' : ' + today.add(2, 'hours').format('LT');
-
-					const cache_key_dt = `delivery_times_${day}_${idx}`;
-					const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
-
-					if (available_delivery_times[idx].max_orders > cached_delivery_times) {
-						times.push({
-							'time': time,
-							'full_date': full_date,
-							'is_available': true,
-							'text': req.custom.local.delivery_time_available,
-						});
-					}
-
-				}
-			}
-			moment.updateLocale(req.custom.lang, {});
-			today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-			delivery_times.push({
-				'day': today.format('dddd'),
-				'times': times
-			});
-
-			times = [];
-			moment.updateLocale('en', {});
-			let tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-			let tomorrow_available_delivery_times = req.custom.settings.orders.available_delivery_times[tomorrow.format('d')];
-			if (cityObj && cityObj.enable_custom_delivery_times) {
-				tomorrow_available_delivery_times = mergeDeliveryTimes(tomorrow_available_delivery_times, cityObj.available_delivery_times[tomorrow.format('d')])
-			}
-			if (tomorrow_available_delivery_times) {
-				const day = tomorrow.format('d');
-
-				for (let idx = 0; idx < tomorrow_available_delivery_times.length; idx++) {
-					tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-					if (!tomorrow_available_delivery_times[idx] ||
-						!tomorrow_available_delivery_times[idx].is_available ||
-						!tomorrow_available_delivery_times[idx].max_orders
-					) {
-						continue;
-					}
-					moment.updateLocale('en', {});
-					const full_date = tomorrow.add(idx, 'hours').format(req.custom.config.date.format);
-					const time = tomorrow.format('LT') + ' : ' + tomorrow.add(2, 'hours').format('LT');
-
-					const cache_key_dt = `delivery_times_${day}_${idx}`;
-					const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
-					if (tomorrow_available_delivery_times && tomorrow_available_delivery_times[idx] && tomorrow_available_delivery_times[idx].max_orders > cached_delivery_times) {
-						times.push({
-							'time': time,
-							'full_date': full_date,
-							'is_available': true,
-							'text': req.custom.local.delivery_time_available,
-						});
-					}
-
-				}
-			}
-
-			moment.updateLocale(req.custom.lang, {});
-			tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-			delivery_times.push({
-				'day': tomorrow.format('dddd'),
-				'times': times
-			});
+			const delivery_times = await getDeliveryTimes(req, cityObj);
 
 			let addresses = [];
 			if (userObj) {
@@ -1338,18 +1139,6 @@ function save_failed_payment(req, reason = null) {
 				message: error.message
 			}
 		});
-}
-
-function getRoundedDate(minutes, d = null) {
-	if (!d) {
-		d = common.getDate();
-	}
-
-	const rended_minutes = d.getMinutes() + 30;
-	d.setMinutes(rended_minutes);
-
-	let ms = 1000 * 60 * minutes; // convert minutes to ms
-	return new Date(Math.round(d.getTime() / ms) * ms);
 }
 
 function update_quantities(req, the_products, cart, token) {
