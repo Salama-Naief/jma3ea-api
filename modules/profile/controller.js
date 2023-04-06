@@ -611,7 +611,7 @@ module.exports.updatecity = function (req, res) {
 							}
 						}
 					]).
-						toArray((err, prods) => {
+						toArray((err, products) => {
 							if (err) {
 								return res.out({
 									'message': err.message
@@ -620,7 +620,7 @@ module.exports.updatecity = function (req, res) {
 
 
 							for (const p of Object.keys(cart)) {
-								const product = prods.find((i) => i._id.toString() === p.toString());
+								const product = products.find((i) => i._id.toString() === p.toString());
 
 								if (!product) {
 									delete cart[p];
