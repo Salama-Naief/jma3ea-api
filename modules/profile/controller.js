@@ -584,16 +584,16 @@ module.exports.updatecity = function (req, res) {
 					const cart = req.custom.authorizationObject.cart || {};
 					const haveDifferentStores = req.custom.authorizationObject.store_id && cityObj && cityObj.store_id && req.custom.authorizationObject.store_id.toString() !== cityObj.store_id.toString();
 
-					let prod_ids = [];
+					let prods = [];
 					if (Object.keys(cart).length > 0) {
 						for (const i of Object.keys(cart)) {
-							prod_ids.push(ObjectID(i));
+							prods.push(i.split('-')[0]);
 						}
 					}
 
 					const prod_collection = req.custom.db.client().collection('product');
 					prod_collection.aggregate([
-						{ $match: { "_id": { $in: prod_ids } } },
+						{ $match: { "sku": { $in: prods } } },
 						{
 							$lookup: {
 								from: 'supplier',
