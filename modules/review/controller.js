@@ -11,6 +11,17 @@ module.exports.add = async (req, res) => {
         return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
     }
 
+    const profile = require('../profile/controller');
+    let user_info = await profile.getInfo(req, {
+        _id: 1,
+        fullname: 1,
+    }).catch(() => null);
+
+    if (user_info) {
+        if (user_info.fullname)
+            req.body.name = user_info.fullname
+    }
+
     req.custom.model = req.custom.model || require('./model/add');
 
     try {
@@ -21,17 +32,6 @@ module.exports.add = async (req, res) => {
 
         if (error) {
             return res.out(error, status_message.VALIDATION_ERROR);
-        }
-
-        const profile = require('../profile/controller');
-        let user_info = await profile.getInfo(req, {
-            _id: 1,
-            fullname: 1,
-        }).catch(() => null);
-
-        if (user_info) {
-            if (user_info.fullname)
-                data.name = user_info.fullname
         }
 
         if (req.custom.authorizationObject.member_id) {
