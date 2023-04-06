@@ -438,6 +438,7 @@ module.exports.buy = async function (req, res) {
 						delete data.supplier.isOpen;
 
 					return data;
+					
 				}),
 				products: products2save.map((p) => {
 					delete p.variants;
