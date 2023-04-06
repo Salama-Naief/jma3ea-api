@@ -75,12 +75,14 @@ module.exports.list = (req, res) => {
 
     req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
 
+    console.log('REVIEW SUPPLIER FILTER: ', req.custom.clean_filter);
+
     mainController.list(req, res, COLLECTION_NAME, {
         "name": 1,
         "stars": 1,
         "comment": 1,
         "member_id": 1
-    }, async (out) => {
+    }/* , async (out) => {
         if (out.data.length === 0) {
             return res.out(out, status_message.NO_DATA);
         }
@@ -102,6 +104,6 @@ module.exports.list = (req, res) => {
 
         res.out(out);
 
-    });
+    } */);
 
 }
