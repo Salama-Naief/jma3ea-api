@@ -6,9 +6,11 @@ module.exports = {
         "type": String,
         "required": true
     }),
-    "stars": new Field({
+    "rating": new Field({
         "type": Number,
-        "required": true
+        "required": true,
+        "min": 1,
+        "max": 5
     }),
     "comment": new Field({
         "type": String,
