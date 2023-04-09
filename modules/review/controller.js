@@ -51,6 +51,42 @@ module.exports.add = async (req, res) => {
             }, status_message.UNEXPECTED_ERROR);
         }
 
+        const supplier_collection = req.custom.db.client().collection('supplier');
+
+        const supplierReviews = await supplier_collection.aggregate([
+            {
+                $match: { _id: ObjectID(data.supplier_id.toString()) }
+            },
+            {
+                $lookup: {
+                    from: "review",
+                    localField: "_id",
+                    foreignField: "supplier_id",
+                    as: "reviews"
+                }
+            },
+            {
+                $project: {
+                    rating: {
+                        $avg: "$reviews.rating"
+                    },
+                    reviews_count: {
+                        $size: "$reviews"
+                    }
+                }
+            }
+        ]).toArray();
+
+        if (supplierReviews && supplierReviews.length > 0) {
+            const supplierReview = supplierReviews[0];
+            await supplier_collection.updateOne({ _id: ObjectID(data.supplier_id.toString()) }, {
+                $set: {
+                    avg_rating: Number(supplierReview.rating.toFixed(1)),
+                    reviews_count: supplierReview.reviews_count
+                }
+            });
+        }
+
         return res.out({
             'message': req.custom.local.review_added_successfully
         }, status_message.CREATED);
@@ -79,7 +115,7 @@ module.exports.list = (req, res) => {
 
     mainController.list(req, res, COLLECTION_NAME, {
         "name": 1,
-        "stars": 1,
+        "rating": 1,
         "comment": 1,
         "member_id": 1
     }/* , async (out) => {
