@@ -9,16 +9,21 @@ module.exports.list = async function (req, res) {
     const cache = req.custom.cache;
     const cityid = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 
-    //const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
+    const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
 
-    /* if (cache_key) {
+    if (cache_key) {
         const cached_data = await cache.get(cache_key).catch(() => null);
         if (cached_data) {
             return res.out({ count: cached_data.length, data: cached_data });
         }
-    } */
+    }
 
-    req.custom.cache_key = false;
+    if (!cityid) {
+        return res.out({
+            'message': req.custom.local.choose_city_first
+        }, status_message.CITY_REQUIRED);
+    }
+
     mainController.list_all(req, res, collectionName, {
         "_id": 1,
         "name": {
@@ -124,13 +129,12 @@ module.exports.list = async function (req, res) {
             }
         }
 
-        console.log('inventories: ', inventories);
         out.data = inventories;
         out.count = inventories.length;
 
-        /* if (cache_key && inventories.length > 0) {
-            cache.set(cache_key, inventories, req.custom.config.cache.life_time).catch(() => null);
-        } */
+        if (cache_key && inventories.length > 0) {
+            await cache.set(cache_key, inventories, req.custom.config.cache.life_time).catch(() => null);
+        }
 
         return res.out(out);
 
