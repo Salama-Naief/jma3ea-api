@@ -1,3 +1,4 @@
+const moment = require('moment');
 const ObjectID = require("../../types/object_id");
 
 /**
@@ -158,6 +159,121 @@ module.exports.groupBySupplier = (products, suppliers = []) => {
     return newProducts;
 }
 
+module.exports.getDeliveryTimes = async (req, cityObj, supplier = {}) => {
+    let delivery_times = [];
+    let min_delivery_time_setting = 30;
+    if (parseInt(req.custom.settings.orders.min_delivery_time) > 0) {
+        min_delivery_time_setting = parseInt(req.custom.settings.orders.min_delivery_time);
+    }
+
+    if (supplier.is_external && supplier.min_delivery_time && parseInt(supplier.min_delivery_time) > 0) {
+        min_delivery_time_setting = parseInt(supplier.min_delivery_time);
+    }
+
+    const cache = req.custom.cache;
+    let times = [];
+    moment.updateLocale('en', {});
+    const min_delivery_time = getRoundedDate(60, new Date(moment().add(min_delivery_time_setting, 'minutes').format(req.custom.config.date.format).toString()));
+    const min_hour = parseInt(moment(min_delivery_time).format('H'));
+    let today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+    let available_delivery_times = [...req.custom.settings.orders.available_delivery_times[today.format('d')]];
+
+    if (cityObj && cityObj.enable_custom_delivery_times) {
+        available_delivery_times = this.mergeDeliveryTimes(available_delivery_times, cityObj.available_delivery_times[today.format('d')]);
+    }
+
+    if (supplier.is_external && supplier.available_delivery_times) {
+        available_delivery_times = this.mergeDeliveryTimes(available_delivery_times, supplier.available_delivery_times[today.format('d')]);
+    }
+
+    if (available_delivery_times) {
+        const day = moment().format('d');
+        const min_day = moment(min_delivery_time);
+        for (let idx = min_hour; idx < available_delivery_times.length; idx++) {
+            today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+            if (!available_delivery_times[idx] ||
+                !available_delivery_times[idx].is_available ||
+                !available_delivery_times[idx].max_orders ||
+                min_day.format('d') != moment().format('d') ||
+                (idx < min_hour)
+            ) {
+                continue;
+            }
+            moment.updateLocale('en', {});
+            const full_date = today.add(idx, 'hours').format(req.custom.config.date.format);
+            const time = today.format('LT') + ' : ' + today.add(2, 'hours').format('LT');
+
+            const cache_key_dt = `delivery_times_${supplier.is_external ? supplier._id.toString() : ''}_${day}_${idx}`;
+            const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
+
+            if (available_delivery_times[idx].max_orders > cached_delivery_times) {
+                times.push({
+                    'time': time,
+                    'full_date': full_date,
+                    'is_available': true,
+                    'text': req.custom.local.delivery_time_available,
+                });
+            }
+
+        }
+    }
+    moment.updateLocale(req.custom.lang, {});
+    today = moment().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+    delivery_times.push({
+        'day': today.format('dddd'),
+        'times': times
+    });
+
+    times = [];
+    moment.updateLocale('en', {});
+    let tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+    let tomorrow_available_delivery_times = [...req.custom.settings.orders.available_delivery_times[tomorrow.format('d')]];
+    if (cityObj && cityObj.enable_custom_delivery_times) {
+        tomorrow_available_delivery_times = this.mergeDeliveryTimes(tomorrow_available_delivery_times, cityObj.available_delivery_times[tomorrow.format('d')])
+    }
+    //
+    if (supplier.is_external && supplier.available_delivery_times) {
+        tomorrow_available_delivery_times = this.mergeDeliveryTimes(tomorrow_available_delivery_times, supplier.available_delivery_times[tomorrow.format('d')]);
+
+    }
+    if (tomorrow_available_delivery_times) {
+        const day = tomorrow.format('d');
+
+        for (let idx = 0; idx < tomorrow_available_delivery_times.length; idx++) {
+            tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+            if (!tomorrow_available_delivery_times[idx] ||
+                !tomorrow_available_delivery_times[idx].is_available ||
+                !tomorrow_available_delivery_times[idx].max_orders
+            ) {
+                continue;
+            }
+            moment.updateLocale('en', {});
+            const full_date = tomorrow.add(idx, 'hours').format(req.custom.config.date.format);
+            const time = tomorrow.format('LT') + ' : ' + tomorrow.add(2, 'hours').format('LT');
+
+            const cache_key_dt = `delivery_times_${supplier.is_external ? supplier._id.toString() : ''}_${day}_${idx}`;
+            const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
+            if (tomorrow_available_delivery_times && tomorrow_available_delivery_times[idx] && tomorrow_available_delivery_times[idx].max_orders > cached_delivery_times) {
+                times.push({
+                    'time': time,
+                    'full_date': full_date,
+                    'is_available': true,
+                    'text': req.custom.local.delivery_time_available,
+                });
+            }
+
+        }
+    }
+
+    moment.updateLocale(req.custom.lang, {});
+    tomorrow = moment().add(1, 'day').set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
+    delivery_times.push({
+        'day': tomorrow.format('dddd'),
+        'times': times
+    });
+
+    return delivery_times;
+}
 
 module.exports.getAvailableOffer = async (req, total, offer_id) => {
     const collection = req.custom.db.client().collection('offer');
@@ -185,4 +301,16 @@ module.exports.getAvailableOffer = async (req, total, offer_id) => {
     }
 
     return offer;
+}
+
+function getRoundedDate(minutes, d = null) {
+	if (!d) {
+		d = common.getDate();
+	}
+
+	const rended_minutes = d.getMinutes() + 30;
+	d.setMinutes(rended_minutes);
+
+	let ms = 1000 * 60 * minutes; // convert minutes to ms
+	return new Date(Math.round(d.getTime() / ms) * ms);
 }
