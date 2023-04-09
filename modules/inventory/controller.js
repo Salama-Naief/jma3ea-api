@@ -35,6 +35,9 @@ module.exports.list = async function (req, res) {
         "picture": {
             $ifNull: [`$picture.${req.custom.lang}`, `$picture`]
         },
+        "logo": {
+            $ifNull: [`$logo.${req.custom.lang}`, `$logo.${req.custom.config.local}`]
+        },
         //"picture": 1,
     }, async (out) => {
         if (out.data && out.data.length < 1) {
