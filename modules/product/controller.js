@@ -186,8 +186,6 @@ module.exports.listByCategory = function (req, res) {
 		}
 	}
 
-	req.custom.cache_key = undefined;
-
 	mainController.list(req, res, collectionName, {
 		"_id": 0,
 		"sku": 1,

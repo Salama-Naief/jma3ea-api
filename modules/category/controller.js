@@ -16,18 +16,18 @@ module.exports.list = function (req, res) {
 		"category_n_storeArr.sorting": 1
 	};
 
-	//req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
+	req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
 
 	if (req.query && req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
 		req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
-		/* req.custom.cache_key = `${collectionName}_${req.custom.lang}_supplier_${req.query.supplier_id}`;
-		req.custom.cache_key += `__supplier_id_${req.query.supplier_id}`; */
+		req.custom.cache_key = `${collectionName}_${req.custom.lang}_supplier_${req.query.supplier_id}`;
+		//req.custom.cache_key += `__supplier_id_${req.query.supplier_id}`;
 	} else {
 		req.custom.clean_filter['supplier_id'] = { $exists: false };
 	}
 
 	if (req.query.featured == 'true') {
-		//req.custom.cache_key = `${collectionName}_${req.custom.lang}__features`;
+		req.custom.cache_key += `__features`;
 		req.custom.clean_filter['featured'] = {
 			$gt: 0
 		};
@@ -36,7 +36,6 @@ module.exports.list = function (req, res) {
 		};
 	}
 
-	req.custom.cache_key = undefined;
 	mainController.list_all(req, res, collectionName, {
 		"_id": 1,
 		"parent_id": 1,
@@ -74,11 +73,6 @@ module.exports.list = function (req, res) {
 			i.children = childs.filter((c) => c.parent_id.toString() === i._id.toString());
 		});
 
-		//rows = rows.filter(i => i.children && i.children.length > 0);
-
-		//console.log('rows after: ', rows.length);
-
-		//console.log('categories after: ', filteredCategories.length);
 		const message = rows.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
 
 		if (req.custom.cache_key && rows.length > 0) {
