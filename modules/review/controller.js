@@ -117,28 +117,19 @@ module.exports.list = (req, res) => {
         "comment": 1,
         "member_id": 1,
         "created": 1
-    }/* , async (out) => {
+    }, (out) => {
         if (out.data.length === 0) {
             return res.out(out, status_message.NO_DATA);
         }
 
-        const reviewsIds = out.data.filter(m => m.member_id && ObjectID.isValid(m.member_id)).map(m => ObjectID(m.member_id));
+        const supplier_collection = req.custom.db.client().collection('supplier');
+        supplier_collection.findOne({ _id: req.custom.clean_filter['supplier_id'] }, { avg_rating: 1, reviews_count: 1 }).then(supplier => {
+            out.avg_rating = supplier.avg_rating;
+            out.reviews_count = supplier.reviews_count;
+            return res.out(out);
+        }).catch(err => res.out({ message: err.message }, status_message.UNEXPECTED_ERROR));
 
-        if (reviewsIds.length > 0) {
-            const member_collection = req.custom.db.client().collection('member');
-            const members = await member_collection.find({ _id: { $in: reviewsIds } }, { name: 1 }).toArray();
-            for (const review of out.data) {
-                if (review.member_id) {
-                    const foundMember = members.find(m => m.member_id.toString() === review.member_id.toString());
-                    if (foundMember) {
-                        review.name = foundMember.fullname;
-                    }
-                }
-            }
-        }
 
-        res.out(out);
-
-    } */);
+    });
 
 }
