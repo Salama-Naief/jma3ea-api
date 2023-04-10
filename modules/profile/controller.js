@@ -628,10 +628,10 @@ module.exports.updatecity = function (req, res) {
 									continue;
 								}
 
-								if (product.supplier && product.supplier.is_external) {
+								/* if (product.supplier && product.supplier.is_external) {
 									delete cart[p];
 									continue;
-								}
+								} */
 
 								if (haveDifferentStores) {
 
