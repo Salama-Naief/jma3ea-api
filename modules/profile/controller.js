@@ -645,7 +645,7 @@ module.exports.updatecity = function (req, res) {
 								row.store_id = cityObj.store_id;
 								row.currency = countryObj.currency;
 								row.language = req.custom.lang;
-								row.cart = cart;
+								row.cart = {};
 								row.member_id = req.custom.authorizationObject.member_id;
 
 								if (row.member_id) {
@@ -671,7 +671,7 @@ module.exports.updatecity = function (req, res) {
 							store_id: cityObj.store_id,
 							currency: countryObj.currency,
 							language: req.custom.lang,
-							cart: cart,
+							cart: {},
 							member_id: req.custom.authorizationObject.member_id,
 						});
 					}
