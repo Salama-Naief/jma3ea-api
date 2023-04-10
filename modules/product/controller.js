@@ -91,9 +91,9 @@ module.exports.list = function (req, res) {
 
 		if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
 			req.custom.clean_filter['supplier_id'] = new ObjectID(req.query.supplier_id);
-			if (req.custom.cache_key) {
+			/* if (req.custom.cache_key) {
 				req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}__supplier_${req.query.supplier_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
-			}
+			} */
 		}
 
 	}

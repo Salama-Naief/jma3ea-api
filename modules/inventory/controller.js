@@ -66,7 +66,7 @@ module.exports.list = async function (req, res) {
             // Stage 4
             {
                 $sort: {
-                    "created": -1
+                    "sorting": 1
                 },
             },
             // Stage 2
