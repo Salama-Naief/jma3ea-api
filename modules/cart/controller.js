@@ -151,6 +151,9 @@ module.exports.add = function (req, res) {
 								store.quantity = temp_store.quantity;
 							}
 							if (store.quantity < data.quantity || (selected_product.max_quantity_cart && selected_product.max_quantity_cart < data.quantity)) {
+								console.log('STORE QUANTITY: ', store.quantity);
+								console.log('STORE QUANTITY: ', store.quantity);
+								console.log('MAX QUANTITY: ', selected_product.max_quantity_cart);
 								const curr_product = products.find((p) => p.sku.toString() === data.sku.toString());
 								return res.out({
 									'message': req.custom.local.cart_product_exceeded_allowed,
