@@ -130,6 +130,6 @@ module.exports.list = (req, res) => {
         }).catch(err => res.out({ message: err.message }, status_message.UNEXPECTED_ERROR));
 
 
-    } */);
+    });
 
 }
