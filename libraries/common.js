@@ -98,7 +98,7 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 				req.custom.clean_filter['fast_shipping'] = true;
 			}
 
-			if (req.custom.clean_filter.hasOwnProperty('supplier_id')) {
+			if (!req.query.hasOwnProperty('q') || req.custom.clean_filter.hasOwnProperty('supplier_id')) {
 				return req.custom.clean_filter;
 			}
 
