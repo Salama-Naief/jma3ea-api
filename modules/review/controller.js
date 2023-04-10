@@ -111,6 +111,8 @@ module.exports.list = (req, res) => {
 
     req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
 
+    console.log('REVIEW SUPPLIER FILTER: ', req.custom.clean_filter);
+
     mainController.list(req, res, COLLECTION_NAME, {
         "name": 1,
         "rating": 1,
@@ -130,6 +132,6 @@ module.exports.list = (req, res) => {
         }).catch(err => res.out({ message: err.message }, status_message.UNEXPECTED_ERROR));
 
 
-    });
+    } */);
 
 }
