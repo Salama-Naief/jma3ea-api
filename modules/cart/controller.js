@@ -376,6 +376,7 @@ module.exports.clear = async function (req, res) {
 
 }
 
+
 /**
  * List all products in Cart
  * @param {Object} req

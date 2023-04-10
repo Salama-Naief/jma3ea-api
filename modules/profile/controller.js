@@ -582,58 +582,48 @@ module.exports.updatecity = function (req, res) {
 					};
 
 					const cart = req.custom.authorizationObject.cart || {};
-					const haveDifferentStores = req.custom.authorizationObject.store_id && cityObj && cityObj.store_id && req.custom.authorizationObject.store_id.toString() !== cityObj.store_id.toString();
+					if (req.custom.authorizationObject.store_id && cityObj && cityObj.store_id && req.custom.authorizationObject.store_id.toString() !== cityObj.store_id.toString()) {
 
-					let prods = [];
-					if (Object.keys(cart).length > 0) {
-						for (const i of Object.keys(cart)) {
-							prods.push(i.split('-')[0]);
-						}
-					}
-
-					const prod_collection = req.custom.db.client().collection('product');
-					prod_collection.aggregate([
-						{ $match: { "sku": { $in: prods } } },
-						{
-							$lookup: {
-								from: 'supplier',
-								localField: 'supplier_id',
-								foreignField: '_id',
-								as: 'supplier'
-							}
-						},
-						{
-							$project: {
-								_id: 1,
-								prod_n_storeArr: 1,
-								sku: 1,
-								supplier_id: 1,
-								supplier: { $arrayElemAt: ['$supplier', 0] }
+						let prod_ids = [];
+						if (Object.keys(cart).length > 0) {
+							for (const i of Object.keys(cart)) {
+								prod_ids.push(ObjectID(i));
 							}
 						}
-					]).
-						toArray((err, products) => {
-							if (err) {
-								return res.out({
-									'message': err.message
-								}, status_message.UNEXPECTED_ERROR)
+
+						const prod_collection = req.custom.db.client().collection('product');
+						prod_collection.aggregate([
+							{ $match: { "_id": { $in: prod_ids } } },
+							{
+								$lookup: {
+									from: 'supplier',
+									localField: 'supplier_id',
+									foreignField: '_id',
+									as: 'supplier'
+								}
+							},
+							{
+								$project: {
+									_id: 1,
+									prod_n_storeArr: 1,
+									supplier_id: 1,
+									supplier: { $arrayElemAt: ['$supplier', 0] }
+								}
 							}
-
-
-							for (const p of Object.keys(cart)) {
-								const product = products.find((i) => i.sku === p);
-
-								if (!product) {
-									delete cart[p];
-									continue;
+						]).
+							toArray((err, prods) => {
+								if (err) {
+									return res.out({
+										'message': err.message
+									}, status_message.UNEXPECTED_ERROR)
 								}
 
-								/* if (product.supplier && product.supplier.is_external) {
-									delete cart[p];
-									continue;
-								} */
-
-								if (haveDifferentStores) {
+								for (const p of Object.keys(cart)) {
+									const product = prods.find((i) => i._id.toString() === p.toString());
+									if (!product || (product.supplier && product.supplier.is_external)) {
+										delete cart[p];
+										continue;
+									}
 
 									const product_qty = product.prod_n_storeArr.find((i) => i.store_id.toString() === cityObj.store_id.toString());
 									if (!product_qty) {
@@ -644,11 +634,10 @@ module.exports.updatecity = function (req, res) {
 									if (cart[p] > product_qty.quantity) {
 										cart[p] = product_qty.quantity;
 									}
+
 								}
-							}
 
 
-							if (haveDifferentStores) {
 								const row = req.custom.authorizationObject;
 
 								row.city_id = data.city_id;
@@ -671,21 +660,21 @@ module.exports.updatecity = function (req, res) {
 								} else {
 									set_cache(row);
 								}
-							} else {
-								set_cache({
-									city_id: data.city_id,
-									country_id: cityObj.country_id,
-									store_id: cityObj.store_id,
-									currency: countryObj.currency,
-									language: req.custom.lang,
-									cart: cart,
-									member_id: req.custom.authorizationObject.member_id,
-								});
-							}
 
 
+							});
+
+					} else {
+						set_cache({
+							city_id: data.city_id,
+							country_id: cityObj.country_id,
+							store_id: cityObj.store_id,
+							currency: countryObj.currency,
+							language: req.custom.lang,
+							cart: cart,
+							member_id: req.custom.authorizationObject.member_id,
 						});
-
+					}
 
 
 				}).catch((error) => res.out({
@@ -699,6 +688,7 @@ module.exports.updatecity = function (req, res) {
 
 		});
 };
+
 
 /**
  * Update exists user
