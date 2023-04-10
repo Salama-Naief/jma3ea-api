@@ -1,5 +1,6 @@
 const status_message = require("../../enums/status_message");
 const mainController = require("../../libraries/mainController");
+const common = require("../../libraries/common");
 const ObjectID = require("../../types/object_id");
 
 const COLLECTION_NAME = 'review';
@@ -25,7 +26,8 @@ module.exports.add = async (req, res) => {
         const collection = req.custom.db.client().collection(COLLECTION_NAME);
 
         data.created = common.getDate();
-        data.member_id = req.custom.authorizationObject.member_id;
+        if (req.custom.authorizationObject.member_id)
+            data.member_id = req.custom.authorizationObject.member_id;
         //data.status = false;
 
         const review = await collection.insertOne(data);
