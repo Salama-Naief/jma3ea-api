@@ -100,7 +100,7 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 
 			if (req.custom.clean_filter.hasOwnProperty('supplier_id')) {
 				return req.custom.clean_filter;
-			} */
+			}
 
 			if (req.custom.clean_filter.hasOwnProperty('$or')) {
 				if (req.custom.clean_filter.hasOwnProperty('$and')) {
