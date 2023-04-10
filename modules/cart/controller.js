@@ -64,6 +64,8 @@ module.exports.add = function (req, res) {
 						}, status_message.VALIDATION_ERROR);
 					}
 
+					console.log('VARIANT: ', variant);
+
 					selected_product = {
 						sku: variant.sku,
 						prod_n_storeArr: variant.prod_n_storeArr,
@@ -144,8 +146,6 @@ module.exports.add = function (req, res) {
 						}
 					}
 
-					console.log('PRODUCT STORE ARR: ', selected_product.prod_n_storeArr);
-
 					for (const store of selected_product.prod_n_storeArr) {
 						if (store.store_id.toString() == req.custom.authorizationObject.store_id.toString()) {
 							if (store.feed_from_store_id) {
@@ -153,6 +153,7 @@ module.exports.add = function (req, res) {
 								store.quantity = temp_store.quantity;
 							}
 							if (store.quantity < data.quantity || (selected_product.max_quantity_cart && selected_product.max_quantity_cart < data.quantity)) {
+								console.log('PRODUCT STORE ARR: ', selected_product.prod_n_storeArr);
 								console.log('STORE QUANTITY: ', store.quantity);
 								console.log('DATA QUANTITY: ', data.quantity);
 								console.log('MAX QUANTITY: ', selected_product.max_quantity_cart);
