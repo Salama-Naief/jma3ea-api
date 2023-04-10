@@ -25,6 +25,7 @@ module.exports.list = async function (req, res) {
         }, status_message.CITY_REQUIRED);
     }
 
+    req.custom.cache = false;
     mainController.list_all(req, res, collectionName, {
         "_id": 1,
         "name": {
@@ -108,6 +109,12 @@ module.exports.list = async function (req, res) {
             req.custom.clean_filter = { inventory_id: ObjectID(inventory._id.toString()), cities: ObjectID(cityid), is_external: true, status: true };
             inventory.min_value = inventory.min_order;
             inventory.min_delivery_time = inventory.delivery_time;
+            if (inventory.picture && inventory.picture != undefined) {
+                inventory.picture = inventory.picture.includes(req.custom.config.media_url) ? inventory.picture : (req.custom.config.media_url + inventory.picture);
+            }
+            if (inventory.logo && inventory.logo != undefined) {
+                inventory.logo = inventory.logo.includes(req.custom.config.media_url) ? inventory.logo : (req.custom.config.media_url + inventory.logo);
+            }
             inventory.suppliers = await new Promise((resolve, reject) => {
                 collection.aggregate([{ $match: req.custom.clean_filter }, ...pipeline], options).toArray((err, results) => {
                     if (err) {
