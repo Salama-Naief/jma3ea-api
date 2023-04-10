@@ -12,12 +12,12 @@ module.exports.list = async function (req, res) {
 
     const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
 
-    /* if (cache_key) {
+    if (cache_key) {
         const cached_data = await cache.get(cache_key).catch(() => null);
         if (cached_data) {
             return res.out({ count: cached_data.length, data: cached_data });
         }
-    } */
+    }
 
     if (!cityid) {
         return res.out({
@@ -25,7 +25,6 @@ module.exports.list = async function (req, res) {
         }, status_message.CITY_REQUIRED);
     }
 
-    req.custom.cache_key = false;
     mainController.list_all(req, res, collectionName, {
         "_id": 1,
         "name": {
