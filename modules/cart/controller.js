@@ -64,6 +64,7 @@ module.exports.add = function (req, res) {
 						}, status_message.VALIDATION_ERROR);
 					}
 
+					console.log('PROD: ', prod);
 					console.log('VARIANT: ', variant);
 
 					selected_product = {
