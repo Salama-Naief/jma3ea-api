@@ -2,6 +2,7 @@
 
 // Load required modules
 const status_message = require("../../enums/status_message");
+const { isSupplierOpen } = require("../../libraries/common");
 const mainController = require("../../libraries/mainController");
 const ObjectID = require("../../types/object_id");
 const collectionName = 'inventory';
@@ -136,6 +137,7 @@ module.exports.list = async function (req, res) {
                     if (i.logo && i.logo != undefined) {
                         i.logo = i.logo.includes(req.custom.config.media_url) ? i.logo : (req.custom.config.media_url + i.logo);
                     }
+                    i.isOpen = isSupplierOpen(i);
                     return i;
                 });
                 inventories.push(inventory);

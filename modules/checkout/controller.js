@@ -795,16 +795,7 @@ module.exports.list = async function (req, res) {
 					// earliest_date_of_delivery = common.getDate(moment().add(earliest_date_of_delivery, 'minutes'));
 				}
 
-				moment.updateLocale('en', {});
-				const dayOfWeek = moment(common.getDate()).format('d');
-				if (sup.supplier.working_times && sup.supplier.working_times.length > 0 && dayOfWeek <= sup.supplier.working_times.length) {
-					const dayHours = common.getDate().getHours();
-					console.log('this is being triggered: ', dayOfWeek, dayHours, sup.supplier.working_times[dayOfWeek]);
-					const isOpen = sup.supplier.working_times[dayOfWeek].from <= dayHours && sup.supplier.working_times[dayOfWeek].to >= dayHours;
-					sup.supplier.isOpen = isOpen;
-				} else {
-					sup.supplier.isOpen = true;
-				}
+				sup.supplier.isOpen = common.isSupplierOpen(sup.supplier);
 
 				earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
 				sup.earliest_date_of_delivery = earliest_date_of_delivery;

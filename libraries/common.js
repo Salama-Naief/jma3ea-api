@@ -29,6 +29,19 @@ module.exports.getDate = function (date = null, local = 'en') {
 	return new Date(date ? moment(date).add(parseInt(process.env.DATE_UTC), 'hours') : moment().add(parseInt(process.env.DATE_UTC), 'hours'));
 };
 
+module.exports.isSupplierOpen = (supplier) => {
+	moment.updateLocale('en', {});
+	const dayOfWeek = moment(this.getDate()).format('d');
+	if (supplier.working_times && supplier.working_times.length > 0 && dayOfWeek <= supplier.working_times.length) {
+		const dayHours = this.getDate().getHours();
+		console.log('this is being triggered: ', dayOfWeek, dayHours, supplier.working_times[dayOfWeek]);
+		const isOpen = supplier.working_times[dayOfWeek].from <= dayHours && supplier.working_times[dayOfWeek].to >= dayHours;
+		return isOpen;
+	} else {
+		return true;
+	}
+}
+
 module.exports.group_products_by_suppliers = (products, req) => {
 	return products.reduce((prod, curr) => {
 		curr.supplier_id = curr.supplier_id || req.custom.settings.site_name[req.custom.lang];
