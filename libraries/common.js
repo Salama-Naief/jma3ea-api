@@ -107,8 +107,10 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 				}
 			});
 
+			console.log('====================================================================================================');
 			console.log("internal supplier ids: ", internalSuppliersIds);
-			console.log("All suppliers: ", all_suppliers.find(s => s.inventory_id.toString() === JM3EIA_STORES_INVENTORY_ID));
+			console.log("All suppliers: ", all_suppliers.find(s => s.inventory_id.toString() === JM3EIA_STORES_INVENTORY_ID), all_suppliers);
+			console.log('====================================================================================================');
 
 			if (req.query.fast_shipping && req.query.fast_shipping == true) {
 				req.custom.clean_filter['fast_shipping'] = true;
