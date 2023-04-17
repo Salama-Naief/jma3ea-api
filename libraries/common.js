@@ -98,7 +98,7 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 		if (all_suppliers.length > 0) {
 			const JM3EIA_STORES_INVENTORY_ID = "6420915a99da0ea02d0ecf39";
 			const internalSuppliersIds = all_suppliers.filter(sup => {
-				if ((!sup.is_external || sup._id.toString() === JM3EIA_STORES_INVENTORY_ID) && (sup.cities && sup.cities.findIndex(c => c.toString() == city_id.toString()) > -1)) {
+				if ((!sup.is_external || (sup.inventory_id && sup.inventory_id.toString() === JM3EIA_STORES_INVENTORY_ID)) && (sup.cities && sup.cities.findIndex(c => c.toString() == city_id.toString()) > -1)) {
 					return sup;
 				}
 			}).map(s => {
@@ -106,6 +106,9 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 					return new ObjectID(s._id);
 				}
 			});
+
+			console.log("internal supplier ids: ", internalSuppliersIds);
+			console.log("All suppliers: ", all_suppliers.find(s => s.inventory_id.toString() === JM3EIA_STORES_INVENTORY_ID));
 
 			if (req.query.fast_shipping && req.query.fast_shipping == true) {
 				req.custom.clean_filter['fast_shipping'] = true;
