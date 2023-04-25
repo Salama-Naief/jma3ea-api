@@ -206,11 +206,15 @@ module.exports.register = function (req, res) {
 								mobile: req.body.mobile,
 								created: new Date(),
 							})
-								.catch(() => { }).then(() => res.out({
-									message: `${req.custom.local.registered_successfully} ${data.fullname} 
-												${data.wallet > 0 ? (', ' + req.custom.local.mail.registerion_gift(data.wallet)) : ''}`,
-									insertedId: response.insertedId
-								}));
+								.catch(() => { }).then(() => {
+									req.body.city_id = req.body.address.city_id;
+									updateUserCity(req, res);
+									return res.out({
+										message: `${req.custom.local.registered_successfully} ${data.fullname} 
+													${data.wallet > 0 ? (', ' + req.custom.local.mail.registerion_gift(data.wallet)) : ''}`,
+										insertedId: response.insertedId
+									})
+								});
 
 						})
 						.catch((error) => res.out({
@@ -645,7 +649,7 @@ module.exports.updatecity = function (req, res) {
 								row.store_id = cityObj.store_id;
 								row.currency = countryObj.currency;
 								row.language = req.custom.lang;
-								row.cart = cart;
+								row.cart = {};
 								row.member_id = req.custom.authorizationObject.member_id;
 
 								if (row.member_id) {
@@ -671,7 +675,7 @@ module.exports.updatecity = function (req, res) {
 							store_id: cityObj.store_id,
 							currency: countryObj.currency,
 							language: req.custom.lang,
-							cart: cart,
+							cart: {},
 							member_id: req.custom.authorizationObject.member_id,
 						});
 					}
@@ -688,6 +692,7 @@ module.exports.updatecity = function (req, res) {
 
 		});
 };
+
 
 /**
  * Update exists user
@@ -1151,6 +1156,158 @@ function save_failed_payment(req, reason = null) {
 				success: false,
 				message: error.message
 			}
+		});
+}
+
+function updateUserCity(req, res) {
+	req.custom.model = require('./model/updatecity');
+	req.custom.getValidData(req).
+		then(({ data, error }) => {
+			if (error) {
+				// TODO: Remove this after making sure it handled in apps
+				error.message = req.custom.local.city_is_not_exists;
+				return res.out(error, status_message.VALIDATION_ERROR);
+			}
+
+			const cityCollection = req.custom.db.client().collection('city');
+			cityCollection.findOne({
+				_id: ObjectID(data.city_id.toString())
+			}).then((cityObj) => {
+
+				// TODO: Update 'meesage' to 'city_id' this after making sure it handled in apps
+				if (!cityObj) {
+					return res.out({
+						'message': req.custom.local.city_is_not_exists
+					}, status_message.CITY_REQUIRED)
+				}
+
+
+				const countryCollection = req.custom.db.client().collection('country');
+				countryCollection.findOne({
+					_id: cityObj.country_id
+				}).then((countryObj) => {
+
+					const set_cache = function (row) {
+
+						req.custom.cache.set(req.custom.token, row, req.custom.config.cache.life_time.token)
+							.then((response) => ({
+								city_id: data.city_id,
+								city: cityObj,
+								country_id: cityObj.country_id,
+								currency: countryObj.currency,
+								member_id: row.member_id,
+							}))
+							.catch((error) => res.out({
+								'message': error.message
+							}, status_message.UNEXPECTED_ERROR));
+
+					};
+
+					const cart = req.custom.authorizationObject.cart || {};
+					if (req.custom.authorizationObject.store_id && cityObj && cityObj.store_id && req.custom.authorizationObject.store_id.toString() !== cityObj.store_id.toString()) {
+
+						let prod_ids = [];
+						if (Object.keys(cart).length > 0) {
+							for (const i of Object.keys(cart)) {
+								prod_ids.push(ObjectID(i));
+							}
+						}
+
+						const prod_collection = req.custom.db.client().collection('product');
+						prod_collection.aggregate([
+							{ $match: { "_id": { $in: prod_ids } } },
+							{
+								$lookup: {
+									from: 'supplier',
+									localField: 'supplier_id',
+									foreignField: '_id',
+									as: 'supplier'
+								}
+							},
+							{
+								$project: {
+									_id: 1,
+									prod_n_storeArr: 1,
+									supplier_id: 1,
+									supplier: { $arrayElemAt: ['$supplier', 0] }
+								}
+							}
+						]).
+							toArray((err, prods) => {
+								if (err) {
+									return res.out({
+										'message': err.message
+									}, status_message.UNEXPECTED_ERROR)
+								}
+
+								for (const p of Object.keys(cart)) {
+									const product = prods.find((i) => i._id.toString() === p.toString());
+									if (!product || (product.supplier && product.supplier.is_external)) {
+										delete cart[p];
+										continue;
+									}
+
+									const product_qty = product.prod_n_storeArr.find((i) => i.store_id.toString() === cityObj.store_id.toString());
+									if (!product_qty) {
+										delete cart[p];
+										continue;
+									}
+
+									if (cart[p] > product_qty.quantity) {
+										cart[p] = product_qty.quantity;
+									}
+
+								}
+
+
+								const row = req.custom.authorizationObject;
+
+								row.city_id = data.city_id;
+								row.country_id = cityObj.country_id;
+								row.store_id = cityObj.store_id;
+								row.currency = countryObj.currency;
+								row.language = req.custom.lang;
+								row.cart = {};
+								row.member_id = req.custom.authorizationObject.member_id;
+
+								if (row.member_id) {
+									const userCollection = req.custom.db.client().collection('member');
+									userCollection.findOne({
+										_id: ObjectID(row.member_id.toString())
+									}).then((userObj) => {
+										row.member_id = userObj._id.toString();
+										set_cache(row);
+										fix_user_data(req, userObj, data.city_id);
+									}).catch(() => { });
+								} else {
+									set_cache(row);
+								}
+
+
+							});
+
+					} else {
+						set_cache({
+							city_id: data.city_id,
+							country_id: cityObj.country_id,
+							store_id: cityObj.store_id,
+							currency: countryObj.currency,
+							language: req.custom.lang,
+							cart: {},
+							member_id: req.custom.authorizationObject.member_id,
+						});
+					}
+
+
+				}).catch((error) => res.out({
+					'message': error.message
+				}, status_message.UNEXPECTED_ERROR));
+
+
+			}).catch((error) => res.out({
+				'message': error.message
+			}, status_message.UNEXPECTED_ERROR));
+
 		});
 }
 

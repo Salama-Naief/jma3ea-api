@@ -29,6 +29,18 @@ module.exports.getDate = function (date = null, local = 'en') {
 	return new Date(date ? moment(date).add(parseInt(process.env.DATE_UTC), 'hours') : moment().add(parseInt(process.env.DATE_UTC), 'hours'));
 };
 
+module.exports.isSupplierOpen = (supplier) => {
+	moment.updateLocale('en', {});
+	const dayOfWeek = moment().format('d');
+	if (supplier.working_times && supplier.working_times.length > 0 && dayOfWeek <= supplier.working_times.length) {
+		const dayHours = moment().hours();
+		const isOpen = supplier.working_times[dayOfWeek].from <= dayHours && supplier.working_times[dayOfWeek].to >= dayHours;
+		return isOpen;
+	} else {
+		return true;
+	}
+}
+
 module.exports.group_products_by_suppliers = (products, req) => {
 	return products.reduce((prod, curr) => {
 		curr.supplier_id = curr.supplier_id || req.custom.settings.site_name[req.custom.lang];
@@ -84,8 +96,9 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 		const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 
 		if (all_suppliers.length > 0) {
+			const JM3EIA_STORES_INVENTORY_ID = "6420915a99da0ea02d0ecf39";
 			const internalSuppliersIds = all_suppliers.filter(sup => {
-				if (!sup.is_external && (sup.cities && sup.cities.findIndex(c => c.toString() == city_id.toString()) > -1/*  && sup.working_times && sup.working_times[moment().format('d')].from <= getDate().getHours() && sup.working_times[moment().format('d')].to >= getDate().getHours() */)) {
+				if ((!sup.is_external || (sup.inventory_id && sup.inventory_id.toString() === JM3EIA_STORES_INVENTORY_ID)) && (sup.cities && sup.cities.findIndex(c => c.toString() == city_id.toString()) > -1)) {
 					return sup;
 				}
 			}).map(s => {
@@ -98,7 +111,7 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 				req.custom.clean_filter['fast_shipping'] = true;
 			}
 
-			if (!req.query.q || req.custom.clean_filter.hasOwnProperty('supplier_id')) {
+			if (!req.query.hasOwnProperty('q') || req.custom.clean_filter.hasOwnProperty('supplier_id')) {
 				return req.custom.clean_filter;
 			}
 

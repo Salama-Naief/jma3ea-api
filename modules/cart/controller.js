@@ -64,6 +64,9 @@ module.exports.add = function (req, res) {
 						}, status_message.VALIDATION_ERROR);
 					}
 
+					console.log('PROD: ', prod);
+					console.log('VARIANT: ', variant);
+
 					selected_product = {
 						sku: variant.sku,
 						prod_n_storeArr: variant.prod_n_storeArr,
@@ -375,6 +378,7 @@ module.exports.clear = async function (req, res) {
 	}); */
 
 }
+
 
 /**
  * List all products in Cart

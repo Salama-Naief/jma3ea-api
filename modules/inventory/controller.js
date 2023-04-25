@@ -1,6 +1,8 @@
 // inventory Controller
 
 // Load required modules
+const status_message = require("../../enums/status_message");
+const { isSupplierOpen } = require("../../libraries/common");
 const mainController = require("../../libraries/mainController");
 const ObjectID = require("../../types/object_id");
 const collectionName = 'inventory';
@@ -9,16 +11,21 @@ module.exports.list = async function (req, res) {
     const cache = req.custom.cache;
     const cityid = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 
-    //const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
+    const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
 
-    /* if (cache_key) {
+    if (cache_key) {
         const cached_data = await cache.get(cache_key).catch(() => null);
         if (cached_data) {
             return res.out({ count: cached_data.length, data: cached_data });
         }
-    } */
+    }
 
-    req.custom.cache_key = false;
+    if (!cityid) {
+        return res.out({
+            'message': req.custom.local.choose_city_first
+        }, status_message.CITY_REQUIRED);
+    }
+
     mainController.list_all(req, res, collectionName, {
         "_id": 1,
         "name": {
@@ -26,6 +33,9 @@ module.exports.list = async function (req, res) {
         },
         "picture": {
             $ifNull: [`$picture.${req.custom.lang}`, `$picture`]
+        },
+        "logo": {
+            $ifNull: [`$logo.${req.custom.lang}`, `$logo.${req.custom.config.local}`]
         },
         //"picture": 1,
     }, async (out) => {
@@ -55,7 +65,7 @@ module.exports.list = async function (req, res) {
             // Stage 4
             {
                 $sort: {
-                    "created": -1
+                    "sorting": 1
                 },
             },
             // Stage 2
@@ -81,7 +91,10 @@ module.exports.list = async function (req, res) {
                     "delivery_time": 1,
                     "delivery_time_text": 1,
                     "min_order": 1,
-                    "shipping_cost": 1
+                    "shipping_cost": 1,
+                    "app_delivery_time": 1,
+                    "avg_rating": 1,
+                    "reviews_count": 1
                 }
             }
         ];
@@ -90,11 +103,18 @@ module.exports.list = async function (req, res) {
             "allowDiskUse": true
         };
 
+
         //req.custom.clean_filter = await filter_internal_suppliers_by_city(req, true);
         for (let inventory of out.data) {
             req.custom.clean_filter = { inventory_id: ObjectID(inventory._id.toString()), cities: ObjectID(cityid), is_external: true, status: true };
             inventory.min_value = inventory.min_order;
             inventory.min_delivery_time = inventory.delivery_time;
+            if (inventory.picture && inventory.picture != undefined) {
+                inventory.picture = inventory.picture.includes(req.custom.config.media_url) ? inventory.picture : (req.custom.config.media_url + inventory.picture);
+            }
+            if (inventory.logo && inventory.logo != undefined) {
+                inventory.logo = inventory.logo.includes(req.custom.config.media_url) ? inventory.logo : (req.custom.config.media_url + inventory.logo);
+            }
             inventory.suppliers = await new Promise((resolve, reject) => {
                 collection.aggregate([{ $match: req.custom.clean_filter }, ...pipeline], options).toArray((err, results) => {
                     if (err) {
@@ -117,20 +137,19 @@ module.exports.list = async function (req, res) {
                     if (i.logo && i.logo != undefined) {
                         i.logo = i.logo.includes(req.custom.config.media_url) ? i.logo : (req.custom.config.media_url + i.logo);
                     }
+                    i.isOpen = isSupplierOpen(i);
                     return i;
                 });
                 inventories.push(inventory);
-                console.log('suppliers: ', inventory.suppliers);
             }
         }
 
-        console.log('inventories: ', inventories);
         out.data = inventories;
         out.count = inventories.length;
 
-        /* if (cache_key && inventories.length > 0) {
-            cache.set(cache_key, inventories, req.custom.config.cache.life_time).catch(() => null);
-        } */
+        if (cache_key && inventories.length > 0) {
+            await cache.set(cache_key, inventories, req.custom.config.cache.life_time).catch(() => null);
+        }
 
         return res.out(out);
 
