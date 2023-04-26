@@ -148,7 +148,7 @@ module.exports.list = async function (req, res) {
         out.count = inventories.length;
 
         if (cache_key && inventories.length > 0) {
-            await cache.set(cache_key, inventories, req.custom.config.cache.life_time).catch(() => null);
+            await cache.set(cache_key, inventories, 1).catch(() => null);
         }
 
         return res.out(out);

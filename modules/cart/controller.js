@@ -511,6 +511,7 @@ module.exports.list = function (req, res) {
 				}
 
 				out.subtotal = total.toFixed(3);
+				out.total_quantities = out.data.reduce((acc, curr) => acc + curr.quantity, 0);
 				if (!user.coupon || !user.coupon.code) {
 					out.total = total + out.shipping_cost;
 					out.total = (out.total > 0 ? out.total : 0).toFixed(3);
@@ -535,7 +536,6 @@ module.exports.list = function (req, res) {
 
 					out.total = total + out.shipping_cost - out.coupon.value;
 					out.total = (out.total > 0 ? out.total : 0).toFixed(3);
-					out.total_quantities = out.data.reduce((acc, curr) => acc + curr.quantity, 0);
 
 					res.out(out);
 

@@ -86,6 +86,8 @@ module.exports.add = async (req, res) => {
                 }
             });
         }
+        
+        await req.custom.cache.unset('inventory_');
 
         return res.out({
             'message': req.custom.local.review_added_successfully
