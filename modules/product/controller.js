@@ -288,7 +288,8 @@ module.exports.featured = async function (req, res) {
 			const filter = {};
 			filter['status'] = true;
 			//filter['feature_id'] = c._id;
-			filter['$or'] = [{ 'feature_id': c._id }, { 'features': c._id }]
+			//filter['features.feature_id'] = c._id;
+			filter['$or'] = [{ 'feature_id': c._id }, { 'features.feature_id': c._id }]
 			const projection = {
 				"_id": 0,
 				"sku": 1,
@@ -311,6 +312,7 @@ module.exports.featured = async function (req, res) {
 			};
 
 			const sort = {
+				"features.sorting": 1,
 				"feature_sorting": 1,
 				"created": -1
 			};
@@ -320,6 +322,9 @@ module.exports.featured = async function (req, res) {
 				// Stage 1
 				{
 					$match: filter
+				},
+				{
+					$unwind: "$features"
 				},
 				// Stage 4
 				{
@@ -347,7 +352,6 @@ module.exports.featured = async function (req, res) {
 					resolve(results);
 				});
 			}).catch(() => null);
-			console.log('PRODUCTS: ', c.products.length);
 			if (c.products.length > 0) {
 				c.products = c.products.map((i) => {
 					if (i.picture) {

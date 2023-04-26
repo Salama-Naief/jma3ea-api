@@ -82,19 +82,23 @@ exports.set = (key, value, expire = 0) => {
 exports.unset = (_key) => {
 	return new Promise((resolve, reject) => {
 		if (!_key) {
+			console.log('CACHE NO KEY');
 			reject(false);
 		}
 		client.keys('*', function (err, keys) {
 			if (!keys) {
+				console.log('CACHE NO KEYS');
 				return false;
 			}
 			keys.forEach(function (key, pos) {
 				if (key.includes(_key) && key.includes(config.cache.prefix)) {
+					console.log('CACHE KEY FOUND: ', key);
 					client.del(key, function (err, o) {
 						if (err) {
 							console.log('[Redis.cache.delete]', !err, key);
 							reject(err);
 						}
+						console.log('CACHE KEY DELETED: ', key);
 						resolve(true);
 
 					});
