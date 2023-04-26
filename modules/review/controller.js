@@ -77,6 +77,7 @@ module.exports.add = async (req, res) => {
             }
         ]).toArray();
 
+
         if (supplierReviews && supplierReviews.length > 0) {
             const supplierReview = supplierReviews[0];
             await supplier_collection.updateOne({ _id: ObjectID(data.supplier_id.toString()) }, {
@@ -86,8 +87,8 @@ module.exports.add = async (req, res) => {
                 }
             });
         }
-        
-        await req.custom.cache.unset('inventory_');
+
+        await req.custom.cache.unset('inventory');
 
         return res.out({
             'message': req.custom.local.review_added_successfully
@@ -95,6 +96,7 @@ module.exports.add = async (req, res) => {
 
 
     } catch (err) {
+        console.log('err: ', err);
         return res.out({
             'message': err.message
         }, status_message.UNEXPECTED_ERROR);
@@ -126,10 +128,13 @@ module.exports.list = (req, res) => {
 
         const supplier_collection = req.custom.db.client().collection('supplier');
         supplier_collection.findOne({ _id: req.custom.clean_filter['supplier_id'] }, { avg_rating: 1, reviews_count: 1 }).then(supplier => {
+
             out.avg_rating = supplier.avg_rating;
             out.reviews_count = supplier.reviews_count;
             return res.out(out);
-        }).catch(err => res.out({ message: err.message }, status_message.UNEXPECTED_ERROR));
+        }).catch(err => {
+            return res.out({ message: err.message }, status_message.UNEXPECTED_ERROR)
+        });
 
 
     });
