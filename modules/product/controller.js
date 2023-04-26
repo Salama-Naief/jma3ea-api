@@ -168,7 +168,7 @@ module.exports.listByCategory = function (req, res) {
 	req.custom.isProducts = true;
 
 	if (req.query.featured == 'true') {
-		req.custom.clean_filter['feature_id'] = ObjectID(req.params.Id);
+		req.custom.clean_filter['features'] = ObjectID(req.params.Id);
 	} else {
 		req.custom.clean_filter['prod_n_categoryArr.category_id'] = ObjectID(req.params.Id);
 	}
@@ -286,7 +286,7 @@ module.exports.featured = async function (req, res) {
 			c.slides = filteredSlides.map(s => ({ _id: s._id, name: s.name, picture: `${req.custom.config.media_url}${s.picture}`, url: s.url }));
 			const filter = {};
 			filter['status'] = true;
-			filter['feature_id'] = c._id;
+			filter['features'] = c._id;
 			const projection = {
 				"_id": 0,
 				"sku": 1,
