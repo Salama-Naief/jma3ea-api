@@ -308,12 +308,18 @@ module.exports.featured = async function (req, res) {
 				},
 				"supplier_id": 1,
 				"show_discount_percentage": 1,
-				"discount_price_valid_until": 1
+				"discount_price_valid_until": 1,
+				"sorting": {
+					$cond: {
+						if: { $in: [c._id, "$features.feature_id"] },
+						then: "$features.sorting",
+						else: "$feature_sorting"
+					}
+				}
 			};
 
 			const sort = {
-				"features.sorting": 1,
-				"feature_sorting": 1,
+				"sorting": 1,
 				"created": -1
 			};
 
@@ -323,9 +329,9 @@ module.exports.featured = async function (req, res) {
 				{
 					$match: filter
 				},
-				{
+				/* {
 					$unwind: "$features"
-				},
+				}, */
 				// Stage 4
 				{
 					$sort: sort
