@@ -288,7 +288,6 @@ module.exports.featured = async function (req, res) {
 			const filter = {};
 			filter['status'] = true;
 			//filter['feature_id'] = c._id;
-			//filter['features.feature_id'] = c._id;
 			filter['$or'] = [{ 'feature_id': c._id }, { 'features.feature_id': c._id }]
 			const projection = {
 				"_id": 0,
@@ -308,20 +307,14 @@ module.exports.featured = async function (req, res) {
 				},
 				"supplier_id": 1,
 				"show_discount_percentage": 1,
-				"discount_price_valid_until": 1,
-				/* "sorting": {
-					$cond: {
-						if: { $in: [c._id, "$features.feature_id"] },
-						then: "$features.sorting",
-						else: "$feature_sorting"
-					}
-				} */
+				"discount_price_valid_until": 1
 			};
 
-			const sort = {
-				"sorting": 1,
+			/* const sort = {
+				"features.sorting": 1,
+				"feature_sorting": 1,
 				"created": -1
-			};
+			}; */
 
 			// Pipeline
 			const pipeline = [
@@ -329,39 +322,21 @@ module.exports.featured = async function (req, res) {
 				{
 					$match: filter
 				},
+				// Stage 
 				{
 					$addFields: {
-						feature_ids: {
-							$cond: {
-								if: { $eq: ['$features', null] },
-								then: ['$feature_id'],
-								else: {
-									$map: {
-										input: {
-											$filter: {
-												input: '$features',
-												as: 'f',
-												cond: { $eq: ['$$f.feature_id', c._id] }
-											}
-										},
-										as: 'f',
-										in: '$$f.feature_id'
-									}
-								}
-							}
-						}
+					  featureSorting: {
+						$ifNull: ["$features.sorting", "$feature_sorting"]
+					  }
 					}
-				},
-				{
+				  },
+				  // Stage 4
+				  {
 					$sort: {
-						$ifNull: [
-							{ $arrayElemAt: ['$features.sorting', 0] },
-							{ $arrayElemAt: ['$feature_sorting', 0] },
-							{ $arrayElemAt: ['$feature_ids.sorting', 0] },
-							-1
-						]
+					  featureSorting: 1,
+					  "created": -1
 					}
-				},
+				  },
 				// Stage 2
 				{
 					$limit: 25
@@ -379,6 +354,7 @@ module.exports.featured = async function (req, res) {
 			c.products = await new Promise((resolve, reject) => {
 				collection.aggregate(pipeline, options).toArray((err, results) => {
 					if (err) {
+						console.log('ERROR: ', err);
 						reject(err);
 					}
 					resolve(results);

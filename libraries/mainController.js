@@ -124,6 +124,16 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 						sort = {
 							"feature_sorting": 1
 						};
+						/* pipeline.push({
+							$addFields: {
+								featureSorting: {
+									$ifNull: ["$features.sorting", "$feature_sorting"]
+								}
+							}
+						});
+						sort = {
+							featureSorting: 1,
+						}; */
 					} else {
 						pipeline.push({
 							$addFields: {
