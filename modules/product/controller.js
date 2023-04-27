@@ -217,7 +217,8 @@ module.exports.listByCategory = function (req, res) {
  */
 module.exports.featured = async function (req, res) {
 
-	const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
+	try {
+		const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 	if (!city_id) {
 		return res.out({
 			'message': req.custom.local.choose_city_first
@@ -243,7 +244,7 @@ module.exports.featured = async function (req, res) {
 	}
 
 
-	if (cache_key) {
+	if (/* cache_key */false) {
 		let cached_data = await cache.get(cache_key).catch(() => null);
 		if (cached_data) {
 			cached_data = cached_data.map((feature_category) => {
@@ -394,6 +395,10 @@ module.exports.featured = async function (req, res) {
 
 		res.out(featured);
 	});
+	} catch(err) {
+		console.log('ERR: ', err);
+	}
+	
 };
 
 /**
