@@ -323,9 +323,9 @@ module.exports.featured = async function (req, res) {
 				{
 					$match: filter
 				},
-				/* {
+				{
 					$unwind: "$features"
-				}, */
+				},
 				// Stage 4
 				{
 					$sort: sort
