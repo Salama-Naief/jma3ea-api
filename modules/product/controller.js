@@ -217,8 +217,7 @@ module.exports.listByCategory = function (req, res) {
  */
 module.exports.featured = async function (req, res) {
 
-	try {
-		const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
+	const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 	if (!city_id) {
 		return res.out({
 			'message': req.custom.local.choose_city_first
@@ -324,9 +323,10 @@ module.exports.featured = async function (req, res) {
 				{
 					$match: filter
 				},
-				/* {
+				{
 					$unwind: "$features"
-				}, */
+				},
+				{ $match: { "features.feature_id": c._id } },
 				// Stage 4
 				{
 					$sort: sort
@@ -395,10 +395,6 @@ module.exports.featured = async function (req, res) {
 
 		res.out(featured);
 	});
-	} catch(err) {
-		console.log('ERR: ', err);
-	}
-	
 };
 
 /**
