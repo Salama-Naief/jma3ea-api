@@ -326,7 +326,6 @@ module.exports.featured = async function (req, res) {
 				{
 					$unwind: "$features"
 				},
-				{ $match: { "features.feature_id": c._id } },
 				// Stage 4
 				{
 					$sort: sort
