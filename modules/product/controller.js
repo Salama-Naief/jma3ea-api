@@ -169,7 +169,7 @@ module.exports.listByCategory = function (req, res) {
 
 	if (req.query.featured == 'true') {
 		//req.custom.clean_filter['feature_id'] = ObjectID(req.params.Id);
-		req.custom.clean_filter['$or'] = [{ 'feature_id': ObjectID(req.params.Id) }, { 'features': ObjectID(req.params.Id) }];
+		req.custom.clean_filter['$or'] = [{ 'feature_id': ObjectID(req.params.Id) }, { 'features.feature_id': ObjectID(req.params.Id) }];
 	} else {
 		req.custom.clean_filter['prod_n_categoryArr.category_id'] = ObjectID(req.params.Id);
 	}
