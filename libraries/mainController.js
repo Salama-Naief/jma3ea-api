@@ -43,9 +43,20 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 								if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
 									const oldPrice = parseFloat(i.old_price);
 									i.price = oldPrice;
-									promises.push(resetPrice(req, i.sku, oldPrice).catch(() => res.out({
+									promises.push(resetPrice(req, i.sku, oldPrice, i).catch(() => res.out({
 										message: req.custom.local.unexpected_error
 									}, status_message.UNEXPECTED_ERROR)));
+								}
+
+
+								if (i.variants && i.variants.length > 0) {
+									i.variants = i.variants.map(v => {
+										if (v.old_price && v.discount_price_valid_until && v.discount_price_valid_until < new Date()) {
+											const oldPrice = parseFloat(v.old_price);
+											v.price = oldPrice;
+										}
+										return v;
+									});
 								}
 
 								return i;
@@ -197,14 +208,22 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 						if (i.picture) {
 							i.picture = `${req.custom.config.media_url}${i.picture}`;
 						}
-						if (req.custom.isProducts == true) {
-
+						if (req.custom.isProducts == true/*  || req.custom.resetDiscountPrice == true */) {
 							if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
 								const oldPrice = parseFloat(i.old_price);
 								i.price = oldPrice;
 								promises.push(resetPrice(req, i.sku, oldPrice).catch(() => res.out({
 									message: req.custom.local.unexpected_error
 								}, status_message.UNEXPECTED_ERROR)));
+							}
+
+							if (i.variants && i.variants.length > 0) {
+								i.variants = i.variants.map(v => {
+									if (v.old_price && v.discount_price_valid_until && v.discount_price_valid_until < new Date()) {
+										v.price = v.old_price;
+									}
+									return v;
+								});
 							}
 
 							if (i.fast_shipping && i.fast_shipping == true && i.fast_shipping_cost > 0) {

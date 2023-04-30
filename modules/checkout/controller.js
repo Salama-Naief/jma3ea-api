@@ -438,7 +438,7 @@ module.exports.buy = async function (req, res) {
 						delete data.supplier.isOpen;
 
 					return data;
-					
+
 				}),
 				products: products2save.map((p) => {
 					delete p.variants;
@@ -618,6 +618,8 @@ module.exports.list = async function (req, res) {
 		'$in': prods
 	};
 	req.custom.limit = 0;
+	//req.custom.resetDiscountPrice = true;
+	req.custom.isProducts = true;
 	mainController.list(req, res, 'product', {
 		"_id": 1,
 		"sku": 1,
@@ -984,6 +986,8 @@ async function products_to_save(products, user, req, to_display = false) {
 						soft_code: v.soft_code,
 						barcode: v.barcode,
 						price: parseFloat(v.price || p.price),
+						old_price: parseFloat(v.old_price || 0),
+						discount_price_valid_until: v.discount_price_valid_until,
 						name: p.name,
 						variants_options: v.options.map((v_o) => {
 							return {
