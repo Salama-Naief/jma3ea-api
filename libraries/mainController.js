@@ -121,10 +121,10 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 				if (req.custom.isProducts && ["/:Id/category", "/:Id/category/:rankId/rank", "/wishlist"].indexOf(req.route.path) > -1) {
 
 					if (req.query.featured == 'true') {
-						sort = {
+						/* sort = {
 							"feature_sorting": 1
-						};
-						/* pipeline.push({
+						}; */
+						pipeline.push({
 							$addFields: {
 								featureSorting: {
 									$ifNull: ["$features.sorting", "$feature_sorting"]
@@ -133,7 +133,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 						});
 						sort = {
 							featureSorting: 1,
-						}; */
+						};
 					} else {
 						pipeline.push({
 							$addFields: {
