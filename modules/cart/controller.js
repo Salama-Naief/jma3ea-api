@@ -47,6 +47,7 @@ module.exports.add = function (req, res) {
 			}).then((prod) => {
 
 				if (!prod) {
+					console.log('No product! ', sku);
 					return res.out({
 						'message': req.custom.local.cart_product_unavailable,
 						cart_products: user.cart
@@ -58,6 +59,7 @@ module.exports.add = function (req, res) {
 					const variant = prod.variants.find((i) => i.sku.toString() === data.sku.toString());
 
 					if (!variant) {
+						console.log('No variant!');
 						return res.out({
 							'message': req.custom.local.cart_product_unavailable,
 							cart_products: user.cart
@@ -103,7 +105,7 @@ module.exports.add = function (req, res) {
 
 						// If the product has an expired discount price
 						// Set the price to the old one
-						if (p.old_price && p.discount_price_valid_until < new Date()) {
+						/* if (p.old_price && p.discount_price_valid_until < new Date()) {
 							const oldPrice = parseFloat(p.old_price);
 							p.price = oldPrice;
 							resetPrice(req, p.sku, oldPrice).then(isPriceResetted => {
@@ -113,7 +115,7 @@ module.exports.add = function (req, res) {
 									}, status_message.UNEXPECTED_ERROR);
 								}
 							});
-						}
+						} */
 
 
 						// Check if the product sku in the cart exists in the main product
@@ -466,6 +468,8 @@ module.exports.list = function (req, res) {
 								variant.prod_n_categoryArr = p.prod_n_categoryArr ? p.prod_n_categoryArr : [];
 								variant.max_quantity_cart = v.max_quantity_cart || p.max_quantity_cart;
 								variant.price = parseFloat(v.price || p.price);
+								variant.old_price = parseFloat(v.old_price || 0);
+								variant.discount_price_valid_until = v.discount_price_valid_until;
 								if (v.gallery_pictures && v.gallery_pictures[0]) {
 									variant.picture = req.custom.config.media_url + v.gallery_pictures[0];
 								}
