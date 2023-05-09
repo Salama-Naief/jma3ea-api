@@ -188,6 +188,10 @@ module.exports.listByCategory = function (req, res) {
 		}
 	}
 
+	if (req.custom.isVIP == true) {
+		req.custom.cache_key += '_vip';
+	}
+
 	mainController.list(req, res, collectionName, {
 		"_id": 0,
 		"sku": 1,
@@ -240,6 +244,10 @@ module.exports.featured = async function (req, res) {
 		cache_key += `__supplier_${req.query.supplier_id}`;
 	} else {
 		req.custom.clean_filter['supplier_id'] = { $exists: false };
+	}
+
+	if (req.custom.isVIP == true) {
+		cache_key += '_vip';
 	}
 
 
@@ -423,7 +431,11 @@ module.exports.read = async function (req, res) {
 	const prod_exists_in_cart = Object.keys(user.cart).indexOf(req.params.sku.toString()) > -1;
 
 	const cache = req.custom.cache;
-	const cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_id_${req.params.sku}`;
+	let cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_id_${req.params.sku}`;
+
+	if (req.custom.isVIP == true) {
+		cache_key += '_vip';
+	}
 
 	req.custom.ignoreCity = true;
 	req.custom.authorizationObject.store_id = req.custom.authorizationObject.store_id || '000000000000000000000000';
