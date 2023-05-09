@@ -375,7 +375,7 @@ module.exports.featured = async function (req, res) {
 					}
 
 					if (req.custom.isVIP == true && i.old_price && i.old_price > 0) {
-						i.price = i.oldPrice;
+						i.price = i.old_price;
 						i.old_price = 0;
 					}
 

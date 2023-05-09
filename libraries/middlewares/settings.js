@@ -33,10 +33,10 @@ module.exports = (req, res, next) => {
 			}
 			if (req.query.isVIP == 'true') {
 				req.custom.isVIP = true;
-				if (req.custom.settings.orders.vip_min_value)
+				if (req.custom.settings.orders && req.custom.settings.orders.vip_min_value)
 					req.custom.settings.orders.min_value = req.custom.settings.orders.vip_min_value;
 
-				if (req.custom.settings.orders.vip_min_delivery_time)
+				if (req.custom.settings.orders && req.custom.settings.orders.vip_min_delivery_time)
 					req.custom.settings.orders.min_delivery_time = req.custom.settings.orders.vip_min_delivery_time;
 			}
 
