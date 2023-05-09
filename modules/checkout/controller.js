@@ -449,6 +449,7 @@ module.exports.buy = async function (req, res) {
 				discount_by_wallet: req.body.discount_by_wallet,
 				discount_by_wallet_value: discount_by_wallet_value,
 				store_id: ObjectID(req.custom.authorizationObject.store_id),
+				isVIP: req.custom.isVIP || false,
 				notes: req.body.notes,
 				created: common.getDate(),
 				status: 1
