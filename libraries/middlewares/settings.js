@@ -14,6 +14,7 @@ module.exports = (req, res, next) => {
 					req.custom.settings[i.key] = i.value;
 				}
 				req.custom.settings['site_id'] = req.custom.settings['site_name']['en'] || SITE_ID;
+
 			} else {
 				const collection = req.custom.db.client().collection('setting');
 				collection.find()
@@ -30,5 +31,15 @@ module.exports = (req, res, next) => {
 						req.custom.settings['site_id'] = req.custom.settings['site_name']['en'] || SITE_ID;
 					});
 			}
+			if (req.query.isVIP == 'true') {
+				req.custom.isVIP = true;
+				if (req.custom.settings.orders.vip_min_value)
+					req.custom.settings.orders.min_value = req.custom.settings.orders.vip_min_value;
+
+				if (req.custom.settings.orders.vip_min_delivery_time)
+					req.custom.settings.orders.min_delivery_time = req.custom.settings.orders.vip_min_delivery_time;
+			}
+
+
 		}).then(() => next());
 };

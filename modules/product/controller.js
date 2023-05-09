@@ -325,18 +325,18 @@ module.exports.featured = async function (req, res) {
 				// Stage 
 				{
 					$addFields: {
-					  featureSorting: {
-						$ifNull: ["$features.sorting", "$feature_sorting"]
-					  }
+						featureSorting: {
+							$ifNull: ["$features.sorting", "$feature_sorting"]
+						}
 					}
-				  },
-				  // Stage 4
-				  {
+				},
+				// Stage 4
+				{
 					$sort: {
-					  featureSorting: 1,
-					  "created": -1
+						featureSorting: 1,
+						"created": -1
 					}
-				  },
+				},
 				// Stage 2
 				{
 					$limit: 25
@@ -365,6 +365,12 @@ module.exports.featured = async function (req, res) {
 					if (i.picture) {
 						i.picture = `${req.custom.config.media_url}${i.picture}`;
 					}
+
+					if (req.custom.isVIP == true && i.old_price && i.old_price > 0) {
+						i.price = i.oldPrice;
+						i.old_price = 0;
+					}
+
 					i.price = common.getFixedPrice(i.price);
 					i.old_price = common.getFixedPrice(i.old_price || 0);
 
@@ -617,6 +623,11 @@ module.exports.read = async function (req, res) {
 					});
 				} else {
 					results.gallery_pictures = [];
+				}
+
+				if (req.custom.isVIP == true && results.old_price && results.old_price > 0) {
+					results.price = results.old_price;
+					results.old_price = 0;
 				}
 
 				results.price = common.getFixedPrice(results.price);

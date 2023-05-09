@@ -208,6 +208,12 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 						if (i.picture) {
 							i.picture = `${req.custom.config.media_url}${i.picture}`;
 						}
+
+						if (req.custom.isVIP == true && i.old_price && i.old_price > 0) {
+							i.price = i.old_price;
+							i.old_price = 0;
+						}
+
 						if (req.custom.isProducts == true/*  || req.custom.resetDiscountPrice == true */) {
 							if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
 								const oldPrice = parseFloat(i.old_price);
@@ -253,6 +259,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 								is_exists: user.wishlist.indexOf(i.sku.toString()) > -1
 							};
 						}
+
 						return i;
 					}) : [];
 
