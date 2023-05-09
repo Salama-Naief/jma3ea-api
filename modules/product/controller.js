@@ -189,7 +189,7 @@ module.exports.listByCategory = function (req, res) {
 	}
 
 	if (req.custom.isVIP == true) {
-		req.custom.cache_key += '_vip';
+		req.custom.cache_key += '__vip';
 	}
 
 	mainController.list(req, res, collectionName, {
@@ -247,7 +247,7 @@ module.exports.featured = async function (req, res) {
 	}
 
 	if (req.custom.isVIP == true) {
-		cache_key += '_vip';
+		cache_key += '__vip';
 	}
 
 
@@ -434,7 +434,7 @@ module.exports.read = async function (req, res) {
 	let cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_id_${req.params.sku}`;
 
 	if (req.custom.isVIP == true) {
-		cache_key += '_vip';
+		cache_key += '__vip';
 	}
 
 	req.custom.ignoreCity = true;

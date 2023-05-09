@@ -24,7 +24,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 	const is_cached = new Promise((resolve, reject) => {
 		if (req.custom.cache_key) {
 			if (req.custom.isVIP == true && !req.custom.cache_key.includes('vip')) {
-				req.custom.cache_key += '_vip';
+				req.custom.cache_key += '__vip';
 			}
 			return cache.get(req.custom.cache_key).
 				then((cached_data) => {
