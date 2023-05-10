@@ -149,7 +149,6 @@ module.exports.register = function (req, res) {
 
 	req.custom.getValidData(req).
 		then(({ data, error }) => {
-			console.log('after validation');
 			if (error && Object.keys(error).length > 0) {
 				return res.out(error, status_message.VALIDATION_ERROR);
 			}
@@ -172,12 +171,9 @@ module.exports.register = function (req, res) {
 					data.status = true;
 
 					data.password = sha1(md5(data.password));
-					console.log('we are here #1');
 					collection.insertOne(data)
 						.then((response) => {
-							console.log('we are here #2');
 							mail.send_mail(req.custom.settings.sender_emails.register, req.custom.settings.site_name[req.custom.lang], data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch(() => null);
-							console.log('we are here #3');
 							const point_transactions_collection = req.custom.db.client().collection('point_transactions');
 							point_transactions_collection.insertOne({
 								member_id: ObjectID(response.insertedId.toString()),
