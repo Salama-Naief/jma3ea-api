@@ -316,7 +316,10 @@ module.exports.featured = async function (req, res) {
 				},
 				"supplier_id": 1,
 				"show_discount_percentage": 1,
-				"discount_price_valid_until": 1
+				"discount_price_valid_until": 1,
+				"vip_old_price": 1,
+				"vip_price": 1,
+				"vip_discount_price_valid_until": 1,
 			};
 
 			/* const sort = {
