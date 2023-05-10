@@ -13,7 +13,7 @@ module.exports = (req, res, next) => {
 				for (const i of docs) {
 					req.custom.settings[i.key] = i.value;
 				}
-				req.custom.settings['site_id'] = req.custom.settings['site_name']['en'] || SITE_ID;
+				req.custom.settings['site_id'] = req.custom.settings['site_name'] ? req.custom.settings['site_name']['en'] : SITE_ID;
 
 			} else {
 				const collection = req.custom.db.client().collection('setting');
