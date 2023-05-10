@@ -140,94 +140,98 @@ module.exports.logout = function (req, res) {
  * @param {Object} res
  */
 module.exports.register = function (req, res) {
-	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
-	}
-	const collection = req.custom.db.client().collection(collectionName);
-	const registered_mobile_collection = req.custom.db.client().collection('registered_mobile');
-	req.custom.model = req.custom.model || require('./model/register');
+	try {
+		if (req.custom.isAuthorized === false) {
+			return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+		}
+		const collection = req.custom.db.client().collection(collectionName);
+		const registered_mobile_collection = req.custom.db.client().collection('registered_mobile');
+		req.custom.model = req.custom.model || require('./model/register');
 
-	req.custom.getValidData(req).
-		then(({ data, error }) => {
+		req.custom.getValidData(req).
+			then(({ data, error }) => {
 
-			if (error && Object.keys(error).length > 0) {
-				return res.out(error, status_message.VALIDATION_ERROR);
-			}
-
-			const valid_gmap = google.valid_gmap_address(req, res, req.body.address);
-
-			valid_gmap.then((v_map) => {
-
-				if (!valid_gmap) {
-					return;
+				if (error && Object.keys(error).length > 0) {
+					return res.out(error, status_message.VALIDATION_ERROR);
 				}
 
-				registered_mobile_collection.findOne({
-					mobile: req.body.mobile,
-				}).then((registered_mobile) => {
+				const valid_gmap = google.valid_gmap_address(req, res, req.body.address);
 
-					data.created = common.getDate();
-					data.wallet = req.custom.settings.wallet.register_gift ? parseFloat(req.custom.settings.wallet.register_gift) : 0;
-					data.wallet = registered_mobile ? 0 : data.wallet;
-					data.points = 50;
-					data.convertedPoints = 0;
-					data.status = true;
+				valid_gmap.then((v_map) => {
 
-					data.password = sha1(md5(data.password));
+					if (!valid_gmap) {
+						return;
+					}
 
-					collection.insertOne(data)
-						.then((response) => {
+					registered_mobile_collection.findOne({
+						mobile: req.body.mobile,
+					}).then((registered_mobile) => {
 
-							mail.send_mail(req.custom.settings.sender_emails.register, req.custom.settings.site_name[req.custom.lang], data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch(() => null);
+						data.created = common.getDate();
+						data.wallet = req.custom.settings.wallet.register_gift ? parseFloat(req.custom.settings.wallet.register_gift) : 0;
+						data.wallet = registered_mobile ? 0 : data.wallet;
+						data.points = 50;
+						data.convertedPoints = 0;
+						data.status = true;
 
-							const point_transactions_collection = req.custom.db.client().collection('point_transactions');
-							point_transactions_collection.insertOne({
-								member_id: ObjectID(response.insertedId.toString()),
-								points: 50,
-								createdAt: common.getDate(),
-								expiresAt: moment(common.getDate()).add(9, 'months').toDate(),
-								used: false,
-								trashed: false
-							}).catch((err) => { console.log('Points transaction error: ', err) });
+						data.password = sha1(md5(data.password));
 
-							const point_history_collection = req.custom.db.client().collection('point_history');
-							point_history_collection.insertOne({
-								member_id: ObjectID(response.insertedId.toString()),
-								old_points: 0,
-								new_points: 50,
-								old_wallet: common.getFixedPrice(0),
-								new_wallet: common.getFixedPrice(0),
-								notes: "User registration",
-								type: "register",
-								created: new Date(),
-							}).catch((err) => { console.log('Points history error: ', err) });
+						collection.insertOne(data)
+							.then((response) => {
 
-							registered_mobile_collection.insertOne({
-								mobile: req.body.mobile,
-								created: new Date(),
+								mail.send_mail(req.custom.settings.sender_emails.register, req.custom.settings.site_name[req.custom.lang], data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch(() => null);
+
+								const point_transactions_collection = req.custom.db.client().collection('point_transactions');
+								point_transactions_collection.insertOne({
+									member_id: ObjectID(response.insertedId.toString()),
+									points: 50,
+									createdAt: common.getDate(),
+									expiresAt: moment(common.getDate()).add(9, 'months').toDate(),
+									used: false,
+									trashed: false
+								}).catch((err) => { console.log('Points transaction error: ', err) });
+
+								const point_history_collection = req.custom.db.client().collection('point_history');
+								point_history_collection.insertOne({
+									member_id: ObjectID(response.insertedId.toString()),
+									old_points: 0,
+									new_points: 50,
+									old_wallet: common.getFixedPrice(0),
+									new_wallet: common.getFixedPrice(0),
+									notes: "User registration",
+									type: "register",
+									created: new Date(),
+								}).catch((err) => { console.log('Points history error: ', err) });
+
+								registered_mobile_collection.insertOne({
+									mobile: req.body.mobile,
+									created: new Date(),
+								})
+									.catch(() => { }).then(() => {
+										req.body.city_id = req.body.address.city_id;
+										updateUserCity(req, res);
+										return res.out({
+											message: `${req.custom.local.registered_successfully} ${data.fullname} 
+														${data.wallet > 0 ? (', ' + req.custom.local.mail.registerion_gift(data.wallet)) : ''}`,
+											insertedId: response.insertedId
+										})
+									});
+
 							})
-								.catch(() => { }).then(() => {
-									req.body.city_id = req.body.address.city_id;
-									updateUserCity(req, res);
-									return res.out({
-										message: `${req.custom.local.registered_successfully} ${data.fullname} 
-													${data.wallet > 0 ? (', ' + req.custom.local.mail.registerion_gift(data.wallet)) : ''}`,
-										insertedId: response.insertedId
-									})
-								});
+							.catch((error) => res.out({
+								'message': error.message
+							}, status_message.UNEXPECTED_ERROR));
 
-						})
-						.catch((error) => res.out({
-							'message': error.message
-						}, status_message.UNEXPECTED_ERROR));
+
+					});
 
 
 				});
 
-
 			});
-
-		});
+	} catch (err) {
+		console.log('err: ', err);
+	}
 
 };
 

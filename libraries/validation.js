@@ -198,7 +198,7 @@ function checkIsUnique(req, collectionName, key, value) {
 				[key]: value
 			};
 			if (req.method === 'PUT') {
-				if (req.originalUrl === '/v2/profile/update' && (req.params.Id || req.custom.authorizationObject.member_id)) {
+				if (req.originalUrl === '/v3/profile/update' && (req.params.Id || req.custom.authorizationObject.member_id)) {
 					where._id = {
 						$ne: ObjectID(req.path === '/profile/update' ? req.params.Id : req.custom.authorizationObject.member_id.toString())
 					};
