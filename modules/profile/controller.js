@@ -161,11 +161,9 @@ module.exports.register = function (req, res) {
 				if (!valid_gmap) {
 					return;
 				}
-				console.log('we are here #1');
 				registered_mobile_collection.findOne({
 					mobile: req.body.mobile,
 				}).then((registered_mobile) => {
-					console.log('we are here #2');
 					data.created = common.getDate();
 					data.wallet = req.custom.settings.wallet.register_gift ? parseFloat(req.custom.settings.wallet.register_gift) : 0;
 					data.wallet = registered_mobile ? 0 : data.wallet;
@@ -174,11 +172,12 @@ module.exports.register = function (req, res) {
 					data.status = true;
 
 					data.password = sha1(md5(data.password));
-
+					console.log('we are here #1');
 					collection.insertOne(data)
 						.then((response) => {
+							console.log('we are here #2');
 							mail.send_mail(req.custom.settings.sender_emails.register, req.custom.settings.site_name[req.custom.lang], data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch(() => null);
-
+							console.log('we are here #3');
 							const point_transactions_collection = req.custom.db.client().collection('point_transactions');
 							point_transactions_collection.insertOne({
 								member_id: ObjectID(response.insertedId.toString()),
