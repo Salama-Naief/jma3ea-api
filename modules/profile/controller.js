@@ -140,7 +140,6 @@ module.exports.logout = function (req, res) {
  * @param {Object} res
  */
 module.exports.register = function (req, res) {
-	console.log('we ar running the route...');
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -148,10 +147,9 @@ module.exports.register = function (req, res) {
 	const registered_mobile_collection = req.custom.db.client().collection('registered_mobile');
 	req.custom.model = req.custom.model || require('./model/register');
 
-	console.log('before validation');
 	req.custom.getValidData(req).
 		then(({ data, error }) => {
-
+			console.log('after validation');
 			if (error && Object.keys(error).length > 0) {
 				return res.out(error, status_message.VALIDATION_ERROR);
 			}
@@ -163,11 +161,11 @@ module.exports.register = function (req, res) {
 				if (!valid_gmap) {
 					return;
 				}
-
+				console.log('we are here #1');
 				registered_mobile_collection.findOne({
 					mobile: req.body.mobile,
 				}).then((registered_mobile) => {
-
+					console.log('we are here #2');
 					data.created = common.getDate();
 					data.wallet = req.custom.settings.wallet.register_gift ? parseFloat(req.custom.settings.wallet.register_gift) : 0;
 					data.wallet = registered_mobile ? 0 : data.wallet;
@@ -176,11 +174,9 @@ module.exports.register = function (req, res) {
 					data.status = true;
 
 					data.password = sha1(md5(data.password));
-					console.log('we are here #1');
 
 					collection.insertOne(data)
 						.then((response) => {
-							console.log('we are here #2');
 							mail.send_mail(req.custom.settings.sender_emails.register, req.custom.settings.site_name[req.custom.lang], data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch(() => null);
 
 							const point_transactions_collection = req.custom.db.client().collection('point_transactions');
@@ -204,13 +200,11 @@ module.exports.register = function (req, res) {
 								type: "register",
 								created: new Date(),
 							}).catch((err) => { console.log('Points history error: ', err) });
-							console.log('we are here #3');
 							registered_mobile_collection.insertOne({
 								mobile: req.body.mobile,
 								created: new Date(),
 							})
 								.catch(() => { }).then(() => {
-									console.log('we are here #1');
 									req.body.city_id = req.body.address.city_id;
 									updateUserCity(req, res);
 									return res.out({
