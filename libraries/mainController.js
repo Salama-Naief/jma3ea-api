@@ -43,12 +43,28 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 								};
 
 
+								promises.push(resetPrice(req, i).catch(() => res.out({
+									message: req.custom.local.unexpected_error
+								}, status_message.UNEXPECTED_ERROR)));
+
 								if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
 									const oldPrice = parseFloat(i.old_price);
 									i.price = oldPrice;
-									promises.push(resetPrice(req, i.sku, oldPrice, i).catch(() => res.out({
-										message: req.custom.local.unexpected_error
-									}, status_message.UNEXPECTED_ERROR)));
+								}
+
+								if (req.custom.isVIP == true) {
+									if (i.vip_old_price && i.vip_old_price > 0 && i.vip_discount_price_valid_until && i.vip_discount_price_valid_until < new Date()) {
+										i.vip_price = i.vip_old_price;
+										i.vip_old_price = 0
+									}
+
+									if (i.vip_price && i.vip_price > 0) {
+										i.price = i.vip_price;
+										i.old_price = i.vip_old_price;
+									} else {
+										i.price = i.old_price;
+										i.old_price = 0;
+									}
 								}
 
 
@@ -185,6 +201,12 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 					});
 				}
 
+				if (req.custom.isVIP == true && req.custom.isProducts == true) {
+					projection['vip_price'] = 1;
+					projection['vip_old_price'] = 1;
+					projection['vip_discount_price_valid_until'] = 1;
+				}
+
 				pipeline.push({
 					$project: projection
 				});
@@ -212,18 +234,34 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 							i.picture = `${req.custom.config.media_url}${i.picture}`;
 						}
 
-						if (req.custom.isVIP == true && i.old_price && i.old_price > 0) {
-							i.price = i.old_price;
+						/* if (req.custom.isVIP == true) {
+							i.price = i.old_price && i.old_price > 0 && i.old_price;
 							i.old_price = 0;
-						}
+						} */
 
-						if (req.custom.isProducts == true/*  || req.custom.resetDiscountPrice == true */) {
+						if (req.custom.isProducts == true || collectionName == 'product') {
+							promises.push(resetPrice(req, i).catch(() => res.out({
+								message: req.custom.local.unexpected_error
+							}, status_message.UNEXPECTED_ERROR)));
+
 							if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
 								const oldPrice = parseFloat(i.old_price);
 								i.price = oldPrice;
-								promises.push(resetPrice(req, i.sku, oldPrice).catch(() => res.out({
-									message: req.custom.local.unexpected_error
-								}, status_message.UNEXPECTED_ERROR)));
+							}
+
+							if (req.custom.isVIP == true) {
+								if (i.vip_old_price && i.vip_old_price > 0 && i.vip_discount_price_valid_until && i.vip_discount_price_valid_until < new Date()) {
+									i.vip_price = i.vip_old_price;
+									i.vip_old_price = 0
+								}
+
+								if (i.vip_price && i.vip_price > 0) {
+									i.price = i.vip_price;
+									i.old_price = i.vip_old_price;
+								} else {
+									i.price = i.old_price;
+									i.old_price = 0;
+								}
 							}
 
 							if (i.variants && i.variants.length > 0) {
@@ -234,6 +272,9 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 									return v;
 								});
 							}
+						}
+
+						if (req.custom.isProducts == true) {
 
 							if (i.fast_shipping && i.fast_shipping == true && i.fast_shipping_cost > 0) {
 								i.price += parseFloat(i.fast_shipping_cost);

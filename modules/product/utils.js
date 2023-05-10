@@ -6,8 +6,10 @@
  * @param {Number} old_price
  * @returns
  */
-module.exports.resetPrice = async function (req, sku, old_price, product) {
+module.exports.resetPrice = async function (req, product) {
   try {
+
+    let shouldUpdate = false;
     let newVariants = [];
     if (product && product.variants && product.variants.length > 0) {
       newVariants = product.variants.map(v => {
@@ -16,22 +18,41 @@ module.exports.resetPrice = async function (req, sku, old_price, product) {
           v.price = oldPrice;
           v.old_price = null;
           v.discount_price_valid_until = null;
+
+          shouldUpdate = true;
+
           return v;
         }
       });
     }
+
+    const data = {};
+
+    if (newVariants.length > 0) {
+      data.variants = newVariants;
+    }
+
+    if (product.old_price && product.discount_price_valid_until && product.discount_price_valid_until < new Date()) {
+      data.price = product.old_price;
+      data.old_price = null;
+      data.discount_price_valid_until = null;
+      shouldUpdate = true;
+    }
+
+    if (product.vip_old_price && product.vip_discount_price_valid_until && product.vip_discount_price_valid_until < new Date()) {
+      data.vip_price = product.vip_old_price;
+      data.vip_old_price = null;
+      data.vip_discount_price_valid_until = null;
+      shouldUpdate = true;
+    }
+
     const collection = req.custom.db.client().collection("product");
     const response = await collection.updateOne(
       {
-        sku,
+        sku: product.sku,
       },
       {
-        $set: {
-          old_price: null,
-          price: old_price,
-          discount_price_valid_until: null,
-          variants: newVariants
-        },
+        $set: data,
       }
     );
 

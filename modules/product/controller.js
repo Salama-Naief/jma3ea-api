@@ -117,7 +117,7 @@ module.exports.list = function (req, res) {
 		},
 		"supplier_id": 1,
 		"show_discount_percentage": 1,
-		"discount_price_valid_until": 1
+		"discount_price_valid_until": 1,
 	}, (data) => {
 		if (data.total == 0 && !/^\d+$/.test(name)) {
 			req.custom.clean_filter['$or'] = [
@@ -248,6 +248,7 @@ module.exports.featured = async function (req, res) {
 
 	if (req.custom.isVIP == true) {
 		cache_key += '__vip';
+		req.custom.clean_filter['show_in_vip'] = true;
 	}
 
 
@@ -280,7 +281,7 @@ module.exports.featured = async function (req, res) {
 	req.custom.clean_sort = {
 		"sorting": 1
 	};
-
+	
 	mainController.list(req, res, collectionFeature, {
 		"_id": 1,
 		"name": {
@@ -374,9 +375,24 @@ module.exports.featured = async function (req, res) {
 						i.picture = `${req.custom.config.media_url}${i.picture}`;
 					}
 
-					if (req.custom.isVIP == true && i.old_price && i.old_price > 0) {
+					/* if (req.custom.isVIP == true && i.old_price && i.old_price > 0) {
 						i.price = i.old_price;
 						i.old_price = 0;
+					} */
+
+					if (req.custom.isVIP == true) {
+						if (i.vip_old_price && i.vip_old_price > 0 && i.vip_discount_price_valid_until && i.vip_discount_price_valid_until < new Date()) {
+							i.vip_price = i.vip_old_price;
+							i.vip_old_price = 0
+						}
+
+						if (i.vip_price && i.vip_price > 0) {
+							i.price = i.vip_price;
+							i.old_price = i.vip_old_price;
+						} else {
+							i.price = i.old_price;
+							i.old_price = 0;
+						}
 					}
 
 					i.price = common.getFixedPrice(i.price);
@@ -637,9 +653,24 @@ module.exports.read = async function (req, res) {
 					results.gallery_pictures = [];
 				}
 
-				if (req.custom.isVIP == true && results.old_price && results.old_price > 0) {
+				/* if (req.custom.isVIP == true && results.old_price && results.old_price > 0) {
 					results.price = results.old_price;
 					results.old_price = 0;
+				} */
+
+				if (req.custom.isVIP == true) {
+					if (results.vip_old_price && results.vip_old_price > 0 && results.vip_discount_price_valid_until && results.vip_discount_price_valid_until < new Date()) {
+						results.vip_price = results.vip_old_price;
+						results.vip_old_price = 0
+					}
+
+					if (results.vip_price && results.vip_price > 0) {
+						results.price = results.vip_price;
+						results.old_price = results.vip_old_price;
+					} else {
+						results.price = results.old_price;
+						results.old_price = 0;
+					}
 				}
 
 				results.price = common.getFixedPrice(results.price);
