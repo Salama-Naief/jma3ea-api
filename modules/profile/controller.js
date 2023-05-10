@@ -140,6 +140,7 @@ module.exports.logout = function (req, res) {
  * @param {Object} res
  */
 module.exports.register = function (req, res) {
+	console.log('we ar running the route...');
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -147,6 +148,7 @@ module.exports.register = function (req, res) {
 	const registered_mobile_collection = req.custom.db.client().collection('registered_mobile');
 	req.custom.model = req.custom.model || require('./model/register');
 
+	console.log('before validation');
 	req.custom.getValidData(req).
 		then(({ data, error }) => {
 
@@ -1162,8 +1164,7 @@ function save_failed_payment(req, reason = null) {
 }
 
 function updateUserCity(req, res) {
-	try {
-		req.custom.model = require('./model/updatecity');
+	req.custom.model = require('./model/updatecity');
 	req.custom.getValidData(req).
 		then(({ data, error }) => {
 			if (error) {
@@ -1312,9 +1313,6 @@ function updateUserCity(req, res) {
 			}, status_message.UNEXPECTED_ERROR));
 
 		});
-	} catch(err) {
-		console.log('UPDATE CITY ERR: ', err);
-	}
 }
 
 module.exports.getInfo = getInfo;
