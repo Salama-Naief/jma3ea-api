@@ -62,8 +62,10 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 										i.price = i.vip_price;
 										i.old_price = i.vip_old_price;
 									} else {
-										i.price = i.old_price;
-										i.old_price = 0;
+										if (i.old_price && i.old_price > 0) {
+											i.price = i.old_price;
+											i.old_price = 0;
+										}
 									}
 								}
 
@@ -259,8 +261,10 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 									i.price = i.vip_price;
 									i.old_price = i.vip_old_price;
 								} else {
-									i.price = i.old_price;
-									i.old_price = 0;
+									if (i.old_price && i.old_price > 0) {
+										i.price = i.old_price;
+										i.old_price = 0;
+									}
 								}
 							}
 

@@ -281,7 +281,7 @@ module.exports.featured = async function (req, res) {
 	req.custom.clean_sort = {
 		"sorting": 1
 	};
-	
+
 	mainController.list(req, res, collectionFeature, {
 		"_id": 1,
 		"name": {
@@ -393,8 +393,10 @@ module.exports.featured = async function (req, res) {
 							i.price = i.vip_price;
 							i.old_price = i.vip_old_price;
 						} else {
-							i.price = i.old_price;
-							i.old_price = 0;
+							if (i.old_price && i.old_price > 0) {
+								i.price = i.old_price;
+								i.old_price = 0;
+							}
 						}
 					}
 
@@ -671,8 +673,10 @@ module.exports.read = async function (req, res) {
 						results.price = results.vip_price;
 						results.old_price = results.vip_old_price;
 					} else {
-						results.price = results.old_price;
-						results.old_price = 0;
+						if (results.old_price && results.old_price > 0) {
+							results.price = results.old_price;
+							results.old_price = 0;
+						}
 					}
 				}
 
