@@ -149,7 +149,6 @@ module.exports.register = function (req, res) {
 
 	req.custom.getValidData(req).
 		then(({ data, error }) => {
-			console.log(error);
 
 			if (error && Object.keys(error).length > 0) {
 				return res.out(error, status_message.VALIDATION_ERROR);
@@ -175,10 +174,11 @@ module.exports.register = function (req, res) {
 					data.status = true;
 
 					data.password = sha1(md5(data.password));
+					console.log('we are here #1');
 
 					collection.insertOne(data)
 						.then((response) => {
-
+							console.log('we are here #2');
 							mail.send_mail(req.custom.settings.sender_emails.register, req.custom.settings.site_name[req.custom.lang], data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch(() => null);
 
 							const point_transactions_collection = req.custom.db.client().collection('point_transactions');
@@ -202,12 +202,13 @@ module.exports.register = function (req, res) {
 								type: "register",
 								created: new Date(),
 							}).catch((err) => { console.log('Points history error: ', err) });
-
+							console.log('we are here #3');
 							registered_mobile_collection.insertOne({
 								mobile: req.body.mobile,
 								created: new Date(),
 							})
 								.catch(() => { }).then(() => {
+									console.log('we are here #1');
 									req.body.city_id = req.body.address.city_id;
 									updateUserCity(req, res);
 									return res.out({
@@ -1161,7 +1162,8 @@ function save_failed_payment(req, reason = null) {
 }
 
 function updateUserCity(req, res) {
-	req.custom.model = require('./model/updatecity');
+	try {
+		req.custom.model = require('./model/updatecity');
 	req.custom.getValidData(req).
 		then(({ data, error }) => {
 			if (error) {
@@ -1310,6 +1312,9 @@ function updateUserCity(req, res) {
 			}, status_message.UNEXPECTED_ERROR));
 
 		});
+	} catch(err) {
+		console.log('UPDATE CITY ERR: ', err);
+	}
 }
 
 module.exports.getInfo = getInfo;
