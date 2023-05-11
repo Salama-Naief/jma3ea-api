@@ -1091,6 +1091,8 @@ async function products_to_save(products, user, req, to_display = false) {
 			prod.categories = [];
 		}
 
+		console.log('SETTINGS: ', req.custom.settings);
+
 		prod.supplier_id = prod.supplier_id || req.custom.settings['site_id'];
 		const supplier = all_suppliers.find((s) => prod.supplier_id && s._id.toString() == prod.supplier_id.toString());
 		prod.supplier = supplier ? {
