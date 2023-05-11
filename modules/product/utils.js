@@ -46,7 +46,7 @@ module.exports.resetPrice = async function (req, product) {
       shouldUpdate = true;
     }
 
-    if (!shouldUpdate && !product.sku) {
+    if (!shouldUpdate || !product.sku) {
       return;
     }
 
