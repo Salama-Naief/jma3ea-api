@@ -117,7 +117,7 @@ module.exports.buy = async function (req, res) {
 	const up_cart = Object.assign({}, user.cart);
 	req.custom.limit = 0;
 
-	req.custom.idProducts = true;
+	//req.custom.isProducts = true;
 	mainController.list(req, res, 'product', {
 		"_id": 1,
 		"soft_code": 1,

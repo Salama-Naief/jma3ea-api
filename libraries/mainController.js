@@ -203,7 +203,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 					});
 				}
 
-				if (req.custom.isVIP == true && req.custom.isProducts == true) {
+				if (req.custom.isVIP == true && (req.custom.isProducts == true || collectionName == 'product')) {
 					projection['vip_price'] = 1;
 					projection['vip_old_price'] = 1;
 					projection['vip_discount_price_valid_until'] = 1;
