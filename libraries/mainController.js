@@ -268,14 +268,14 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 								}
 							}
 
-							if (i.variants && i.variants.length > 0) {
+							/* if (i.variants && i.variants.length > 0) {
 								i.variants = i.variants.map(v => {
 									if (v.old_price && v.discount_price_valid_until && v.discount_price_valid_until < new Date()) {
 										v.price = v.old_price;
 									}
 									return v;
 								});
-							}
+							} */
 						}
 
 						if (req.custom.isProducts == true) {
