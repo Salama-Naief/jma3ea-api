@@ -20,9 +20,9 @@ module.exports.resetPrice = async function (req, product) {
           v.discount_price_valid_until = null;
 
           shouldUpdate = true;
-
-          return v;
         }
+
+        return v;
       });
     }
 
@@ -44,6 +44,10 @@ module.exports.resetPrice = async function (req, product) {
       data.vip_old_price = null;
       data.vip_discount_price_valid_until = null;
       shouldUpdate = true;
+    }
+
+    if (!shouldUpdate && !product.sku) {
+      return;
     }
 
     const collection = req.custom.db.client().collection("product");
