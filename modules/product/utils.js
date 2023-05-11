@@ -50,6 +50,8 @@ module.exports.resetPrice = async function (req, product) {
       return;
     }
 
+    console.log('resetting product price... ', product.sku);
+
     const collection = req.custom.db.client().collection("product");
     const response = await collection.updateOne(
       {
