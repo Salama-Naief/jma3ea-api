@@ -248,7 +248,15 @@ module.exports.featured = async function (req, res) {
 
 	if (req.custom.isVIP == true) {
 		cache_key += '__vip';
-		req.custom.clean_filter['show_in_vip'] = true;
+		req.custom.clean_filter['$or'] = [
+			{ 'show_in_vip': true },
+			{ 'only_vip': true }
+		]
+	} else {
+		req.custom.clean_filter['$or'] = [
+			{ 'only_vip': { $exists: false } },
+			{ 'only_vip': false }
+		]
 	}
 
 
