@@ -103,6 +103,13 @@ module.exports.buy = async function (req, res) {
 		}, status_message.VALIDATION_ERROR);
 	}
 
+	if (req.body.payment_method == 'knet') {
+		console.log('///////////////////////////////////////////////////////////////////////////////////////////////////');
+		console.log('QUERY: ', req.query);
+		console.log('BODY IS VIP: ', req.body.isVIP);
+		console.log('///////////////////////////////////////////////////////////////////////////////////////////////////');
+	}
+
 	let user = req.custom.authorizationObject;
 	user.cart = user.cart || {};
 	let prods = [];
