@@ -876,9 +876,19 @@ module.exports.list = async function (req, res) {
 			} */
 
 			let total = parseFloat(total_prods) + parseFloat(shipping_cost);
+			if (out_coupon.code === 'SH22') {
+				console.log('========================================================================');
+				console.log('coupon value: ', out_coupon.value);
+				console.log('total_prods: ', total_prods);
+				console.log('total: ', total);
+			}
 			if (general_coupon && parseFloat(total_prods) > out_coupon.value) {
 				total -= parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
 			}
+			if (out_coupon.code === 'SH22') {
+				console.log('total after: ', total)
+				console.log('========================================================================');
+			};
 			total = total > 0 ? total : 0;
 
 			const user_collection = req.custom.db.client().collection('member');
