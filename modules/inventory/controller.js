@@ -62,6 +62,33 @@ module.exports.list = async function (req, res) {
                     }
                 }
             }, */
+            {
+                $lookup: {
+                    from: "product",
+                    let: { supplierId: "$_id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$supplier_id", "$$supplierId"] },
+                                        { $ne: ["$supplier_id", null] }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            $limit: 1
+                        },
+                        {
+                            $project: {
+                                _id: 1,
+                            }
+                        }
+                    ],
+                    as: "products"
+                }
+            },
             // Stage 4
             {
                 $sort: {
