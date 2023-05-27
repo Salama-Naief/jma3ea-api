@@ -878,7 +878,8 @@ module.exports.list = async function (req, res) {
 			let total = parseFloat(total_prods) + parseFloat(shipping_cost);
 			if (out_coupon.code === 'SH22') {
 				console.log('========================================================================');
-				console.log('coupon value: ', out_coupon.value);
+				console.log('coupon value: ', out_coupon.value, (totalToApplyCoupon * general_coupon.percent_value) / 100);
+				console.log('total to apply coupon: ', totalToApplyCoupon);
 				console.log('total_prods: ', total_prods);
 				console.log('total: ', total);
 			}
