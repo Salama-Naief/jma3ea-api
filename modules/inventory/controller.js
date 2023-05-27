@@ -47,7 +47,7 @@ module.exports.list = async function (req, res) {
         const supplier_collection = "supplier";
         const collection = req.custom.db.client().collection(supplier_collection);
         const pipeline = [
-            {
+            /* {
                 $lookup: {
                     from: 'product',
                     localField: '_id',
@@ -61,7 +61,7 @@ module.exports.list = async function (req, res) {
                         $ne: []
                     }
                 }
-            },
+            }, */
             // Stage 4
             {
                 $sort: {
@@ -70,7 +70,7 @@ module.exports.list = async function (req, res) {
             },
             // Stage 2
             {
-                $limit: 3
+                $limit: 1000
             },
             // Stage 3
             {
@@ -123,7 +123,7 @@ module.exports.list = async function (req, res) {
                     }
 
                     //results.unshift({ _id: req.custom.settings.site_name['en'], name: req.custom.settings.site_name[req.custom.lang || req.custom.config.local], picture: "https://jm3eia.com/assets/img/logo.png" });
-                    console.log('SUPPLIERS RESULTS: ', results);
+                    //console.log('SUPPLIERS RESULTS: ', results);
                     resolve(results);
                 });
             }).catch(() => null);
