@@ -305,7 +305,6 @@ module.exports.featured = async function (req, res) {
 				const filteredSlides = slides.filter(s => s.features && s.features.map(f => f.toString()).includes(c._id.toString()) && s.language_code == req.custom.lang);
 				if (c._id.toString() == '6455fffd20ed6601d895d416') {
 					console.log('slides: ', slides.length, features.data.map(f => ObjectID(f._id.toString())));
-					console.log('filtered slides: ', slides.filter(s => s.features && s.features.map(f => f.toString()).includes(c._id.toString())), filteredSlides.length);
 				}
 				c.slides = filteredSlides.map(s => ({ _id: s._id, name: s.name, picture: `${req.custom.config.media_url}${s.picture}`, url: s.url }));
 				const filter = {};
