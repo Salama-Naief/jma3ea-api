@@ -299,13 +299,13 @@ module.exports.featured = async function (req, res) {
 	}, async (features) => {
 		try {
 			const slideCollection = req.custom.db.client().collection("slide");
-			const slides = await slideCollection.find({ features: { $in: features.data.map(f => f._id.toString()) } }).toArray();
+			const slides = await slideCollection.find({ features: { $in: [...features.data.map(f => ObjectID(f._id.toString())), features.data.map(f => f._id.toString())] } }).toArray();
 			const featured = [];
 			for (const c of features.data) {
 				const filteredSlides = slides.filter(s => s.features && s.features.map(f => f.toString()).includes(c._id.toString()) && s.language_code == req.custom.lang);
-				if (c._id.toString() == '6455fffd20ed6601d895d416') {
+				/* if (c._id.toString() == '6455fffd20ed6601d895d416') {
 					console.log('slides: ', slides.length, features.data.map(f => ObjectID(f._id.toString())));
-				}
+				} */
 				c.slides = filteredSlides.map(s => ({ _id: s._id, name: s.name, picture: `${req.custom.config.media_url}${s.picture}`, url: s.url }));
 				const filter = {};
 				filter['status'] = true;
