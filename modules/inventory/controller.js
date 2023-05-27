@@ -47,7 +47,7 @@ module.exports.list = async function (req, res) {
         const supplier_collection = "supplier";
         const collection = req.custom.db.client().collection(supplier_collection);
         const pipeline = [
-            /* {
+            {
                 $lookup: {
                     from: 'product',
                     localField: '_id',
@@ -61,7 +61,7 @@ module.exports.list = async function (req, res) {
                         $ne: []
                     }
                 }
-            }, */
+            },
             // Stage 4
             {
                 $sort: {
