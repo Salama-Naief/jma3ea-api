@@ -70,7 +70,7 @@ module.exports.list = async function (req, res) {
             },
             // Stage 2
             {
-                $limit: 100
+                $limit: 3
             },
             // Stage 3
             {
