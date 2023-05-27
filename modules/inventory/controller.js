@@ -13,7 +13,7 @@ module.exports.list = async function (req, res) {
 
     const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
 
-    if (cache_key) {
+    if (false) {
         const cached_data = await cache.get(cache_key).catch(() => null);
         if (cached_data) {
             return res.out({ count: cached_data.length, data: cached_data });
@@ -115,6 +115,7 @@ module.exports.list = async function (req, res) {
             if (inventory.logo && inventory.logo != undefined) {
                 inventory.logo = inventory.logo.includes(req.custom.config.media_url) ? inventory.logo : (req.custom.config.media_url + inventory.logo);
             }
+            console.log('FILTERS: ', req.custom.clean_filter);
             inventory.suppliers = await new Promise((resolve, reject) => {
                 collection.aggregate([{ $match: req.custom.clean_filter }, ...pipeline], options).toArray((err, results) => {
                     if (err) {
@@ -126,6 +127,7 @@ module.exports.list = async function (req, res) {
                     resolve(results);
                 });
             }).catch(() => null);
+            console.log('INVENTORY: ', inventory.name, inventory.suppliers);
             if (inventory && inventory.suppliers && inventory.suppliers.length > 0) {
                 inventory.suppliers = inventory.suppliers.map(i => {
                     if (i.picture && i.picture != undefined) {

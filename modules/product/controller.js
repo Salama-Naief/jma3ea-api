@@ -260,7 +260,7 @@ module.exports.featured = async function (req, res) {
 	}
 
 
-	if (cache_key) {
+	if (false) {
 		let cached_data = await cache.get(cache_key).catch(() => null);
 		if (cached_data) {
 			cached_data = cached_data.map((feature_category) => {
@@ -290,6 +290,7 @@ module.exports.featured = async function (req, res) {
 		"sorting": 1
 	};
 
+	req.custom.cache_key = false;
 	mainController.list(req, res, collectionFeature, {
 		"_id": 1,
 		"name": {
@@ -297,10 +298,13 @@ module.exports.featured = async function (req, res) {
 		}
 	}, async (features) => {
 		const slideCollection = req.custom.db.client().collection("slide");
-		const slides = await slideCollection.find({ features: { $in: features.data.map(f => f._id.toString()) } }).toArray() || [];
+		const slides = await slideCollection.find({ features: { $in: features.data.map(f => ObjectID(f._id.toString())) } }).toArray() || [];
 		const featured = [];
 		for (const c of features.data) {
 			const filteredSlides = slides.filter(s => s.features && s.features.map(f => f.toString()).includes(c._id.toString()) && s.language_code == req.custom.lang);
+			if (c._id.toString() == '5fd787969f41233a11a68098') {
+				console.log('filtered slides: ', slides.filter(s => s.features && s.features.map(f => f.toString()).includes(c._id.toString())), filteredSlides);
+			}
 			c.slides = filteredSlides.map(s => ({ _id: s._id, name: s.name, picture: `${req.custom.config.media_url}${s.picture}`, url: s.url }));
 			const filter = {};
 			filter['status'] = true;

@@ -18,8 +18,9 @@ module.exports.check = function (req, res) {
 	const cache = req.custom.cache;
 	const local = req.custom.local;
 
-	if (!req.body.appId || !req.body.appSecret) {
+	console.log(req.body);
 
+	if (!req.body.appId || !req.body.appSecret) {
 		return res.out({
 			message: local.failed_create_auth_app
 		}, status_message.INVALID_APP_AUTHENTICATION);
@@ -36,12 +37,12 @@ module.exports.check = function (req, res) {
 	collection.findOne(where).catch(() => res.out({ message: local.failed_create_auth_app }, status_message.UNEXPECTED_ERROR)).
 		then((theapp) => {
 
-
 			if (!theapp) {
 				return res.out({
 					message: local.failed_auth_user
 				}, status_message.UNEXPECTED_ERROR);
 			}
+
 
 			bcrypt.compare(appSecret, theapp.appSecret, function (err, valid) {
 				if (err || !valid) {
