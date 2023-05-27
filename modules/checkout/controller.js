@@ -945,7 +945,7 @@ module.exports.list = async function (req, res) {
 
 			earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
 
-			if (out_coupon.code === 'SH22') console.log('OUT COUPON: ', out_coupon);
+			if (out_coupon.code === 'SH22') console.log('OUT COUPON: ', out_coupon, products.map(p => p.sku));
 
 			res.out({
 				subtotal: common.getFixedPrice(total_prods),
