@@ -106,7 +106,7 @@ module.exports.list = async function (req, res) {
 
         //req.custom.clean_filter = await filter_internal_suppliers_by_city(req, true);
         for (let inventory of out.data) {
-            req.custom.clean_filter = { inventory_id: ObjectID(inventory._id.toString())/* , cities: ObjectID(cityid) */, is_external: true, status: true };
+            req.custom.clean_filter = { inventory_id: ObjectID(inventory._id.toString()), cities: ObjectID(cityid), is_external: true, status: true };
             inventory.min_value = inventory.min_order;
             inventory.min_delivery_time = inventory.delivery_time;
             if (inventory.picture && inventory.picture != undefined) {
@@ -119,11 +119,12 @@ module.exports.list = async function (req, res) {
             inventory.suppliers = await new Promise((resolve, reject) => {
                 collection.aggregate([{ $match: req.custom.clean_filter }, ...pipeline], options).toArray((err, results) => {
                     if (err) {
+                        console.log('SUPPLIERS ERROR: ', err);
                         reject(err);
                     }
 
                     //results.unshift({ _id: req.custom.settings.site_name['en'], name: req.custom.settings.site_name[req.custom.lang || req.custom.config.local], picture: "https://jm3eia.com/assets/img/logo.png" });
-
+                    console.log('SUPPLIER RESULTS: ', results);
                     resolve(results);
                 });
             }).catch(() => null);
