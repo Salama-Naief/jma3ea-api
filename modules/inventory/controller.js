@@ -89,6 +89,13 @@ module.exports.list = async function (req, res) {
                     as: "products"
                 }
             },
+            {
+                $match: {
+                    products: {
+                        $ne: []
+                    }
+                }
+            },
             // Stage 4
             {
                 $sort: {
