@@ -47,7 +47,7 @@ module.exports.list = async function (req, res) {
         const supplier_collection = "supplier";
         const collection = req.custom.db.client().collection(supplier_collection);
         const pipeline = [
-            {
+            /* {
                 $lookup: {
                     from: 'product',
                     localField: '_id',
@@ -61,7 +61,7 @@ module.exports.list = async function (req, res) {
                         $ne: []
                     }
                 }
-            },
+            }, */
             // Stage 4
             {
                 $sort: {
@@ -70,7 +70,7 @@ module.exports.list = async function (req, res) {
             },
             // Stage 2
             {
-                $limit: 1000
+                $limit: 100
             },
             // Stage 3
             {
@@ -115,7 +115,6 @@ module.exports.list = async function (req, res) {
             if (inventory.logo && inventory.logo != undefined) {
                 inventory.logo = inventory.logo.includes(req.custom.config.media_url) ? inventory.logo : (req.custom.config.media_url + inventory.logo);
             }
-            console.log('FILTERS: ', req.custom.clean_filter);
             inventory.suppliers = await new Promise((resolve, reject) => {
                 collection.aggregate([{ $match: req.custom.clean_filter }, ...pipeline], options).toArray((err, results) => {
                     if (err) {
@@ -124,11 +123,10 @@ module.exports.list = async function (req, res) {
                     }
 
                     //results.unshift({ _id: req.custom.settings.site_name['en'], name: req.custom.settings.site_name[req.custom.lang || req.custom.config.local], picture: "https://jm3eia.com/assets/img/logo.png" });
-                    console.log('SUPPLIER RESULTS: ', results);
+                    console.log('SUPPLIERS RESULTS: ', results);
                     resolve(results);
                 });
             }).catch(() => null);
-            console.log('INVENTORY: ', inventory.name, inventory.suppliers);
             if (inventory && inventory.suppliers && inventory.suppliers.length > 0) {
                 inventory.suppliers = inventory.suppliers.map(i => {
                     if (i.picture && i.picture != undefined) {
