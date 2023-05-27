@@ -876,18 +876,9 @@ module.exports.list = async function (req, res) {
 			} */
 
 			let total = parseFloat(total_prods) + parseFloat(shipping_cost);
-			if (out_coupon.code === 'SH22') {
-				console.log('========================================================================');
-				console.log('coupon value: ', out_coupon.value, totalToApplyCoupon * (parseFloat(general_coupon.percent_value) / 100));
-				console.log('total to apply coupon: ', totalToApplyCoupon, general_coupon.percent_value, general_coupon.percent_value / 100, totalToApplyCoupon * (general_coupon.percent_value / 100));
-			}
 			if (general_coupon && parseFloat(total_prods) > out_coupon.value) {
 				total -= parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
 			}
-			if (out_coupon.code === 'SH22') {
-				console.log('total after: ', total)
-				console.log('========================================================================');
-			};
 			total = total > 0 ? total : 0;
 
 			const user_collection = req.custom.db.client().collection('member');
@@ -953,6 +944,8 @@ module.exports.list = async function (req, res) {
 			}
 
 			earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
+
+			if (out_coupon.code === 'SH22') console.log('OUT COUPON: ', out_coupon);
 
 			res.out({
 				subtotal: common.getFixedPrice(total_prods),
