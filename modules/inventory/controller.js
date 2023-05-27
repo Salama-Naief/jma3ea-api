@@ -126,7 +126,7 @@ module.exports.list = async function (req, res) {
                     resolve(results);
                 });
             }).catch(() => null);
-            if (inventory.suppliers.length > 0) {
+            if (inventory && inventory.suppliers && inventory.suppliers.length > 0) {
                 inventory.suppliers = inventory.suppliers.map(i => {
                     if (i.picture && i.picture != undefined) {
                         if (typeof i.picture === 'object') {
