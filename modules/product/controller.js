@@ -297,158 +297,162 @@ module.exports.featured = async function (req, res) {
 			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 		}
 	}, async (features) => {
-		const slideCollection = req.custom.db.client().collection("slide");
-		const slides = await slideCollection.find({ features: { $in: features.data.map(f => ObjectID(f._id.toString())) } }).toArray() || [];
-		const featured = [];
-		for (const c of features.data) {
-			const filteredSlides = slides.filter(s => s.features && s.features.map(f => f.toString()).includes(c._id.toString()) && s.language_code == req.custom.lang);
-			if (c._id.toString() == '5fd787969f41233a11a68098') {
-				console.log('slides: ', slides.length, features.data.map(f => ObjectID(f._id.toString())));
-				console.log('filtered slides: ', slides.filter(s => s.features && s.features.map(f => f.toString()).includes(c._id.toString())), filteredSlides.length);
-			}
-			c.slides = filteredSlides.map(s => ({ _id: s._id, name: s.name, picture: `${req.custom.config.media_url}${s.picture}`, url: s.url }));
-			const filter = {};
-			filter['status'] = true;
-			//filter['feature_id'] = c._id;
-			filter['$or'] = [{ 'feature_id': c._id }, { 'features.feature_id': c._id }]
-			const projection = {
-				"_id": 0,
-				"sku": 1,
-				"name": {
-					$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
-				},
-				"picture": 1,
-				"old_price": 1,
-				"price": 1,
-				"availability": `$prod_n_storeArr`,
-				"has_variants": { $isArray: "$variants" },
-				"prod_n_storeArr": 1,
-				"prod_n_categoryArr": 1,
-				"max_quantity_cart": {
-					$ifNull: ["$max_quantity_cart", 0]
-				},
-				"supplier_id": 1,
-				"show_discount_percentage": 1,
-				"discount_price_valid_until": 1,
-				"vip_old_price": 1,
-				"vip_price": 1,
-				"vip_discount_price_valid_until": 1,
-			};
-
-			/* const sort = {
-				"features.sorting": 1,
-				"feature_sorting": 1,
-				"created": -1
-			}; */
-
-			// Pipeline
-			const pipeline = [
-				// Stage 1
-				{
-					$match: filter
-				},
-				// Stage 
-				{
-					$addFields: {
-						featureSorting: {
-							$ifNull: ["$features.sorting", "$feature_sorting"]
-						}
-					}
-				},
-				// Stage 4
-				{
-					$sort: {
-						featureSorting: 1,
-						"created": -1
-					}
-				},
-				// Stage 2
-				{
-					$limit: 25
-				},
-				// Stage 3
-				{
-					$project: projection
+		try {
+			const slideCollection = req.custom.db.client().collection("slide");
+			const slides = await slideCollection.find({ features: { $in: features.data.map(f => ObjectID(f._id.toString())) } }).toArray() || [];
+			const featured = [];
+			for (const c of features.data) {
+				const filteredSlides = slides.filter(s => s.features && s.features.map(f => f.toString()).includes(c._id.toString()) && s.language_code == req.custom.lang);
+				if (c._id.toString() == '6455fffd20ed6601d895d416') {
+					console.log('slides: ', slides.length, features.data.map(f => ObjectID(f._id.toString())));
+					console.log('filtered slides: ', slides.filter(s => s.features && s.features.map(f => f.toString()).includes(c._id.toString())), filteredSlides.length);
 				}
-			];
-			const options = {
-				"allowDiskUse": true
-			};
+				c.slides = filteredSlides.map(s => ({ _id: s._id, name: s.name, picture: `${req.custom.config.media_url}${s.picture}`, url: s.url }));
+				const filter = {};
+				filter['status'] = true;
+				//filter['feature_id'] = c._id;
+				filter['$or'] = [{ 'feature_id': c._id }, { 'features.feature_id': c._id }]
+				const projection = {
+					"_id": 0,
+					"sku": 1,
+					"name": {
+						$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+					},
+					"picture": 1,
+					"old_price": 1,
+					"price": 1,
+					"availability": `$prod_n_storeArr`,
+					"has_variants": { $isArray: "$variants" },
+					"prod_n_storeArr": 1,
+					"prod_n_categoryArr": 1,
+					"max_quantity_cart": {
+						$ifNull: ["$max_quantity_cart", 0]
+					},
+					"supplier_id": 1,
+					"show_discount_percentage": 1,
+					"discount_price_valid_until": 1,
+					"vip_old_price": 1,
+					"vip_price": 1,
+					"vip_discount_price_valid_until": 1,
+				};
 
-			const collection = req.custom.db.client().collection(collectionName);
-			c.products = await new Promise((resolve, reject) => {
-				collection.aggregate(pipeline, options).toArray((err, results) => {
-					if (err) {
-						console.log('ERROR: ', err);
-						reject(err);
-					}
-					resolve(results);
-				});
-			}).catch(() => null);
-			if (c.products.length > 0) {
-				c.products = c.products.map((i) => {
-					if (i.picture) {
-						i.picture = `${req.custom.config.media_url}${i.picture}`;
-					}
+				/* const sort = {
+					"features.sorting": 1,
+					"feature_sorting": 1,
+					"created": -1
+				}; */
 
-					/* if (req.custom.isVIP == true && i.old_price && i.old_price > 0) {
-						i.price = i.old_price;
-						i.old_price = 0;
-					} */
-
-					if (req.custom.isVIP == true) {
-						if (i.vip_old_price && i.vip_old_price > 0 && i.vip_discount_price_valid_until && i.vip_discount_price_valid_until < new Date()) {
-							i.vip_price = i.vip_old_price;
-							i.vip_old_price = 0
-						}
-
-						if (i.vip_price && i.vip_price > 0) {
-							i.price = i.vip_price;
-							i.old_price = i.vip_old_price;
-						} else {
-							if (i.old_price && i.old_price > 0) {
-								i.price = i.old_price;
-								i.old_price = 0;
+				// Pipeline
+				const pipeline = [
+					// Stage 1
+					{
+						$match: filter
+					},
+					// Stage 
+					{
+						$addFields: {
+							featureSorting: {
+								$ifNull: ["$features.sorting", "$feature_sorting"]
 							}
 						}
-					}
-
-					i.price = common.getFixedPrice(i.price);
-					i.old_price = common.getFixedPrice(i.old_price || 0);
-
-					const quantity_store = i.availability ? i.availability.find((p_n_s) => {
-						if (!p_n_s.feed_from_store_id && p_n_s.store_id.toString() === req.custom.authorizationObject.store_id.toString()) {
-							return p_n_s;
-						} else if (p_n_s.feed_from_store_id) {
-							const temp_store = i.availability.find((t_s) => t_s.store_id.toString() == p_n_s.feed_from_store_id.toString());
-							p_n_s.quantity = temp_store ? parseInt(temp_store.quantity) : 0;
-							return p_n_s;
+					},
+					// Stage 4
+					{
+						$sort: {
+							featureSorting: 1,
+							"created": -1
 						}
-					}) : null;
+					},
+					// Stage 2
+					{
+						$limit: 25
+					},
+					// Stage 3
+					{
+						$project: projection
+					}
+				];
+				const options = {
+					"allowDiskUse": true
+				};
 
-					i.availability = quantity_store && quantity_store.quantity > 0;
+				const collection = req.custom.db.client().collection(collectionName);
+				c.products = await new Promise((resolve, reject) => {
+					collection.aggregate(pipeline, options).toArray((err, results) => {
+						if (err) {
+							console.log('ERROR: ', err);
+							reject(err);
+						}
+						resolve(results);
+					});
+				}).catch(() => null);
+				if (c.products.length > 0) {
+					c.products = c.products.map((i) => {
+						if (i.picture) {
+							i.picture = `${req.custom.config.media_url}${i.picture}`;
+						}
 
-					const prod_exists_in_cart = i.sku && Object.keys(user.cart).indexOf(i.sku.toString()) > -1;
-					i.cart_status = {
-						is_exists: prod_exists_in_cart,
-						quantity: prod_exists_in_cart ? user.cart[i.sku] : 0
-					};
-					i.wishlist_status = {
-						is_exists: i.sku && user.wishlist.indexOf(i.sku.toString()) > -1
-					};
+						/* if (req.custom.isVIP == true && i.old_price && i.old_price > 0) {
+							i.price = i.old_price;
+							i.old_price = 0;
+						} */
 
-					return i;
-				});
-				c.products = c.products.filter((i) => i.availability);
-				featured.push(c);
+						if (req.custom.isVIP == true) {
+							if (i.vip_old_price && i.vip_old_price > 0 && i.vip_discount_price_valid_until && i.vip_discount_price_valid_until < new Date()) {
+								i.vip_price = i.vip_old_price;
+								i.vip_old_price = 0
+							}
+
+							if (i.vip_price && i.vip_price > 0) {
+								i.price = i.vip_price;
+								i.old_price = i.vip_old_price;
+							} else {
+								if (i.old_price && i.old_price > 0) {
+									i.price = i.old_price;
+									i.old_price = 0;
+								}
+							}
+						}
+
+						i.price = common.getFixedPrice(i.price);
+						i.old_price = common.getFixedPrice(i.old_price || 0);
+
+						const quantity_store = i.availability ? i.availability.find((p_n_s) => {
+							if (!p_n_s.feed_from_store_id && p_n_s.store_id.toString() === req.custom.authorizationObject.store_id.toString()) {
+								return p_n_s;
+							} else if (p_n_s.feed_from_store_id) {
+								const temp_store = i.availability.find((t_s) => t_s.store_id.toString() == p_n_s.feed_from_store_id.toString());
+								p_n_s.quantity = temp_store ? parseInt(temp_store.quantity) : 0;
+								return p_n_s;
+							}
+						}) : null;
+
+						i.availability = quantity_store && quantity_store.quantity > 0;
+
+						const prod_exists_in_cart = i.sku && Object.keys(user.cart).indexOf(i.sku.toString()) > -1;
+						i.cart_status = {
+							is_exists: prod_exists_in_cart,
+							quantity: prod_exists_in_cart ? user.cart[i.sku] : 0
+						};
+						i.wishlist_status = {
+							is_exists: i.sku && user.wishlist.indexOf(i.sku.toString()) > -1
+						};
+
+						return i;
+					});
+					c.products = c.products.filter((i) => i.availability);
+					featured.push(c);
+				}
 			}
-		}
 
-		if (cache_key && featured.length > 0) {
-			cache.set(cache_key, featured, req.custom.config.cache.life_time).catch(() => null);
-		}
+			if (cache_key && featured.length > 0) {
+				cache.set(cache_key, featured, req.custom.config.cache.life_time).catch(() => null);
+			}
 
-		res.out(featured);
+			res.out(featured);
+		} catch (err) {
+			console.log('ERROR: ', err);
+		}
 	});
 };
 
