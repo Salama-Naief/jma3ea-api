@@ -284,6 +284,10 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 								i.price += parseFloat(i.fast_shipping_cost);
 							}
 
+							if (i.prod_n_storeArr && i.prod_n_storeArr.length > 0) {
+								i.prod_n_storeArr = i.prod_n_storeArr.map(p => ({ ...p, quantity: parseInt(p.quantity.toString()) }));
+							}
+
 							i.price = common.getFixedPrice(i.price);
 							i.old_price = common.getFixedPrice(i.old_price || 0);
 
