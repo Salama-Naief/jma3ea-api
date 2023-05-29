@@ -192,7 +192,8 @@ module.exports.normalize = async (req, res) => {
 
     try {
         const resposne = await collection.updateMany({}, { $set: { free_shipping: false, is_gift: false, fast_shipping: false } });
-        return res.out('DONE: ', resposne.modifiedCount);
+        console.log('DONE: ', resposne);
+        return res.out('DONE: ' + resposne.modifiedCount);
     } catch (err) {
         console.log('ERROR: ', err);
         return res.out(err);
