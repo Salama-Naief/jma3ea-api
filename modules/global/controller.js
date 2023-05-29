@@ -36,7 +36,6 @@ module.exports.cleanProductsQuantities = async function (req, res) {
     }
 }
 
-
 module.exports.cleanProductsStatuses = async function (req, res) {
     try {
         const collection = req.custom.db.client().collection("product");
@@ -78,7 +77,6 @@ module.exports.cleanProductsStatuses = async function (req, res) {
     }
 }
 
-
 module.exports.convertStrToInt = async function (req, res) {
     try {
         const collection = req.custom.db.client().collection("product");
@@ -115,7 +113,6 @@ module.exports.convertWalletStrToFloat = async function (req, res) {
         res.Send("Error");
     }
 }
-
 
 module.exports.pointsToTransaction = async (req, res) => {
     /**
@@ -187,4 +184,17 @@ module.exports.pointsToTransaction = async (req, res) => {
     });
 
     return res.out('Done!');
+}
+
+
+module.exports.normalize = async (req, res) => {
+    const collection = req.custom.db.client().collection('product');
+
+    try {
+        const resposne = await collection.updateMany({}, { $set: { free_shipping: false, is_gift: false, fast_shipping: false } });
+        return res.out('DONE: ', resposne.modifiedCount);
+    } catch (err) {
+        console.log('ERROR: ', err);
+        return res.out(err);
+    }
 }
