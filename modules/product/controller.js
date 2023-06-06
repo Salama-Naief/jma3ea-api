@@ -474,6 +474,8 @@ module.exports.read = async function (req, res) {
 		cache_key += '__vip';
 	}
 
+	cache_key = false;
+
 	req.custom.ignoreCity = true;
 	req.custom.authorizationObject.store_id = req.custom.authorizationObject.store_id || '000000000000000000000000';
 
