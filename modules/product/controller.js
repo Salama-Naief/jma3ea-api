@@ -397,7 +397,7 @@ module.exports.featured = async function (req, res) {
 						} */
 
 						if (req.custom.isVIP == true) {
-							if (i.vip_old_price && i.vip_old_price > 0 && i.vip_discount_price_valid_until && i.vip_discount_price_valid_until < new Date()) {
+							if (i.vip_old_price && i.vip_old_price > 0 && (i.vip_discount_price_valid_until ? i.vip_discount_price_valid_until < new Date() : true)) {
 								i.vip_price = i.vip_old_price;
 								i.vip_old_price = 0
 							}
@@ -680,7 +680,7 @@ module.exports.read = async function (req, res) {
 				} */
 
 				if (req.custom.isVIP == true) {
-					if (results.vip_old_price && results.vip_old_price > 0 && results.vip_discount_price_valid_until && results.vip_discount_price_valid_until < new Date()) {
+					if (results.vip_old_price && results.vip_old_price > 0 && (results.vip_discount_price_valid_until ? results.vip_discount_price_valid_until < new Date() : true)) {
 						results.vip_price = results.vip_old_price;
 						results.vip_old_price = 0
 					}

@@ -53,7 +53,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 								}
 
 								if (req.custom.isVIP == true) {
-									if (i.vip_old_price && i.vip_old_price > 0 && i.vip_discount_price_valid_until && i.vip_discount_price_valid_until < new Date()) {
+									if (i.vip_old_price && i.vip_old_price > 0 && (i.vip_discount_price_valid_until ? i.vip_discount_price_valid_until < new Date() : true)) {
 										i.vip_price = i.vip_old_price;
 										i.vip_old_price = 0
 									}
@@ -252,7 +252,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 							}
 
 							if (req.custom.isVIP == true) {
-								if (i.vip_old_price && i.vip_old_price > 0 && i.vip_discount_price_valid_until && i.vip_discount_price_valid_until < new Date()) {
+								if (i.vip_old_price && i.vip_old_price > 0 && (i.vip_discount_price_valid_until ? i.vip_discount_price_valid_until < new Date() : true)) {
 									i.vip_price = i.vip_old_price;
 									i.vip_old_price = 0
 								}
