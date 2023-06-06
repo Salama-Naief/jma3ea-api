@@ -260,7 +260,7 @@ module.exports.featured = async function (req, res) {
 	}
 
 
-	if (cache_key) {
+	if (false) {
 		let cached_data = await cache.get(cache_key).catch(() => null);
 		if (cached_data) {
 			cached_data = cached_data.map((feature_category) => {
@@ -290,7 +290,7 @@ module.exports.featured = async function (req, res) {
 		"sorting": 1
 	};
 
-	//req.custom.cache_key = false;
+	req.custom.cache_key = false;
 	mainController.list(req, res, collectionFeature, {
 		"_id": 1,
 		"name": {
