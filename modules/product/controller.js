@@ -543,7 +543,10 @@ module.exports.read = async function (req, res) {
 				"variants": 1,
 				"supplier_id": 1,
 				"show_discount_percentage": 1,
-				"discount_price_valid_until": 1
+				"discount_price_valid_until": 1,
+				"vip_price": 1,
+				"vip_old_price": 1,
+				"vip_discount_price_valid_until": 1,
 			}, async (results) => {
 				if (!results || !results.sku) {
 					return res.out(results, status_message.NO_DATA);
@@ -680,7 +683,13 @@ module.exports.read = async function (req, res) {
 				} */
 
 				if (req.custom.isVIP == true) {
+					if (req.params.sku == '7007489') {
+						console.log('results: ', results);
+					}
 					if (results.vip_old_price && results.vip_old_price > 0 && (results.vip_discount_price_valid_until ? results.vip_discount_price_valid_until < new Date() : true)) {
+						if (req.params.sku == '7007489') {
+							console.log('YES');
+						}
 						results.vip_price = results.vip_old_price;
 						results.vip_old_price = 0
 					}
