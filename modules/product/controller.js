@@ -686,7 +686,7 @@ module.exports.read = async function (req, res) {
 					if (req.params.sku == '7007489') {
 						console.log('results: ', results);
 					}
-					if (results.vip_old_price && results.vip_old_price > 0 && (results.vip_discount_price_valid_until ? results.vip_discount_price_valid_until < new Date() : true)) {
+					if (results.vip_old_price && results.vip_old_price > 0 && (results.vip_discount_price_valid_until ? results.vip_discount_price_valid_until < new Date() : false)) {
 						if (req.params.sku == '7007489') {
 							console.log('YES');
 						}
