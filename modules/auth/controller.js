@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const common = require('../../libraries/common');
 const status_message = require('../../enums/status_message');
 const config = require('../../config')
+const ObjectID = require("../../types/object_id");
 const { v4: uuid } = require('uuid');
 
 
@@ -66,6 +67,7 @@ module.exports.check = function (req, res) {
 
 				const data = {
 					userAgent: userAgent,
+					store_id: ObjectID("5d3827c683545d0366ac4285"),
 					created: common.getDate()
 				};
 				if (config.auto_load_city) {

@@ -81,6 +81,9 @@ module.exports.transform_word_begins_with_alif_letter = (text) => {
 module.exports.filter_internal_suppliers_by_city = async function (req) {
 	try {
 
+		const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
+
+		if (!city_id) return req.custom.clean_filter;
 
 		const cache = req.custom.cache;
 		const cache_key = `supplier_all_solid`;
@@ -92,8 +95,6 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 				cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch(() => null);
 			}
 		}
-
-		const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 
 		if (all_suppliers.length > 0) {
 			const JM3EIA_STORES_INVENTORY_ID = "6420915a99da0ea02d0ecf39";

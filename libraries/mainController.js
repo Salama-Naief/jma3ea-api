@@ -114,11 +114,11 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 			filter.status = true;
 			const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
-			if (!city_id) {
+			/* if (!city_id) {
 				return res.out({
 					'message': req.custom.local.choose_city_first
 				}, status_message.CITY_REQUIRED);
-			}
+			} */
 
 		}
 
@@ -485,11 +485,11 @@ module.exports.read = function (req, res, collectionName, projection, callback) 
 		}
 
 		const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
-		if (!city_id && req.custom.ignoreCity != true) {
+		/* if (!city_id && req.custom.ignoreCity != true) {
 			return res.out({
 				'message': req.custom.local.choose_city_first
 			}, status_message.CITY_REQUIRED);
-		}
+		} */
 
 		const id_key = req.custom.isProducts ? 'sku' : '_id';
 		const id_value = req.custom.isProducts ? req.params.sku : ObjectID(req.params.Id);

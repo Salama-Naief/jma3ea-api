@@ -222,11 +222,11 @@ module.exports.listByCategory = function (req, res) {
 module.exports.featured = async function (req, res) {
 
 	const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
-	if (!city_id) {
+	/* if (!city_id) {
 		return res.out({
 			'message': req.custom.local.choose_city_first
 		}, status_message.CITY_REQUIRED);
-	}
+	} */
 
 	req.custom.limit = 999;
 
