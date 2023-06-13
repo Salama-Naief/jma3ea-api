@@ -61,7 +61,7 @@ module.exports.list = function (req, res) {
 				}
 			}
 		}
-		
+
 		const productCollection = req.custom.db.client().collection('product');
 		const categoriesWithProducts = await Promise.all(childs.map(async category => {
 			const hasProducts = await productCollection.findOne({ 'prod_n_categoryArr.category_id': ObjectID(category._id.toString()), status: true });
@@ -104,6 +104,27 @@ module.exports.read = function (req, res) {
 			$ifNull: [`$description.${req.custom.lang}`, `$description.${req.custom.config.local}`]
 		},
 		"picture": 1
+	}, (doc) => {
+		if (req.query && req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
+			req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
+		} else {
+			req.custom.clean_filter['supplier_id'] = { $exists: false };
+		}
+
+		req.custom.clean_filter['parent_id'] = ObjectID(req.params.Id);
+
+		mainController.list_all(req, res, collectionName, {
+			"_id": 1,
+			"name": {
+				$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+			},
+			"description": {
+				$ifNull: [`$description.${req.custom.lang}`, `$description.${req.custom.config.local}`]
+			},
+			"picture": 1
+		}, (out) => {
+			return res.out({ ...doc, children: out.data });
+		});
 	});
 };
 
