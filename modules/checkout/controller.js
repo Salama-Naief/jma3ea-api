@@ -141,7 +141,10 @@ module.exports.buy = async function (req, res) {
 		"supplier_id": 1,
 		"variants": 1,
 		"free_shipping": 1,
-		"discount_price_valid_until": 1
+		"discount_price_valid_until": 1,
+		"floor": 1,
+		"rack_zone": 1,
+		"barcode_2": 1,
 	}, async (out) => {
 		try {
 			if (out.data.length === 0) {
@@ -1016,6 +1019,9 @@ async function products_to_save(products, user, req, to_display = false) {
 						preparation_time: parseInt(p.preparation_time || 30),
 						prod_n_storeArr: v.prod_n_storeArr,
 						supplier_id: p.supplier_id,
+						floor: p.floor,
+						rack_zone: p.rack_zone,
+						barcode_2: p.barcode_2,
 					});
 				}
 			}
