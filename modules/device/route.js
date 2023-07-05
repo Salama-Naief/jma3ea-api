@@ -14,6 +14,11 @@ router.get('/', controller.list);
 router.post('/', controller.add);
 
 /**
+ * PUT /device
+ */
+router.put('/:Id', controller.update);
+
+/**
  * DELETE /device
  */
 router.delete('/', controller.remove);

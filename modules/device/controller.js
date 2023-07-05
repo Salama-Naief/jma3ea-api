@@ -1,6 +1,7 @@
 // Device Controller
 const collectionName = 'device';
 const status_message = require('../../enums/status_message');
+const ObjectID = require("../../types/object_id");
 
 /**
  * List all devices
@@ -11,6 +12,11 @@ module.exports.list = function (req, res) {
 	req.custom.clean_sort = { "_id": 1 };
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+	}
+
+	const city_id = req.query.city_id;
+	if (city_id && city_id !== '') {
+		req.custom.clean_filter['city_id'] = ObjectID(city_id);
 	}
 	const lang = req.query.lang;
 	if (!lang) {
@@ -60,12 +66,45 @@ module.exports.add = async function (req, res) {
 		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 	data.language = req.custom.lang || 'ar';
+
+	const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
+
+	if (city_id && ObjectID.isValid(city_id)) data.city_id = ObjectID(city_id);
+
 	const collection = req.custom.db.client().collection(collectionName);
 	collection.createIndex({ token: 1 }, { unique: true });
 	collection.insertOne(data)
 		.then((response) => {
 			res.out({ message: req.custom.local.device_added, insertedId: response.insertedId });
 		})
+		.catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
+};
+
+/**
+ * Update device
+ * @param {Object} req
+ * @param {Object} res
+ */
+module.exports.update = async function (req, res) {
+	if (req.custom.isAuthorized === false) {
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+	}
+	if (!ObjectID.isValid(req.params.Id)) {
+		return res.out(error, status_message.VALIDATION_ERROR);
+	}
+
+	data.language = req.custom.lang || 'ar';
+
+	const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
+
+	if (city_id && ObjectID.isValid(city_id)) data.city_id = ObjectID(city_id);
+
+	const collection = req.custom.db.client().collection(collectionName);
+	collection.updateOne({ _id: ObjectID(req.params.Id) }, { $set: { language: req.custom.lang || 'ar', city_id } })
+		.then((response) =>
+			res.out({
+				message: req.custom.local.saved_done
+			}, status_message.UPDATED))
 		.catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
 };
 
