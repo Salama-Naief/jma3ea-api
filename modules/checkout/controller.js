@@ -103,13 +103,6 @@ module.exports.buy = async function (req, res) {
 		}, status_message.VALIDATION_ERROR);
 	}
 
-	if (req.body.payment_method == 'knet') {
-		console.log('///////////////////////////////////////////////////////////////////////////////////////////////////');
-		console.log('QUERY: ', req.query);
-		console.log('BODY IS VIP: ', req.body.isVIP);
-		console.log('///////////////////////////////////////////////////////////////////////////////////////////////////');
-	}
-
 	let user = req.custom.authorizationObject;
 	user.cart = user.cart || {};
 	let prods = [];
@@ -554,7 +547,7 @@ module.exports.buy = async function (req, res) {
 			//}
 			res.out(order_data);
 		} catch (err) {
-			console.log('//////////////////////////////////////// BUY ERROR FOUND ////////////////////////////////////////:\n ', err);
+			console.log('//////////////////////////////////////// BUY ERROR FOUND ////////////////////////////////////////:\n ', err, up_products);
 		}
 	});
 
@@ -1175,7 +1168,7 @@ function update_quantities(req, the_products, cart, token) {
 
 			let variant = p.variants.find((i) => i.sku == p_n_c);
 			let prod_n_storeArr = [];
-			if (variant.prod_n_storeArr) {
+			if (variant.prod_n_storeArr && Array.isArray(variant.prod_n_storeArr)) {
 				for (const i of variant.prod_n_storeArr) {
 					if (i.store_id.toString() == store_id) {
 						i.quantity -= quantity;
@@ -1221,7 +1214,7 @@ function update_quantities(req, the_products, cart, token) {
 
 		} else {
 			let prod_n_storeArr = [];
-			if (p.prod_n_storeArr) {
+			if (p.prod_n_storeArr && Array.isArray(p.prod_n_storeArr)) {
 				for (const i of p.prod_n_storeArr) {
 					if (i.feed_from_store_id) {
 						const temp_store = p.prod_n_storeArr.find((pi) => pi.store_id.toString() == i.feed_from_store_id.toString());
