@@ -1,7 +1,8 @@
 // Device Controller
-const collectionName = 'device';
+const mainController = require("../../libraries/mainController");
 const status_message = require('../../enums/status_message');
 const ObjectID = require("../../types/object_id");
+const collectionName = 'device';
 
 /**
  * List all devices
@@ -50,6 +51,11 @@ module.exports.list = function (req, res) {
 			});
 	});
 };
+
+module.exports.getDevicesWithCity = async (req, res) => {
+	req.custom.clean_filter['city_id'] = { $exists: true };
+	mainController.list(req, res, collectionName, {});
+}
 
 /**
  * Add new device

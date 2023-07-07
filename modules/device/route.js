@@ -9,6 +9,11 @@ const controller = require('./controller');
 router.get('/', controller.list);
 
 /**
+ * GET /device/city
+ */
+router.get('/city', controller.getDevicesWithCity);
+
+/**
  * POST /device
  */
 router.post('/', controller.add);
