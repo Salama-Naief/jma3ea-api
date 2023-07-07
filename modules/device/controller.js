@@ -62,7 +62,6 @@ module.exports.getDevicesWithCity = async (req, res) => {
 		if (total === 0) {
 			return res.out({ count: 0, total: 0, links: [], data: [] }, status_message.NO_DATA);
 		}
-		req.custom.clean_filter.language = lang;
 		collection
 			.find(req.custom.clean_filter)
 			.sort(req.custom.clean_sort)
