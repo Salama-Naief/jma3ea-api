@@ -54,7 +54,7 @@ module.exports.list = function (req, res) {
 
 module.exports.getDevicesWithCity = async (req, res) => {
 	req.custom.clean_filter['city_id'] = { $exists: true };
-	mainController.list(req, res, collectionName, {});
+	mainController.list(req, res, collectionName);
 }
 
 /**
@@ -76,6 +76,8 @@ module.exports.add = async function (req, res) {
 	const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
 
 	if (city_id && ObjectID.isValid(city_id)) data.city_id = ObjectID(city_id);
+
+	console.log('Changed: ', req.custom.authorizationObject, data);
 
 	const collection = req.custom.db.client().collection(collectionName);
 	collection.createIndex({ token: 1 }, { unique: true });
