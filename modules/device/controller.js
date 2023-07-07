@@ -54,7 +54,33 @@ module.exports.list = function (req, res) {
 
 module.exports.getDevicesWithCity = async (req, res) => {
 	req.custom.clean_filter['city_id'] = { $exists: true };
-	mainController.list(req, res, collectionName);
+	const collection = req.custom.db.client().collection(collectionName);
+	collection.count(req.custom.clean_filter, (err, total) => {
+		if (err) {
+			return res.out({ message: err.message }, status_message.UNEXPECTED_ERROR);
+		}
+		if (total === 0) {
+			return res.out({ count: 0, total: 0, links: [], data: [] }, status_message.NO_DATA);
+		}
+		req.custom.clean_filter.language = lang;
+		collection
+			.find(req.custom.clean_filter)
+			.sort(req.custom.clean_sort)
+			.limit(req.custom.limit)
+			.skip(req.custom.skip)
+			.toArray(function (err, docs) {
+				if (err) {
+					return res.out({ message: err.message }, status_message.UNEXPECTED_ERROR);
+				}
+				res.out({
+					total: total,
+					count: docs.length,
+					per_page: req.custom.limit,
+					current_page: req.query.skip || 1,
+					data: docs
+				});
+			});
+	});
 }
 
 /**
