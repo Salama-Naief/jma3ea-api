@@ -120,9 +120,16 @@ module.exports.list = function (req, res) {
 		"discount_price_valid_until": 1,
 	}, (data) => {
 		if (data.total == 0 && !/^\d+$/.test(name)) {
+			let filter_regex = '';
+			try {
+				filter_regex = `${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`;
+				filter_regex = new RegExp(filter_regex, "i");
+			} catch (er) {
+				filter_regex = new RegExp('', "i");
+			}
 			req.custom.clean_filter['$or'] = [
-				{ "name.ar": { $regex: new RegExp(`${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`, "i") } },
-				{ "name.en": { $regex: new RegExp(`${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`, "i") } },
+				{ "name.ar": { $regex: filter_regex } },
+				{ "name.en": { $regex: filter_regex } },
 			];
 
 			if (delete req.custom.clean_filter.hasOwnProperty('$text'))
