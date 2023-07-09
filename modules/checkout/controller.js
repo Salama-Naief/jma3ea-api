@@ -975,7 +975,7 @@ module.exports.list = async function (req, res) {
 
 			});
 		} catch (err) {
-			console.log('//////////////////////////////////////// ERROR FOUND ////////////////////////////////////////:\n ', err);
+			console.log('ERROR FOUND: ', err);
 		}
 	});
 };
@@ -1214,7 +1214,7 @@ function update_quantities(req, the_products, cart, token) {
 
 		} else {
 			let prod_n_storeArr = [];
-			if (p.prod_n_storeArr && Array.isArray(p.prod_n_storeArr)) {
+			if (p && p.prod_n_storeArr && Array.isArray(p.prod_n_storeArr)) {
 				for (const i of p.prod_n_storeArr) {
 					if (i.feed_from_store_id) {
 						const temp_store = p.prod_n_storeArr.find((pi) => pi.store_id.toString() == i.feed_from_store_id.toString());
