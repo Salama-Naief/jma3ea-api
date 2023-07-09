@@ -259,7 +259,7 @@ module.exports.buy = async function (req, res) {
 					}
 				}
 
-				const supplier_delivery_time = req.body.suppliers.length > 0 && typeof req.body.suppliers[0] == 'object' ? req.body.suppliers.find(s => s.supplier_id == sup.supplier._id).delivery_time : req.body.delivery_time;
+				const supplier_delivery_time = req.body.suppliers && req.body.suppliers.length > 0 && typeof req.body.suppliers[0] == 'object' ? req.body.suppliers.find(s => s.supplier_id == sup.supplier._id).delivery_time : req.body.delivery_time;
 				const delivery_time = moment(supplier_delivery_time).isValid() ?
 					supplier_delivery_time : moment(common.getDate()).format(req.custom.config.date.format).toString();
 
