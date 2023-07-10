@@ -139,6 +139,7 @@ module.exports.buy = async function (req, res) {
 		"rack_zone": 1,
 		"barcode_2": 1,
 	}, async (out) => {
+		const isOrderInsertedCorrectly = false;
 		try {
 			if (out.data.length === 0) {
 				save_failed_payment(req, 'NO_PRODUCTS_IN_CART');
@@ -476,6 +477,7 @@ module.exports.buy = async function (req, res) {
 					}
 				});
 
+			isOrderInsertedCorrectly = true;
 
 			if (data.user_data && data.user_data._id && (parseFloat(discount_by_wallet_value) > 0 || req.body.payment_method == 'wallet')) {
 				const paid_wallet_value = parseFloat(req.body.payment_method == 'wallet' ? total : discount_by_wallet_value);
@@ -543,11 +545,15 @@ module.exports.buy = async function (req, res) {
 
 			//if (token) {
 			// Update quantities
-			await update_quantities(req, up_products, up_cart, token);//.catch(() => null);
+			await update_quantities(req, up_products, up_cart, token).catch(() => null);
 			//}
-			res.out(order_data);
+			return res.out(order_data);
 		} catch (err) {
 			console.log('//////////////////////////////////////// BUY ERROR FOUND ////////////////////////////////////////:\n ', err);
+			if (isOrderInsertedCorrectly)
+				return res.out({});
+			else
+				return res.out({}, status_message.UNEXPECTED_ERROR);
 		}
 	});
 
