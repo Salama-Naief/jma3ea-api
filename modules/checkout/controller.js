@@ -549,11 +549,10 @@ module.exports.buy = async function (req, res) {
 			//}
 			return res.out(order_data);
 		} catch (err) {
-			console.log('//////////////////////////////////////// BUY ERROR FOUND ////////////////////////////////////////:\n ', err);
-			if (isOrderInsertedCorrectly)
-				return res.out({});
-			else
-				return res.out({}, status_message.UNEXPECTED_ERROR);
+			console.log('err_checkout', err);
+			return res.out({
+				'message': err.message
+			}, status_message.UNEXPECTED_ERROR);
 		}
 	});
 
