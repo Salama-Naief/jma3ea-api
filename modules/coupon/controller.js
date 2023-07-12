@@ -18,6 +18,9 @@ module.exports.remove_coupon = function (req, res) {
 
 	let user = req.custom.authorizationObject;
 
+	if (!req.body.code && req.query.code) {
+		req.body.code = req.query.code;
+	}
 
 	const data = req.body;
 	let coupon = null;

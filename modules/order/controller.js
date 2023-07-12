@@ -34,7 +34,8 @@ module.exports.list = function (req, res) {
 		"driver_track_id": 1
 	}, (results) => {
 		results.data = results.data.map((i) => {
-			i.status = req.custom.local.order_status_list[i.status];
+			i.status_number = i.status;
+			i.status = req.custom.local.order_status_list[i.status_number];
 			return i;
 		});
 		res.out(results);
