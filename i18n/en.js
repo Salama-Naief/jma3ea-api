@@ -91,6 +91,8 @@ const locals = {
 		"12": 'Ready to pick',
 		"13": 'Time is up',
 		"14": 'Processing your order',
+		"15": 'No answer for the driver',
+		"16": 'Customer asks for rescheduling DT',
 	},
 	mail: {
 		checkout_items_in_cart: 'Products in your cart',
