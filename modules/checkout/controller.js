@@ -140,6 +140,7 @@ module.exports.buy = async function (req, res) {
 		"barcode_2": 1,
 	}, async (out) => {
 		let isOrderInsertedCorrectly = false;
+		let order_data = {};
 		try {
 			if (out.data.length === 0) {
 				save_failed_payment(req, 'NO_PRODUCTS_IN_CART');
@@ -410,7 +411,7 @@ module.exports.buy = async function (req, res) {
 			req.body.delivery_time = moment(req.body.delivery_time).isValid() ?
 				req.body.delivery_time : moment(common.getDate()).format(req.custom.config.date.format).toString();
 
-			const order_data = {
+			let order_data = {
 				order_id: (user_info ? 'u' : 'v') + '_' + shortid.generate(),
 				payment_method: payment_method,
 				payment_details: data.payment_details,
@@ -550,9 +551,13 @@ module.exports.buy = async function (req, res) {
 			return res.out(order_data);
 		} catch (err) {
 			console.log('err_checkout', err);
-			return res.out({
-				'message': err.message
-			}, status_message.UNEXPECTED_ERROR);
+			if (isOrderInsertedCorrectly) {
+				return res.out(order_data);
+			} else {
+				return res.out({
+					'message': err.message
+				}, status_message.UNEXPECTED_ERROR);
+			}
 		}
 	});
 
