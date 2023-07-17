@@ -139,7 +139,7 @@ module.exports.buy = async function (req, res) {
 		"rack_zone": 1,
 		"barcode_2": 1,
 	}, async (out) => {
-		const isOrderInsertedCorrectly = false;
+		let isOrderInsertedCorrectly = false;
 		try {
 			if (out.data.length === 0) {
 				save_failed_payment(req, 'NO_PRODUCTS_IN_CART');
