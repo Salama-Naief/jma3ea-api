@@ -1166,7 +1166,7 @@ function update_quantities(req, the_products, cart, token) {
 		const p = the_products.find((my_prod) => p_n_c.includes(my_prod.sku));
 
 		console.log('============================================================');
-		console.log('Products: ', the_products);
+		console.log('Products: ', the_products.map(p => p.sku));
 		console.log('Cart: ', JSON.stringify(cart));
 		console.log('============================================================');
 
