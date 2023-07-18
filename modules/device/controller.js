@@ -102,8 +102,6 @@ module.exports.add = async function (req, res) {
 
 	if (city_id && ObjectID.isValid(city_id)) data.city_id = ObjectID(city_id);
 
-	console.log('Changed: ', req.custom.authorizationObject, data);
-
 	const collection = req.custom.db.client().collection(collectionName);
 	collection.createIndex({ token: 1 }, { unique: true });
 	collection.insertOne(data)
@@ -126,6 +124,8 @@ module.exports.update = async function (req, res) {
 		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
+	const data = {};
+
 	data.language = req.custom.lang || 'ar';
 
 	const city_id = req.custom.authorizationObject && req.custom.authorizationObject.city_id ? req.custom.authorizationObject.city_id.toString() : '';
@@ -133,7 +133,7 @@ module.exports.update = async function (req, res) {
 	if (city_id && ObjectID.isValid(city_id)) data.city_id = ObjectID(city_id);
 
 	const collection = req.custom.db.client().collection(collectionName);
-	collection.updateOne({ _id: ObjectID(req.params.Id) }, { $set: { language: req.custom.lang || 'ar', city_id } })
+	collection.updateOne({ _id: ObjectID(req.params.Id) }, { $set: data })
 		.then((response) =>
 			res.out({
 				message: req.custom.local.saved_done
