@@ -17,7 +17,7 @@ module.exports.collectionName = collectionName;
  * @param {Object} res
  */
 module.exports.list = function (req, res) {
-	req.custom.isProducts = true;
+	//req.custom.isProducts = true;
 	const name = common.parseArabicNumbers(req.query.q);
 	const newNames = [];
 	const names_array = name ? name.split(' ') : [];
@@ -60,7 +60,7 @@ module.exports.list = function (req, res) {
 				$search: name,//`${name} ${newNames.join(' ')}`,
 				$language: getTermLang(name),
 				$caseSensitive: false,
-				$diacriticSensitive: true,
+				$diacriticSensitive: false,
 				$meta: 'textScore'
 			}
 
@@ -122,43 +122,6 @@ module.exports.list = function (req, res) {
 		if (data.total == 0 && !/^\d+$/.test(name)) {
 			console.log('========================= TOTAL IS 0 =========================', req.custom.clean_filter['$text']);
 			let filter_regex = `${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`;
-
-			function generateArabicLetterRegex(letter) {
-				const arabicLetterVariations = {
-				  ب: '[بﺑﺒﺐ]',
-				  ت: '[تﺗﺘﺖ]',
-				  ث: '[ثﺛﺜﺚ]',
-				  ج: '[جﺟﺠﺞ]',
-				  خ: '[خﺧﺨﺦ]',
-				  ذ: '[ذﺬﺫﺭ]',
-				  ز: '[زﺯﺰ]',
-				  س: '[سﺳﺴﺲ]',
-				  ش: '[شﺷﺸﺶ]',
-				  ص: '[صﺻﺼﺺ]',
-				  ض: '[ضﺿﻀﺾ]',
-				  ط: '[طﻃﻄﻂ]',
-				  ظ: '[ظﻇﻈﻆ]',
-				  ع: '[عﻋﻌﻊ]',
-				  غ: '[غﻏﻐﻎ]',
-				  ف: '[فﻓﻔﻒ]',
-				  ق: '[قﻗﻘﻖ]',
-				  ك: '[كﻛﻜﻚ]',
-				  ل: '[لﻟﻠﻞ]',
-				  م: '[مﻣﻤﻢ]',
-				  ن: '[نﻧﻨﻦ]',
-				  ه: '[هﻫﻬﻪ]',
-				  و: '[وﻭﻮ]',
-				  ي: '[يىﻳﻴﻲ]'
-				  // You can continue adding more variations for other Arabic letters as needed
-				};
-				
-				return arabicLetterVariations[letter] || letter;
-			  }
-
-			// Replace each Arabic letter in the pattern with its variations using the helper function
-			const arabicLettersRegex = /[\u0621-\u064A]/g; // Range for Arabic letters
-			filter_regex = filter_regex.replace(arabicLettersRegex, (match) => generateArabicLetterRegex(match));
-
 
 			try {
 				filter_regex = new RegExp(filter_regex, 'i');
