@@ -120,7 +120,7 @@ module.exports.list = function (req, res) {
 		"discount_price_valid_until": 1,
 	}, (data) => {
 		if (data.total == 0 && !/^\d+$/.test(name)) {
-			console.log('========================= TOTAL IS 0 =========================', req.custom.clean_filter['$text']['$search']);
+			console.log('========================= TOTAL IS 0 =========================', req.custom.clean_filter['$text']);
 			let filter_regex = `${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`;
 
 			try {
