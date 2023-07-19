@@ -120,18 +120,17 @@ module.exports.list = function (req, res) {
 		"discount_price_valid_until": 1,
 	}, (data) => {
 		if (data.total == 0 && !/^\d+$/.test(name)) {
-			console.log('========================= TOTAL IS 0 =========================', req.custom.clean_filter['$text']);
-			let filter_regex = `${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`;
+			//let filter_regex = `${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`;
 
-			try {
+			/* try {
 				filter_regex = new RegExp(filter_regex, 'i');
 			} catch (e) {
 				filter_regex = new RegExp(name, 'i');
-			}
+			} */
 
 			req.custom.clean_filter['$or'] = [
-				{ "name.ar": { $regex: filter_regex } },
-				{ "name.en": { $regex: filter_regex } },
+				{ "name.ar": { $regex: new RegExp(name, 'i') } },
+				{ "name.en": { $regex: new RegExp(name, 'i') } },
 			];
 			/* try {
 				filter_regex = `${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`;
