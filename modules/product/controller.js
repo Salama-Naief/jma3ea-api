@@ -59,8 +59,8 @@ module.exports.list = function (req, res) {
 			req.custom.clean_filter['$text'] = {
 				$search: `${name} ${newNames.join(' ')}`,
 				$language: getTermLang(name),
-				$caseSensitive: false,
-				$diacriticSensitive: false,
+				//$caseSensitive: false,
+				//$diacriticSensitive: false,
 				$meta: 'textScore'
 			}
 
