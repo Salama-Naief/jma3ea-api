@@ -123,6 +123,38 @@ module.exports.list = function (req, res) {
 			console.log('========================= TOTAL IS 0 =========================', req.custom.clean_filter['$text']);
 			let filter_regex = `${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`;
 
+			const arabicCharacterClasses = {
+				ب: '[بﺑﺒﺐ]',
+				ت: '[تﺗﺘﺖ]',
+				ث: '[ثﺛﺜﺚ]',
+				ج: '[جﺟﺠﺞ]',
+				خ: '[خﺧﺨﺦ]',
+				ذ: '[ذﺬﺫﺭ]',
+				ز: '[زﺯﺰ]',
+				س: '[سﺳﺴﺲ]',
+				ش: '[شﺷﺸﺶ]',
+				ض: '[ضﺿﻀﺾ]',
+				ط: '[طﻃﻄﻂ]',
+				ظ: '[ظﻇﻈﻆ]',
+				ع: '[عﻋﻌﻊ]',
+				غ: '[غﻏﻐﻎ]',
+				ف: '[فﻓﻔﻒ]',
+				ق: '[قﻗﻘﻖ]',
+				ك: '[كﻛﻜﻚ]',
+				ل: '[لﻟﻠﻞ]',
+				م: '[مﻣﻤﻢ]',
+				ن: '[نﻧﻨﻦ]',
+				ه: '[هﻫﻬﻪ]',
+				و: '[وﻭﻮ]',
+				ي: '[يىﻳﻴﻲ]'
+				// Add more character classes for other Arabic letters as needed
+			};
+
+
+			for (const letter in arabicCharacterClasses) {
+				filter_regex = filter_regex.replace(new RegExp(letter, 'g'), arabicCharacterClasses[letter]);
+			}
+
 			try {
 				filter_regex = new RegExp(filter_regex, 'i');
 			} catch (e) {
