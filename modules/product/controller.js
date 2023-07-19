@@ -57,7 +57,7 @@ module.exports.list = function (req, res) {
 
 			// Add the text filter operator
 			req.custom.clean_filter['$text'] = {
-				$search: `${name} ${newNames.join(' ')}`,
+				$search: name,//`${name} ${newNames.join(' ')}`,
 				$language: getTermLang(name),
 				$caseSensitive: false,
 				$diacriticSensitive: true,
