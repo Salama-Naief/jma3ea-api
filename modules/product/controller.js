@@ -120,8 +120,19 @@ module.exports.list = function (req, res) {
 		"discount_price_valid_until": 1,
 	}, (data) => {
 		if (data.total == 0 && !/^\d+$/.test(name)) {
-			let filter_regex = '';
+			let filter_regex = `${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`;
+
 			try {
+				filter_regex = new RegExp(filter_regex, 'i');
+			} catch (e) {
+				filter_regex = new RegExp(name, 'i');
+			}
+
+			req.custom.clean_filter['$or'] = [
+				{ "name.ar": { $regex: filter_regex } },
+				{ "name.en": { $regex: filter_regex } },
+			];
+			/* try {
 				filter_regex = `${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`;
 				filter_regex = new RegExp(filter_regex, "i");
 			} catch (er) {
@@ -130,7 +141,7 @@ module.exports.list = function (req, res) {
 			req.custom.clean_filter['$or'] = [
 				{ "name.ar": { $regex: filter_regex } },
 				{ "name.en": { $regex: filter_regex } },
-			];
+			]; */
 
 			if (delete req.custom.clean_filter.hasOwnProperty('$text'))
 				delete req.custom.clean_filter['$text'];
