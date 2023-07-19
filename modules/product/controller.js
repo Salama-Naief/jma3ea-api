@@ -17,7 +17,7 @@ module.exports.collectionName = collectionName;
  * @param {Object} res
  */
 module.exports.list = function (req, res) {
-	//req.custom.isProducts = true;
+	req.custom.isProducts = true;
 	const name = common.parseArabicNumbers(req.query.q);
 	const newNames = [];
 	const names_array = name ? name.split(' ') : [];
