@@ -31,10 +31,6 @@ module.exports.buy = async function (req, res) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
-	if (req.query.web == 'true') {
-		console.log('======================================= WEB LOG ==================================\n', req.body);
-	}
-
 	moment.updateLocale('en', {});
 	const only_validation = req.query.validation !== undefined;
 
@@ -556,7 +552,7 @@ module.exports.buy = async function (req, res) {
 			return res.out(order_data);
 		} catch (err) {
 			if (req.query.web == 'true') {
-				console.log('======================================= WEB LOG ==================================\n', err, req.body);
+				console.log('======================================= WEB LOG ==================================\n', err, req.body, order_data);
 			}
 			if (isOrderInsertedCorrectly) {
 				return res.out(order_data);
