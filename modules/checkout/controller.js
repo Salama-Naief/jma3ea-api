@@ -1171,10 +1171,7 @@ function update_quantities(req, the_products, cart, token) {
 
 		const p = the_products.find((my_prod) => p_n_c.includes(my_prod.sku));
 
-		console.log('============================================================');
-		console.log('Products: ', the_products.map(p => p.sku));
-		console.log('Cart: ', JSON.stringify(cart));
-		console.log('============================================================');
+		if (!p) continue;
 
 		const quantity = parseInt(cart[p_n_c]);
 		let store_id = req.custom.authorizationObject.store_id.toString();
