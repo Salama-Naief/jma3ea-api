@@ -57,7 +57,7 @@ module.exports.list = function (req, res) {
 
 			// Add the text filter operator
 			req.custom.clean_filter['$text'] = {
-				$search: `${name} ${newNames.join(' ')}`,
+				$search: name,//`${name} ${newNames.join(' ')}`,
 				$language: getTermLang(name),
 				$caseSensitive: false,
 				$diacriticSensitive: false,
@@ -120,6 +120,7 @@ module.exports.list = function (req, res) {
 		"discount_price_valid_until": 1,
 	}, (data) => {
 		if (data.total == 0 && !/^\d+$/.test(name)) {
+			console.log('========================= TOTAL IS 0 =========================');
 			let filter_regex = `${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`;
 
 			try {
