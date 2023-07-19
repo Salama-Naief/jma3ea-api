@@ -986,6 +986,9 @@ module.exports.list = async function (req, res) {
 			});
 		} catch (err) {
 			console.log('ERROR FOUND: ', err);
+			return res.out({
+				'message': err.message
+			}, status_message.UNEXPECTED_ERROR);
 		}
 	});
 };

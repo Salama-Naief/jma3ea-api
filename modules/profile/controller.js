@@ -908,7 +908,9 @@ module.exports.chargeWallet = async function (req, res) {
 
 		res.out({ ...wallet_data, total: data.amount });
 	} catch (err) {
-		console.log('Err: ', err);
+		return res.out({
+			'message': err.message
+		}, status_message.UNEXPECTED_ERROR);
 	}
 
 };

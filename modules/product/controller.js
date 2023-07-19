@@ -457,7 +457,9 @@ module.exports.featured = async function (req, res) {
 
 			res.out(featured);
 		} catch (err) {
-			console.log('ERROR: ', err);
+			return res.out({
+				'message': err.message
+			}, status_message.UNEXPECTED_ERROR);
 		}
 	});
 };
