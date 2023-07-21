@@ -59,7 +59,7 @@ module.exports.list = async function (req, res) {
 				multi_match: {
 					query: name,
 					fields: ['name.en', 'name.ar'],
-					type: 'best_fields',
+					type: 'most_fields',
 				},
 			};
 
