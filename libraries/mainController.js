@@ -187,11 +187,11 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 					}
 				}
 
-				/* if (!req.custom.hasOwnProperty('sort_after') || !req.custom.sort_after) {
+				if (!req.custom.hasOwnProperty('sort_after') || !req.custom.sort_after) {
 					pipeline.push({
 						$sort: sort
 					});
-				} */
+				}
 
 				pipeline.push({
 					$skip: req.custom.skip
@@ -217,11 +217,11 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 					"allowDiskUse": true
 				};
 
-				/* if (req.custom.hasOwnProperty('sort_after') && req.custom.sort_after) {
+				if (req.custom.hasOwnProperty('sort_after') && req.custom.sort_after) {
 					pipeline.push({
 						$sort: sort
 					});
-				} */
+				}
 
 				collection.aggregate(pipeline, options).toArray((err, results) => {
 					if (err) {

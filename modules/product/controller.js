@@ -90,11 +90,8 @@ module.exports.list = async function (req, res) {
 			let searchResults = body.hits.hits.map((hit) => hit._source);
 
 			if (!isInstantSearch) {
-				const skuArray = searchResults.map((p) => p.sku);
-				const filterQuery = {
-					$or: skuArray.map((sku) => ({ sku })),
-				};
-				req.custom.clean_filter = filterQuery;
+				const skus = searchResults.map((p) => p.sku);
+				req.custom.clean_filter['sku'] = { $in: skus };
 				mainController.list(req, res, collectionName, {
 					"_id": 0,
 					"sku": 1,
@@ -118,6 +115,19 @@ module.exports.list = async function (req, res) {
 					"discount_price_valid_until": 1
 				}, (out) => {
 					out.total = totalResults;
+					const products = out.data;
+					const skuIndexMap = new Map();
+					skus.forEach((sku, index) => skuIndexMap.set(sku, index));
+
+					// Sort the 'products' array based on the order of SKUs in 'skus' array
+					const sortedProducts = products.sort((a, b) => {
+						const indexA = skuIndexMap.get(a.sku);
+						const indexB = skuIndexMap.get(b.sku);
+						return indexA - indexB;
+					});
+
+					out.data = sortedProducts;
+
 					return res.out(out);
 				});
 
