@@ -81,7 +81,7 @@ module.exports.list = async function (req, res) {
 					query: {
 						bool: {
 							should: [
-								{
+								/* {
 									match: {
 										'name.ar': {
 											query: name,
@@ -95,7 +95,7 @@ module.exports.list = async function (req, res) {
 											fuzziness: 'AUTO',
 										},
 									},
-								},
+								}, */
 								{
 									match: {
 										'name.en': {
