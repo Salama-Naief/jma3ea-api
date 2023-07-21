@@ -54,8 +54,30 @@ module.exports.list = async function (req, res) {
 
 		if (/^\d+$/.test(name)) {
 			req.custom.clean_filter["barcode"] = name;
+			mainController.list(req, res, collectionName, {
+				"_id": 0,
+				"sku": 1,
+				"name": {
+					$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+				},
+				"picture": 1,
+				"old_price": 1,
+				"price": 1,
+				"availability": `$prod_n_storeArr`,
+				"has_variants": { $isArray: "$variants" },
+				"prod_n_storeArr": 1,
+				"prod_n_categoryArr": 1,
+				"max_quantity_cart": {
+					$ifNull: ["$max_quantity_cart", 0]
+				},
+				"name_length": {
+					$strLenCP: { $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`] }
+				},
+				"show_discount_percentage": 1,
+				"discount_price_valid_until": 1
+			});
 		} else {
-			const textSearch = {
+			/* const textSearch = {
 				multi_match: {
 					query: name,
 					fields: ['name.en', 'name.ar'],
@@ -63,17 +85,17 @@ module.exports.list = async function (req, res) {
 					operator: 'or',
 					fuzziness: 'AUTO'
 				},
-			};
+			}; */
 
 
 			const page = parseInt(req.query.page) || 1;
 			const from = (page - 1) * page_size;
 
-			const searchQuery = {
+			/* const searchQuery = {
 				bool: {
 					should: [textSearch],
 				},
-			};
+			}; */
 
 			const body = await esClient.search({
 				index: 'products',
