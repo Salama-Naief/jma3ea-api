@@ -6,7 +6,7 @@ const cron = require('node-cron');
 const { Client } = require('@elastic/elasticsearch');
 
 
-const esClient = new Client({ node: 'http://localhost:9200' });
+const esClient = new Client({ node: 'http://143.198.140.3:9200' });
 
 module.exports.cleanProductsQuantities = async function (req, res) {
     try {
