@@ -213,7 +213,6 @@ module.exports.indexProducts = async (req, res) => {
         const skip = (currentPage - 1) * PAGE_SIZE;
 
         const products = await collection.find({ status: true }).skip(skip).limit(PAGE_SIZE).toArray();
-        console.log('PRODUCTS TO INDEX: ', products.length);
 
 
         for (const product of products) {
@@ -234,7 +233,7 @@ module.exports.indexProducts = async (req, res) => {
         }
 
         console.log('=============================================== Indexing completed. =====================================================');
-        return res.out({ message: 'Indexing completed' });
+        return res.out({ message: 'Indexing completed', count: products.length });
     } catch (error) {
         console.error('Error indexing products:', error);
         return res.out(error);
