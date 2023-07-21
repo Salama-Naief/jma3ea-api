@@ -12,6 +12,8 @@ const collectionName = 'product';
 
 const esClient = new Client({ node: 'http://localhost:9200' });
 
+const PAGE_SIZE = 10;
+
 module.exports.collectionName = collectionName;
 
 /**
