@@ -237,3 +237,15 @@ module.exports.indexProducts = async (req, res) => {
         return res.out(error);
     }
 }
+
+
+module.exports.deleteIndexes = async (req, res) => {
+    try {
+        await esClient.indices.delete({ index: 'products' });
+        console.log('Index deleted successfully.');
+        return res.out({ message: 'Index deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting index:', error);
+        return res.out(error);
+    }
+}

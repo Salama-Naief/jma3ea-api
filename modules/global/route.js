@@ -9,5 +9,6 @@ router.post('/products/normalize', controller.normalize);
 router.post('/wallet/strtofloat', controller.convertWalletStrToFloat);
 router.post('/member/point_transaction', controller.pointsToTransaction);
 router.post('/products/index', controller.indexProducts);
+router.delete('/products/index', controller.deleteIndexes);
 
 module.exports = router;
