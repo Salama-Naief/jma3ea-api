@@ -96,7 +96,7 @@ module.exports.list = async function (req, res) {
 				};
 				const sortQuery = { $sort: { sku: { $in: skuArray } } };
 				const filterSortQuery = [...filterQuery, sortQuery];
-				req.custom.clean_filter['$and'] = filterSortQuery;
+				req.custom.clean_filter = filterQuery;
 				mainController.list(req, res, collectionName, {
 					"_id": 0,
 					"sku": 1,
