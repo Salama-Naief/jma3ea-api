@@ -49,7 +49,7 @@ module.exports.list = async function (req, res) {
 
 		}
 
-		const page_size = parseInt(req.query.limit || config.db.limit);
+		const page_size = parseInt(req.query.limit || req.custom.config.db.limit);
 		const isInstantSearch = req.query.instant;
 
 		if (/^\d+$/.test(name)) {
