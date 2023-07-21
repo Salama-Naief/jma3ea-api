@@ -107,6 +107,7 @@ module.exports.list = async function (req, res) {
 									match: {
 										'name.ar': {
 											query: name,
+											operator: 'or'
 										},
 									},
 								},
@@ -115,6 +116,7 @@ module.exports.list = async function (req, res) {
 										'name.ar': {
 											query: name,
 											fuzziness: 'AUTO',
+											operator: 'or'
 										},
 									},
 								},
@@ -122,6 +124,7 @@ module.exports.list = async function (req, res) {
 									match: {
 										'name.en': {
 											query: name,
+											operator: 'or'
 										},
 									},
 								},
@@ -130,6 +133,7 @@ module.exports.list = async function (req, res) {
 										'name.en': {
 											query: name,
 											fuzziness: 'AUTO',
+											operator: 'or'
 										},
 									},
 								},
