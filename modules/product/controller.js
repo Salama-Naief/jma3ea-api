@@ -22,6 +22,7 @@ module.exports.collectionName = collectionName;
  * @param {Object} res
  */
 module.exports.list = async function (req, res) {
+	req.custom.isProducts = true;
 	const name = common.parseArabicNumbers(req.query.q);
 
 	if (req.query) {
@@ -89,8 +90,7 @@ module.exports.list = async function (req, res) {
 			let searchResults = body.hits.hits.map((hit) => hit._source);
 
 			if (!isInstantSearch) {
-				req.custom.isProducts = true;
-				req.custom.clean_filter['sku'] = { $in: searchResults.map(p => p.sku) };
+				req.custom.clean_filter['$or'] = [searchResults.map(p => ({ sku: p.sku }))];
 				mainController.list(req, res, collectionName, {
 					"_id": 0,
 					"sku": 1,
