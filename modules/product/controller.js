@@ -198,7 +198,8 @@ module.exports.list = async function (req, res) {
 						$strLenCP: { $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`] }
 					},
 					"show_discount_percentage": 1,
-					"discount_price_valid_until": 1
+					"discount_price_valid_until": 1,
+					"supplier_id": 1
 				}, (out) => {
 					out.total = totalResults;
 					const products = out.data;
