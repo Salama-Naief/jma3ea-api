@@ -90,13 +90,6 @@ module.exports.list = async function (req, res) {
 									},
 								},
 							],
-							must: [
-								{
-									match: {
-										'name.ar': name, // Exact match
-									},
-								},
-							],
 						},
 					},
 					from: from,
