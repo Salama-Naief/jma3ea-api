@@ -228,5 +228,6 @@ module.exports.indexProducts = async (req, res) => {
         console.log('Indexing completed.');
     } catch (error) {
         console.error('Error indexing products:', error);
+        return res.out(error);
     }
 }
