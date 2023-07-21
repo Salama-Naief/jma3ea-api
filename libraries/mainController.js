@@ -140,7 +140,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 			} else {
 				let sort = Object.keys(req.custom.clean_sort).length > 0 ? req.custom.clean_sort : {
 					"sorting": 1,
-					"name": 1
+					//"name": 1
 				};
 
 				// Pipeline
