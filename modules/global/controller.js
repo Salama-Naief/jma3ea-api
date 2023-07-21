@@ -252,3 +252,25 @@ module.exports.deleteIndexes = async (req, res) => {
         return res.out(error);
     }
 }
+
+
+module.exports.countIndexedProducts = async function () {
+    try {
+        const { body: indices } = await esClient.cat.indices({ format: 'json' });
+
+        // Find the index for "products"
+        const productsIndex = indices.find(index => index.index === 'products');
+
+        if (!productsIndex) {
+            console.log('Products index not found.');
+            return;
+        }
+
+        const indexedProductsCount = productsIndex['docs.count'];
+        console.log('Number of indexed products:', indexedProductsCount);
+        return res.out('Number of indexed products:', indexedProductsCount);
+    } catch (error) {
+        console.error('Error counting indexed products:', error);
+        return res.out(error);
+    }
+}
