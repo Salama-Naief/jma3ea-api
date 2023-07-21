@@ -73,11 +73,11 @@ module.exports.list = async function (req, res) {
 				/* bool: {
 					should: [textSearch],
 				}, */
-				multi_match: {
+				match: {
 					name,
 					fields: ['name.en', 'name.ar'],
-					type: 'best_fields',
-					operator: 'or',
+					/* type: 'best_fields',
+					operator: 'or', */
 				},
 			};
 
