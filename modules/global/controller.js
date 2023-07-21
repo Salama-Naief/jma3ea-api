@@ -213,6 +213,7 @@ module.exports.indexProducts = async (req, res) => {
         const skip = (currentPage - 1) * PAGE_SIZE; */
         // Retrieve all documents from MongoDB "product" collection
         const products = await collection.find()/* .skip(skip).limit(PAGE_SIZE) */.toArray();
+        console.log('PRODUCTS TO INDEX: ', products.length);
 
 
         // Index each product document in Elasticsearch
