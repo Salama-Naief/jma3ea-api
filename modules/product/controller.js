@@ -70,8 +70,14 @@ module.exports.list = async function (req, res) {
 			const from = (page - 1) * page_size;
 
 			const searchQuery = {
-				bool: {
+				/* bool: {
 					should: [textSearch],
+				}, */
+				multi_match: {
+					query,
+					fields: ['name.en', 'name.ar'],
+					type: 'best_fields',
+					operator: 'or',
 				},
 			};
 
