@@ -217,7 +217,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 					"allowDiskUse": true
 				};
 
-				i/* f (req.custom.hasOwnProperty('sort_after') && req.custom.sort_after) {
+				/* if (req.custom.hasOwnProperty('sort_after') && req.custom.sort_after) {
 					pipeline.push({
 						$sort: sort
 					});
