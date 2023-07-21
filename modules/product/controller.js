@@ -137,6 +137,16 @@ module.exports.list = async function (req, res) {
 										},
 									},
 								},
+								{
+									wildcard: {
+										'name.en': `*${name}*`
+									}
+								},
+								{
+									wildcard: {
+										'name.ar': `*${name}*`
+									}
+								}
 							],
 						},
 					},
