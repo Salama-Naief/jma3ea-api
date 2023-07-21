@@ -85,7 +85,14 @@ module.exports.list = async function (req, res) {
 									match: {
 										'name.ar': {
 											query: name,
-											fuzziness: 'AUTO', // Use 'AUTO' to allow slight spelling differences
+										},
+									},
+								},
+								{
+									match: {
+										'name.ar': {
+											query: name,
+											fuzziness: 'AUTO',
 										},
 									},
 								},
