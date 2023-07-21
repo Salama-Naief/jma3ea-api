@@ -12,8 +12,6 @@ const collectionName = 'product';
 
 const esClient = new Client({ node: 'http://localhost:9200' });
 
-const PAGE_SIZE = 10;
-
 module.exports.collectionName = collectionName;
 
 /**
@@ -50,6 +48,7 @@ module.exports.list = async function (req, res) {
 
 	}
 
+	const page_size = parseInt(req.query.limit || config.db.limit);
 	const isInstantSearch = req.query.instant;
 
 	if (/^\d+$/.test(name)) {
@@ -65,7 +64,7 @@ module.exports.list = async function (req, res) {
 
 		try {
 			const page = parseInt(req.query.page) || 1;
-			const from = (page - 1) * PAGE_SIZE;
+			const from = (page - 1) * page_size;
 
 			const searchQuery = {
 				bool: {
@@ -78,14 +77,14 @@ module.exports.list = async function (req, res) {
 				body: {
 					query: searchQuery,
 					from: from,
-					size: PAGE_SIZE,
+					size: page_size,
 				},
 			});
 
 			console.log('this is the body: ', body);
 
 			const totalResults = body.hits.total.value;
-			const totalPages = Math.ceil(totalResults / PAGE_SIZE);
+			const totalPages = Math.ceil(totalResults / page_size);
 
 			let searchResults = body.hits.hits.map((hit) => hit._source);
 
@@ -95,8 +94,9 @@ module.exports.list = async function (req, res) {
 					$or: skuArray.map((sku) => ({ sku })),
 				};
 				const sortQuery = { $sort: { sku: { $in: skuArray } } };
-				const filterSortQuery = [...filterQuery, sortQuery];
+				//const filterSortQuery = [...filterQuery, sortQuery];
 				req.custom.clean_filter = filterQuery;
+				req.custom.clean_sort = { sku: { $in: skuArray } };
 				mainController.list(req, res, collectionName, {
 					"_id": 0,
 					"sku": 1,
