@@ -96,6 +96,21 @@ module.exports.list = async function (req, res) {
 										},
 									},
 								},
+								{
+									match: {
+										'name.en': {
+											query: name,
+										},
+									},
+								},
+								{
+									match: {
+										'name.en': {
+											query: name,
+											fuzziness: 'AUTO',
+										},
+									},
+								},
 							],
 						},
 					},
