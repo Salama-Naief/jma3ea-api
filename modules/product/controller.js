@@ -70,21 +70,35 @@ module.exports.list = async function (req, res) {
 			const from = (page - 1) * page_size;
 
 			const searchQuery = {
-				/* bool: {
+				bool: {
 					should: [textSearch],
-				}, */
-				match: {
-					name,
-					fields: ['name.en', 'name.ar'],
-					/* type: 'best_fields',
-					operator: 'or', */
 				},
 			};
 
 			const body = await esClient.search({
 				index: 'products',
 				body: {
-					query: searchQuery,
+					query: {
+						bool: {
+							should: [
+								{
+									match: {
+										'name.ar': {
+											query: name,
+											fuzziness: 'AUTO', // Use 'AUTO' to allow slight spelling differences
+										},
+									},
+								},
+							],
+							must: [
+								{
+									match: {
+										'name.ar': name, // Exact match
+									},
+								},
+							],
+						},
+					},
 					from: from,
 					size: page_size,
 				},
