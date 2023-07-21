@@ -208,25 +208,28 @@ module.exports.normalize = async (req, res) => {
 module.exports.indexProducts = async (req, res) => {
     const collection = req.custom.db.client().collection('product');
     try {
-        const PAGE_SIZE = 10000;
+        /* const PAGE_SIZE = 10000;
         const currentPage = parseInt(req.query.page) || 1
-        const skip = (currentPage - 1) * PAGE_SIZE;
+        const skip = (currentPage - 1) * PAGE_SIZE; */
         // Retrieve all documents from MongoDB "product" collection
-        const products = await collection.find().skip(skip).limit(PAGE_SIZE).toArray();
+        const products = await collection.find()/* .skip(skip).limit(PAGE_SIZE) */.toArray();
+
 
         // Index each product document in Elasticsearch
         for (const product of products) {
+            const body = {
+                name: {
+                    en: product.name.en,
+                    ar: product.name.ar,
+                },
+                sku: product.sku
+            };
+
+            if (product.supplier_id) body.supplier_id = product.supplier_id;
             await esClient.index({
                 index: 'products',
                 id: product._id.toString(),
-                body: {
-                    name: {
-                        en: product.name.en,
-                        ar: product.name.ar,
-                    },
-                    supplier_id: product.supplier_id,
-                    sku: product.sku
-                },
+                body: body,
             });
         }
 
