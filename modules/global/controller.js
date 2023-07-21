@@ -199,3 +199,30 @@ module.exports.normalize = async (req, res) => {
         return res.out(err);
     }
 }
+
+
+module.exports.indexProducts = async (req, res) => {
+    const collection = req.custom.db.client().collection('product');
+    try {
+        // Retrieve all documents from MongoDB "product" collection
+        const products = await collection.find().toArray();
+
+        // Index each product document in Elasticsearch
+        for (const product of products) {
+            await esClient.index({
+                index: 'products',
+                id: product._id.toString(),
+                body: {
+                    name: {
+                        en: product.name.en,
+                        ar: product.name.ar,
+                    },
+                },
+            });
+        }
+
+        console.log('Indexing completed.');
+    } catch (error) {
+        console.error('Error indexing products:', error);
+    }
+}
