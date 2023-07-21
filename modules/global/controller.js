@@ -214,6 +214,7 @@ module.exports.indexProducts = async (req, res) => {
 
         const products = await collection.find({ status: true }).skip(skip).limit(PAGE_SIZE).toArray();
 
+        console.log('======================= Start indexing.... ========================  ', products.length);
 
         for (const product of products) {
             const body = {
