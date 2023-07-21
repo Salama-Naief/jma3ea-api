@@ -3,6 +3,7 @@ const common = require('../../libraries/common');
 const moment = require('moment');
 const ObjectID = require("../../types/object_id");
 const cron = require('node-cron');
+const esClient = new Client({ node: 'http://localhost:9200' });
 
 module.exports.cleanProductsQuantities = async function (req, res) {
     try {
