@@ -115,7 +115,7 @@ module.exports.list = async function (req, res) {
 					"discount_price_valid_until": 1
 				}, (out) => {
 					out.total = totalResults;
-					const products = out.data;
+					/* const products = out.data;
 					const skuIndexMap = new Map();
 					skus.forEach((sku, index) => skuIndexMap.set(sku, index));
 
@@ -126,7 +126,7 @@ module.exports.list = async function (req, res) {
 						return indexA - indexB;
 					});
 
-					out.data = sortedProducts;
+					out.data = sortedProducts; */
 
 					return res.out(out);
 				});
