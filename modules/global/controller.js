@@ -212,7 +212,7 @@ module.exports.indexProducts = async (req, res) => {
         const currentPage = parseInt(req.query.page) || 1
         const skip = (currentPage - 1) * PAGE_SIZE;
 
-        const products = await collection.find().skip(skip).limit(PAGE_SIZE).toArray();
+        const products = await collection.find({ status: true }).skip(skip).limit(PAGE_SIZE).toArray();
         console.log('PRODUCTS TO INDEX: ', products.length);
 
 
