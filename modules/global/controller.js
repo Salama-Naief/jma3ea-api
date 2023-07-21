@@ -208,7 +208,7 @@ module.exports.normalize = async (req, res) => {
 module.exports.indexProducts = async (req, res) => {
     const collection = req.custom.db.client().collection('product');
     try {
-        const PAGE_SIZE = 3000;
+        const PAGE_SIZE = 10000;
         const currentPage = parseInt(req.query.page) || 1
         const skip = (currentPage - 1) * PAGE_SIZE;
         // Retrieve all documents from MongoDB "product" collection
@@ -224,6 +224,8 @@ module.exports.indexProducts = async (req, res) => {
                         en: product.name.en,
                         ar: product.name.ar,
                     },
+                    supplier_id: product.supplier_id,
+                    sku: product.sku
                 },
             });
         }

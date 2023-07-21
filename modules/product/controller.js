@@ -49,6 +49,8 @@ module.exports.list = async function (req, res) {
 
 	}
 
+	const isInstantSearch = req.query.instant;
+
 	if (/^\d+$/.test(name)) {
 		req.custom.clean_filter["barcode"] = name;
 	} else {
@@ -61,13 +63,9 @@ module.exports.list = async function (req, res) {
 		};
 
 		try {
-			// Calculate the page number from the request query parameters (default to 1 if not provided)
 			const page = parseInt(req.query.page) || 1;
-
-			// Calculate the offset (from) based on the current page and page size
 			const from = (page - 1) * PAGE_SIZE;
 
-			// Add pagination options to the Elasticsearch search query
 			const searchQuery = {
 				bool: {
 					should: [textSearch],
@@ -88,14 +86,48 @@ module.exports.list = async function (req, res) {
 			const totalResults = body.hits.total.value;
 			const totalPages = Math.ceil(totalResults / PAGE_SIZE);
 
-			const searchResults = body.hits.hits.map((hit) => hit._source);
+			let searchResults = body.hits.hits.map((hit) => hit._source);
 
-			return res.json({
-				results: searchResults,
-				totalResults,
-				totalPages,
-				currentPage: page,
-			});
+			if (!isInstantSearch) {
+				req.custom.isProducts = true;
+				req.custom.clean_filter['sku'] = { $in: searchResults.map(p => p.sku) };
+				mainController.list(req, res, collectionName, {
+					"_id": 0,
+					"sku": 1,
+					"name": {
+						$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+					},
+					"picture": 1,
+					"old_price": 1,
+					"price": 1,
+					"availability": `$prod_n_storeArr`,
+					"has_variants": { $isArray: "$variants" },
+					"prod_n_storeArr": 1,
+					"prod_n_categoryArr": 1,
+					"max_quantity_cart": {
+						$ifNull: ["$max_quantity_cart", 0]
+					},
+					"name_length": {
+						$strLenCP: { $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`] }
+					},
+					"show_discount_percentage": 1,
+					"discount_price_valid_until": 1
+				}, (out) => {
+					out.total = totalResults;
+					return res.out(out);
+				});
+
+			} else {
+				return res.json({
+					total: totalResults,
+					count: searchResults.length,
+					per_page: req.custom.limit,
+					current_page: req.query.skip || 1,
+					totalPages,
+					data: searchResults,
+				});
+			}
+
 		} catch (error) {
 			console.error('Error searching for products:', error);
 			res.status(500).json({ error: 'Internal server error' });
