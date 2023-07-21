@@ -60,6 +60,7 @@ module.exports.list = async function (req, res) {
 					query: name,
 					fields: ['name.en', 'name.ar'],
 					type: 'most_fields',
+					operator: 'or',
 				},
 			};
 
