@@ -5,9 +5,12 @@ const mainController = require("../../libraries/mainController");
 const common = require('../../libraries/common');
 const status_message = require('../../enums/status_message');
 const ObjectID = require("../../types/object_id");
+const { Client } = require('@elastic/elasticsearch');
 const { getTermLang } = require("./utils");
 
 const collectionName = 'product';
+
+const esClient = new Client({ node: 'http://localhost:9200' });
 
 module.exports.collectionName = collectionName;
 
@@ -16,62 +19,8 @@ module.exports.collectionName = collectionName;
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.list = function (req, res) {
-	req.custom.isProducts = true;
+module.exports.list = async function (req, res) {
 	const name = common.parseArabicNumbers(req.query.q);
-	const newNames = [];
-	const names_array = name ? name.split(' ') : [];
-
-	if (/^\d+$/.test(name)) {
-		req.custom.clean_filter["barcode"] = name;
-	} else {
-		if (names_array.length > 0) {
-			let names_array = name.split(' ');
-			for (let item of names_array) {
-
-				// Get the last character of the word
-				const lastCharacter = item.slice(-1);
-
-				// If the last character of teh word contains ه
-				if (/\u0647/.test(lastCharacter)) {
-					// Add new search item for ة
-					newNames.push(item.slice(0, -1) + '\u0629');
-				}
-
-				// If the last character of teh word contains ة
-				if (/\u0629/.test(lastCharacter)) {
-					// Add new search item for ه
-					newNames.push(item.slice(0, -1) + '\u0647');
-				}
-
-				// If the word begins with Alif
-				if (common.begins_with_similar_alif_letters(item)) {
-
-					// Set all different types of Alifs to the search
-					let alif_words = common.transform_word_begins_with_alif_letter(item);
-					alif_words.forEach((alif_word) => {
-						newNames.push(alif_word);
-					});
-				}
-			}
-
-			// Add the text filter operator
-			req.custom.clean_filter['$text'] = {
-				$search: name,//`${name} ${newNames.join(' ')}`,
-				/* $language: getTermLang(name),
-				$caseSensitive: false,
-				$diacriticSensitive: false, */
-				$meta: 'textScore'
-			}
-
-			// Set the sort option
-			req.custom.clean_sort = { score: { $meta: 'textScore' } };
-
-		} else {
-			//req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
-		}
-	}
-
 
 	if (req.query) {
 		if (req.query.brand_id && req.query.brand_id !== "all") {
@@ -98,83 +47,57 @@ module.exports.list = function (req, res) {
 
 	}
 
-	req.custom.cache_key = false;
-	mainController.list(req, res, collectionName, {
-		"_id": 0,
-		"sku": 1,
-		"name": {
-			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
-		},
-		"picture": 1,
-		"old_price": 1,
-		"price": 1,
-		"availability": `$prod_n_storeArr`,
-		"has_variants": { $isArray: "$variants" },
-		"prod_n_storeArr": 1,
-		"prod_n_categoryArr": 1,
-		"max_quantity_cart": {
-			$ifNull: ["$max_quantity_cart", 0]
-		},
-		"supplier_id": 1,
-		"show_discount_percentage": 1,
-		"discount_price_valid_until": 1,
-	}, (data) => {
-		if (data.total == 0 && !/^\d+$/.test(name)) {
-			let filter_regex = `${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`;
+	if (/^\d+$/.test(name)) {
+		req.custom.clean_filter["barcode"] = name;
+	} else {
+		const textSearch = {
+			multi_match: {
+				query: name,
+				fields: ['name.en', 'name.ar'],
+				type: 'best_fields',
+			},
+		};
 
-			try {
-				filter_regex = new RegExp(filter_regex, 'i');
-			} catch (e) {
-				filter_regex = new RegExp(name, 'i');
-			}
+		try {
+			// Calculate the page number from the request query parameters (default to 1 if not provided)
+			const page = parseInt(req.query.page) || 1;
 
-			req.custom.clean_filter['$or'] = [
-				{ "name.ar": { $regex: filter_regex } },
-				{ "name.en": { $regex: filter_regex } },
-			];
-			/* try {
-				filter_regex = `${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`;
-				filter_regex = new RegExp(filter_regex, "i");
-			} catch (er) {
-				filter_regex = new RegExp('', "i");
-			}
-			req.custom.clean_filter['$or'] = [
-				{ "name.ar": { $regex: filter_regex } },
-				{ "name.en": { $regex: filter_regex } },
-			]; */
+			// Calculate the offset (from) based on the current page and page size
+			const from = (page - 1) * PAGE_SIZE;
 
-			if (delete req.custom.clean_filter.hasOwnProperty('$text'))
-				delete req.custom.clean_filter['$text'];
-
-			req.custom.clean_sort = { name_length: 1 };
-			req.custom.sort_after = true;
-
-			mainController.list(req, res, collectionName, {
-				"_id": 0,
-				"sku": 1,
-				"name": {
-					$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+			// Add pagination options to the Elasticsearch search query
+			const searchQuery = {
+				bool: {
+					should: [textSearch],
 				},
-				"picture": 1,
-				"old_price": 1,
-				"price": 1,
-				"availability": `$prod_n_storeArr`,
-				"has_variants": { $isArray: "$variants" },
-				"prod_n_storeArr": 1,
-				"prod_n_categoryArr": 1,
-				"max_quantity_cart": {
-					$ifNull: ["$max_quantity_cart", 0]
+			};
+
+			const { body } = await esClient.search({
+				index: 'products',
+				body: {
+					query: searchQuery,
+					from: from,
+					size: PAGE_SIZE,
 				},
-				"name_length": {
-					$strLenCP: { $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`] }
-				},
-				"show_discount_percentage": 1,
-				"discount_price_valid_until": 1
 			});
-		} else {
-			return res.out(data);
+
+			const totalResults = body.hits.total.value;
+			const totalPages = Math.ceil(totalResults / PAGE_SIZE);
+
+			const searchResults = body.hits.hits.map((hit) => hit._source);
+
+			return res.json({
+				results: searchResults,
+				totalResults,
+				totalPages,
+				currentPage: page,
+			});
+		} catch (error) {
+			console.error('Error searching for products:', error);
+			res.status(500).json({ error: 'Internal server error' });
 		}
-	});
+	}
+
 };
 
 /**
