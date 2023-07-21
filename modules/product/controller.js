@@ -20,49 +20,50 @@ module.exports.collectionName = collectionName;
  * @param {Object} res
  */
 module.exports.list = async function (req, res) {
-	req.custom.isProducts = true;
-	const name = common.parseArabicNumbers(req.query.q);
+	try {
+		req.custom.isProducts = true;
+		const name = common.parseArabicNumbers(req.query.q);
 
-	if (req.query) {
-		if (req.query.brand_id && req.query.brand_id !== "all") {
-			req.custom.clean_filter['brand_id'] = new ObjectID(req.query.brand_id);
-		}
-		if (req.query.category_id && req.query.category_id !== "all") {
-			req.custom.clean_filter['prod_n_categoryArr.category_id'] = new ObjectID(req.query.category_id);
-		}
-
-		if (req.query.sortBy && req.query.sorting) {
-			if (req.query.sortBy == "name") {
-				req.custom.clean_sort = { ["name." + req.custom.lang]: parseInt(req.query.sorting) };
-			} else {
-				req.custom.clean_sort = { [req.query.sortBy]: parseInt(req.query.sorting) };
+		if (req.query) {
+			if (req.query.brand_id && req.query.brand_id !== "all") {
+				req.custom.clean_filter['brand_id'] = new ObjectID(req.query.brand_id);
 			}
+			if (req.query.category_id && req.query.category_id !== "all") {
+				req.custom.clean_filter['prod_n_categoryArr.category_id'] = new ObjectID(req.query.category_id);
+			}
+
+			if (req.query.sortBy && req.query.sorting) {
+				if (req.query.sortBy == "name") {
+					req.custom.clean_sort = { ["name." + req.custom.lang]: parseInt(req.query.sorting) };
+				} else {
+					req.custom.clean_sort = { [req.query.sortBy]: parseInt(req.query.sorting) };
+				}
+			}
+
+			if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
+				req.custom.clean_filter['supplier_id'] = new ObjectID(req.query.supplier_id);
+				/* if (req.custom.cache_key) {
+					req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}__supplier_${req.query.supplier_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
+				} */
+			}
+
 		}
 
-		if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
-			req.custom.clean_filter['supplier_id'] = new ObjectID(req.query.supplier_id);
-			/* if (req.custom.cache_key) {
-				req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}__supplier_${req.query.supplier_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
-			} */
-		}
+		const page_size = parseInt(req.query.limit || config.db.limit);
+		const isInstantSearch = req.query.instant;
 
-	}
+		if (/^\d+$/.test(name)) {
+			req.custom.clean_filter["barcode"] = name;
+		} else {
+			const textSearch = {
+				multi_match: {
+					query: name,
+					fields: ['name.en', 'name.ar'],
+					type: 'best_fields',
+				},
+			};
 
-	const page_size = parseInt(req.query.limit || config.db.limit);
-	const isInstantSearch = req.query.instant;
 
-	if (/^\d+$/.test(name)) {
-		req.custom.clean_filter["barcode"] = name;
-	} else {
-		const textSearch = {
-			multi_match: {
-				query: name,
-				fields: ['name.en', 'name.ar'],
-				type: 'best_fields',
-			},
-		};
-
-		try {
 			const page = parseInt(req.query.page) || 1;
 			const from = (page - 1) * page_size;
 
@@ -134,10 +135,10 @@ module.exports.list = async function (req, res) {
 				});
 			}
 
-		} catch (error) {
-			console.error('Error searching for products:', error);
-			res.status(500).json({ error: 'Internal server error' });
 		}
+	} catch (error) {
+		console.error('Error searching for products:', error);
+		res.status(500).json({ error: 'Internal server error' });
 	}
 
 };
