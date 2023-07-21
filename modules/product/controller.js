@@ -74,7 +74,7 @@ module.exports.list = async function (req, res) {
 					should: [textSearch],
 				}, */
 				multi_match: {
-					query,
+					name,
 					fields: ['name.en', 'name.ar'],
 					type: 'best_fields',
 					operator: 'or',
