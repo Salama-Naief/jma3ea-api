@@ -61,6 +61,7 @@ module.exports.list = async function (req, res) {
 					fields: ['name.en', 'name.ar'],
 					type: 'most_fields',
 					operator: 'or',
+					fuzziness: 'AUTO'
 				},
 			};
 
