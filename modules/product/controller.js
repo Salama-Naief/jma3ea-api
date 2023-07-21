@@ -90,7 +90,13 @@ module.exports.list = async function (req, res) {
 			let searchResults = body.hits.hits.map((hit) => hit._source);
 
 			if (!isInstantSearch) {
-				req.custom.clean_filter['$or'] = searchResults.map(p => ({ sku: p.sku }));
+				const skuArray = searchResults.map((p) => p.sku);
+				const filterQuery = {
+					$or: skuArray.map((sku) => ({ sku })),
+				};
+				const sortQuery = { $sort: { sku: { $in: skuArray } } };
+				const filterSortQuery = [...filterQuery, sortQuery];
+				req.custom.clean_filter['$and'] = filterSortQuery;
 				mainController.list(req, res, collectionName, {
 					"_id": 0,
 					"sku": 1,
