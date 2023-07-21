@@ -208,7 +208,7 @@ module.exports.normalize = async (req, res) => {
 module.exports.indexProducts = async (req, res) => {
     const collection = req.custom.db.client().collection('product');
     try {
-        const PAGE_SIZE = 10;
+        const PAGE_SIZE = 1000;
         const currentPage = parseInt(req.query.page) || 1
         const skip = (currentPage - 1) * PAGE_SIZE;
 
