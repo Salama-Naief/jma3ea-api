@@ -74,7 +74,7 @@ module.exports.list = async function (req, res) {
 				},
 			};
 
-			const { body } = await esClient.search({
+			const body = await esClient.search({
 				index: 'products',
 				body: {
 					query: searchQuery,
@@ -82,6 +82,8 @@ module.exports.list = async function (req, res) {
 					size: PAGE_SIZE,
 				},
 			});
+
+			console.log('this is the body: ', body);
 
 			const totalResults = body.hits.total.value;
 			const totalPages = Math.ceil(totalResults / PAGE_SIZE);
