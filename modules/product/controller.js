@@ -97,59 +97,72 @@ module.exports.list = async function (req, res) {
 				},
 			}; */
 
+			const searchQuery = {
+				bool: {
+					should: [
+						{
+							match: {
+								'name.ar': {
+									query: name,
+									operator: 'or'
+								},
+							},
+						},
+						{
+							match: {
+								'name.ar': {
+									query: name,
+									fuzziness: 'AUTO',
+									operator: 'or'
+								},
+							},
+						},
+						{
+							match: {
+								'name.en': {
+									query: name,
+									operator: 'or'
+								},
+							},
+						},
+						{
+							match: {
+								'name.en': {
+									query: name,
+									fuzziness: 'AUTO',
+									operator: 'or'
+								},
+							},
+						},
+						{
+							wildcard: {
+								'name.en': `*${name}*`
+							}
+						},
+						{
+							wildcard: {
+								'name.ar': `*${name}*`
+							}
+						}
+					],
+				},
+			};
+
+			if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
+				searchQuery.bool.filter = [
+					{
+						term: {
+							'supplier_id': req.query.supplier_id
+						}
+					}
+				];
+			}
+
+
 			const body = await esClient.search({
 				index: 'products',
 				body: {
-					query: {
-						bool: {
-							should: [
-								{
-									match: {
-										'name.ar': {
-											query: name,
-											operator: 'or'
-										},
-									},
-								},
-								{
-									match: {
-										'name.ar': {
-											query: name,
-											fuzziness: 'AUTO',
-											operator: 'or'
-										},
-									},
-								},
-								{
-									match: {
-										'name.en': {
-											query: name,
-											operator: 'or'
-										},
-									},
-								},
-								{
-									match: {
-										'name.en': {
-											query: name,
-											fuzziness: 'AUTO',
-											operator: 'or'
-										},
-									},
-								},
-								{
-									wildcard: {
-										'name.en': `*${name}*`
-									}
-								},
-								{
-									wildcard: {
-										'name.ar': `*${name}*`
-									}
-								}
-							],
-						},
-					},
+					query: searchQuery,
 					from: from,
 					size: page_size,
 				},
