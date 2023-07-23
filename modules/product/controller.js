@@ -225,7 +225,12 @@ module.exports.list = async function (req, res) {
 					per_page: req.custom.limit,
 					current_page: req.query.skip || 1,
 					totalPages,
-					data: searchResults,
+					data: searchResults.map(p => {
+						if (p.picture) {
+							p.picture = p.picture.includes(req.custom.config.media_url) ? p.picture : (req.custom.config.media_url + p.picture);
+						}
+						return p;
+					}),
 				});
 			}
 
