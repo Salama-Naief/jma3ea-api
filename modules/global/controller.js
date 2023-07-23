@@ -254,23 +254,20 @@ module.exports.deleteIndexes = async (req, res) => {
 }
 
 
-module.exports.countIndexedProducts = async function () {
+module.exports.getAllIndexedProducts = async function () {
     try {
-        const { body: indices } = await esClient.cat.indices({ format: 'json' });
+        const { body } = await esClient.search({
+            index: 'products',
+            body: {
+                query: {
+                    match_all: {},
+                },
+            },
+        });
 
-        // Find the index for "products"
-        const productsIndex = indices.find(index => index.index === 'products');
-
-        if (!productsIndex) {
-            console.log('Products index not found.');
-            return;
-        }
-
-        const indexedProductsCount = productsIndex['docs.count'];
-        console.log('Number of indexed products:', indexedProductsCount);
-        return res.out('Number of indexed products:', indexedProductsCount);
+        return res.out(body.hits.hits.map(hit => hit._source));
     } catch (error) {
-        console.error('Error counting indexed products:', error);
+        console.error('Error fetching data from Elasticsearch:', error);
         return res.out(error);
     }
 }
