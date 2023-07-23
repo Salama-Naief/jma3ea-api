@@ -222,14 +222,23 @@ module.exports.indexProducts = async (req, res) => {
                     en: product.name.en,
                     ar: product.name.ar,
                 },
-                sku: product.sku
+                sku: product.sku,
+                picture: product.picture
             };
 
             if (product.supplier_id) body.supplier_id = product.supplier_id;
-            await esClient.index({
+
+
+            const updateBody = {
+                doc: {
+                    picture: product.picture,
+                },
+            };
+
+            await esClient.update({
                 index: 'products',
                 id: product._id.toString(),
-                body: body,
+                body: updateBody,
             });
         }
 
