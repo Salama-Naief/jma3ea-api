@@ -235,6 +235,9 @@ module.exports.indexProducts = async (req, res) => {
                 },
             };
 
+            if (product._id.toString() === '5d4bddc645de0376bb50e8e6')
+                console.log('=============================================== UPDATE PRODUCT \n', updateBody.doc, '===============================================');
+
             await esClient.update({
                 index: 'products',
                 id: product._id.toString(),
