@@ -256,7 +256,7 @@ module.exports.deleteIndexes = async (req, res) => {
 
 module.exports.getAllIndexedProducts = async function (req, res) {
     try {
-        const { body } = await esClient.search({
+        const body = await esClient.search({
             index: 'products',
             body: {
                 query: {
