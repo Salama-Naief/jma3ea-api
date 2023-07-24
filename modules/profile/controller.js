@@ -76,7 +76,7 @@ module.exports.login = function (req, res) {
 			}
 		],
 		password: sha1(md5(req.body.password))
-	}).then((theuser) => {
+	}).then(async (theuser) => {
 		if (!theuser) {
 			return res.out({
 				message: local.failed_auth_user
@@ -98,6 +98,28 @@ module.exports.login = function (req, res) {
 		const data = req.custom.authorizationObject;
 		data.member_id = theuser._id;
 		data.language = theuser.language || req.custom.lang;
+		if (theuser.address && theuser.address.city_id) {
+			const cityCollection = req.custom.db.client().collection('city');
+			const cityObj = await cityCollection.findOne({
+				_id: ObjectID(theuser.address.city_id.toString())
+			});
+			if (!cityObj) {
+				return res.out({
+					'message': req.custom.local.city_is_not_exists
+				}, status_message.CITY_REQUIRED)
+			}
+
+			const countryCollection = req.custom.db.client().collection('country');
+			const countryObj = await countryCollection.findOne({
+				_id: cityObj.country_id
+			});
+
+			data.city_id = theuser.address.city_id;
+			data.city = cityObj;
+			data.country_id = cityObj.country_id;
+			data.currency = countryObj.currency;
+		}
+
 		delete theuser.password;
 		theuser.wallet = theuser.wallet && parseFloat(theuser.wallet) > 0 ? parseFloat(theuser.wallet) : 0;
 		req.custom.cache.set(token, data, req.custom.config.cache.life_time.token)
