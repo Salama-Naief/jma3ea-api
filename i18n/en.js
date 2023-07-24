@@ -1,7 +1,7 @@
 const config = require('../config');
 
 const locals = {
-	upgrade_message:"Please update the app",
+	upgrade_message: "Please update the app",
 	address_name_exists: 'Address name is already exists',
 	can_not_delete_default_address: 'You cannot delete the primary address',
 	cart_coupon_added: 'Coupon has been added',
@@ -93,6 +93,8 @@ const locals = {
 		"14": 'Processing your order',
 		"15": 'No answer for the driver',
 		"16": 'Customer asks for rescheduling DT',
+		"17": 'Ready',
+		"18": 'Delivering your order'
 	},
 	mail: {
 		checkout_items_in_cart: 'Products in your cart',
