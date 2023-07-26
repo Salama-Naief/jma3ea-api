@@ -11,5 +11,6 @@ router.post('/member/point_transaction', controller.pointsToTransaction);
 router.post('/products/index', controller.indexProducts);
 router.delete('/products/index', controller.deleteIndexes);
 router.get('/products/index', controller.getAllIndexedProducts);
+router.post('/orders/order_number', controller.convertOrderNumbersToString);
 
 module.exports = router;

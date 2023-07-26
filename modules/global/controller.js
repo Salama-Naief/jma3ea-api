@@ -272,3 +272,33 @@ module.exports.getAllIndexedProducts = async function (req, res) {
         return res.out(error);
     }
 }
+
+
+module.exports.convertOrderNumbersToString = async (req, res) => {
+    try {
+        const collection = req.custom.db.client().collection('order');
+
+        const filter = {
+            order_number: { $exists: true }
+        };
+
+        const update = [
+            {
+                $set: {
+                    order_number: { $toString: "$order_number" }
+                }
+            }
+        ];
+
+        const result = await collection.updateMany(filter, update);
+        //const result = await collection.updateMany(filter, { $set: { order_number: Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000 } });
+
+        console.log(`${result.modifiedCount} documents updated.`);
+
+        return res.out(`${result.modifiedCount} documents updated.`);
+
+    } catch (err) {
+        console.log('Convert order numbers error: ', err);
+        return res.out(err);
+    }
+}
