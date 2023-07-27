@@ -367,6 +367,10 @@ module.exports.featured = async function (req, res) {
 					return feature_category;
 				} */
 
+				if (f.expiration_date) {
+					console.log('============================== EXPIRATION DATE ============================== ', f.expiration_date, new Date(), common.getDate());
+				}
+
 				return feature_category;
 			});
 			return res.out(cached_data.filter(f => !f.expiration_date || f.expiration_date > new Date()));
