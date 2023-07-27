@@ -343,7 +343,7 @@ module.exports.featured = async function (req, res) {
 	}
 
 
-	if (cache_key) {
+	if (false) {
 		let cached_data = await cache.get(cache_key).catch(() => null);
 		if (cached_data) {
 			cached_data = cached_data.map((feature_category) => {
