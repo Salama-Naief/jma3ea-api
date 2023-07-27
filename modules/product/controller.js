@@ -363,12 +363,9 @@ module.exports.featured = async function (req, res) {
 
 				});
 
-				/* if (feature_category.expiration_date)
-					console.log('=========================== EXPIRATION DATE =====================', feature_category.expiration_date, new Date())
-
 				if (!feature_category.expiration_date || feature_category.expiration_date > new Date()) {
 					return feature_category;
-				} */
+				}
 			});
 			return res.out(cached_data);
 		}
@@ -388,7 +385,6 @@ module.exports.featured = async function (req, res) {
 		"expiration_date_message": 1
 	}, async (features) => {
 		try {
-			//features.data = features.data.filter(f => !f.expiration_date || f.expiration_date > new Date());
 			const slideCollection = req.custom.db.client().collection("slide");
 			const slides = await slideCollection.find({ features: { $in: [...features.data.map(f => ObjectID(f._id.toString())), ...features.data.map(f => f._id.toString())] } }).toArray() || [];
 			const featured = [];
@@ -539,7 +535,7 @@ module.exports.featured = async function (req, res) {
 				cache.set(cache_key, featured, req.custom.config.cache.life_time).catch(() => null);
 			}
 
-			res.out(featured);
+			res.out(featured.filter(f => !f.expiration_date || f.expiration_date > new Date()));
 		} catch (err) {
 			return res.out({
 				'message': err.message
