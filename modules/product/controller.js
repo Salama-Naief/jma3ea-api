@@ -343,7 +343,7 @@ module.exports.featured = async function (req, res) {
 	}
 
 
-	if (false) {
+	if (cache_key) {
 		let cached_data = await cache.get(cache_key).catch(() => null);
 		if (cached_data) {
 			cached_data = cached_data.map((feature_category) => {
@@ -366,6 +366,8 @@ module.exports.featured = async function (req, res) {
 				/* if (!feature_category.expiration_date || feature_category.expiration_date > new Date()) {
 					return feature_category;
 				} */
+
+				return feature_category;
 			});
 			return res.out(cached_data);
 		}
