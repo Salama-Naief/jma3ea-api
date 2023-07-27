@@ -367,7 +367,7 @@ module.exports.featured = async function (req, res) {
 					return feature_category;
 				} */
 
-				if (feature_category.expiration_date) {
+				if (feature_category.expiration_date && feature_category._id && feature_category._id.toString() === '648086284e9e6379c835a4f4') {
 					console.log('============================== EXPIRATION DATE ============================== ', feature_category.expiration_date, new Date(), common.getDate());
 				}
 
