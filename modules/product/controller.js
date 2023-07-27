@@ -363,9 +363,9 @@ module.exports.featured = async function (req, res) {
 
 				});
 
-				if (!feature_category.expiration_date || feature_category.expiration_date > new Date()) {
+				/* if (!feature_category.expiration_date || feature_category.expiration_date > new Date()) {
 					return feature_category;
-				}
+				} */
 			});
 			return res.out(cached_data);
 		}
@@ -535,7 +535,7 @@ module.exports.featured = async function (req, res) {
 				cache.set(cache_key, featured, req.custom.config.cache.life_time).catch(() => null);
 			}
 
-			res.out(featured.filter(f => !f.expiration_date || f.expiration_date > new Date()));
+			res.out(featured/* .filter(f => !f.expiration_date || f.expiration_date > new Date()) */);
 		} catch (err) {
 			return res.out({
 				'message': err.message
