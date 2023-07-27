@@ -363,6 +363,9 @@ module.exports.featured = async function (req, res) {
 
 				});
 
+				if (feature_category.expiration_date)
+					console.log('=========================== EXPIRATION DATE =====================', feature_category.expiration_date, new Date())
+
 				if (!feature_category.expiration_date || feature_category.expiration_date > new Date()) {
 					return feature_category;
 				}
