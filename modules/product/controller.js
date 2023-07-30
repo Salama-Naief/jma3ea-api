@@ -52,8 +52,11 @@ module.exports.list = async function (req, res) {
 		const page_size = parseInt(req.query.limit || req.custom.config.db.limit);
 		const isInstantSearch = req.query.instant;
 
-		if (/^\d+$/.test(name)) {
-			req.custom.clean_filter["barcode"] = name;
+		if (!name || name === "" || /^\d+$/.test(name)) {
+
+			if (name && name !== "")
+				req.custom.clean_filter["barcode"] = name;
+
 			mainController.list(req, res, collectionName, {
 				"_id": 0,
 				"sku": 1,
@@ -167,8 +170,6 @@ module.exports.list = async function (req, res) {
 					size: page_size,
 				},
 			});
-
-			console.log('this is the body: ', body);
 
 			const totalResults = body.hits.total.value;
 			const totalPages = Math.ceil(totalResults / page_size);
