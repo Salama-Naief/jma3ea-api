@@ -388,6 +388,11 @@ module.exports.forgotpassword = function (req, res) {
 		}
 
 		userCollection.findOne({ [searchColumn]: data[searchColumn] }).then((userObj) => {
+
+			if (!userObj) {
+				return res.out({ message: req.custom.local.forgotpassword_not_found }, status_message.NOT_FOUND);
+			}
+
 			const otpCode = process.env.NODE_ENV !== "production" ? 1234 : Math.floor(1000 + Math.random() * 9000);
 
 			const reset_hash = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);

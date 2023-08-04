@@ -102,6 +102,7 @@ const locals = {
 		forgotpassword_c_b: 'To reset your password please follow the link below',
 		forgotpassword_q: 'Forgot your password?',
 		forgotpassword_thanks: 'Thanks.',
+		forgotpassword_not_found: 'Please make sure you enter the correct phone number or email.',
 		reset_password_link_sent: 'Reset password link has been sent to your email, check your email.',
 		reset_password_otp_correct: 'OTP Code Correct',
 		reset_password_otp_incorrect: 'OTP Code Incorrect',
