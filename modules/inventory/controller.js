@@ -20,11 +20,11 @@ module.exports.list = async function (req, res) {
         }
     }
 
-    if (!cityid) {
+    /* if (!cityid) {
         return res.out({
             'message': req.custom.local.choose_city_first
         }, status_message.CITY_REQUIRED);
-    }
+    } */
 
     mainController.list_all(req, res, collectionName, {
         "_id": 1,
@@ -140,7 +140,10 @@ module.exports.list = async function (req, res) {
 
         //req.custom.clean_filter = await filter_internal_suppliers_by_city(req, true);
         for (let inventory of out.data) {
-            req.custom.clean_filter = { inventory_id: ObjectID(inventory._id.toString()), cities: ObjectID(cityid), is_external: true, status: true };
+            req.custom.clean_filter = { inventory_id: ObjectID(inventory._id.toString()), is_external: true, status: true };
+            if (cityid) {
+                req.custom.clean_filter.cities = ObjectID(cityid);
+            }
             inventory.min_value = inventory.min_order;
             inventory.min_delivery_time = inventory.delivery_time;
             if (inventory.picture && inventory.picture != undefined) {
