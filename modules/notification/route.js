@@ -13,4 +13,9 @@ router.get('/', controller.read);
  */
 router.put('/:Id', controller.update2sent);
 
+/**
+ * PATCH /notification/:Id/open
+ */
+router.put('/:Id/open', controller.notificationOpened);
+
 module.exports = router;
