@@ -29,7 +29,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 			return cache.get(req.custom.cache_key).
 				then((cached_data) => {
 
-					if (cached_data) {
+					if (false) {
 						if (req.custom.isProducts == true) {
 							const promises = [];
 							cached_data.data = cached_data.data.map((i) => {
