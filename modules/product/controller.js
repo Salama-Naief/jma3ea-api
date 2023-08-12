@@ -178,7 +178,7 @@ module.exports.list = async function (req, res) {
 
 			if (!isInstantSearch) {
 				const skus = searchResults.map((p) => p.sku);
-				console.log('================================ SKUS ===========================', skus);
+				console.log('================================ SKUS BEFORE ===========================', name, skus.includes('60003129'));
 				req.custom.clean_filter['sku'] = { $in: skus };
 				mainController.list(req, res, collectionName, {
 					"_id": 0,
