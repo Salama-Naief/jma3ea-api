@@ -939,7 +939,99 @@ module.exports.chargeWallet = async function (req, res) {
 			'message': err.message
 		}, status_message.UNEXPECTED_ERROR);
 	}
+};
 
+
+module.exports.getTheMonthShipping = async function (req, res) {
+	try {
+		if (req.custom.isAuthorized === false) {
+			return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+		}
+
+		const only_validation = req.query.validation !== undefined;
+
+		// Get the current user profile
+		const profile = require('../profile/controller');
+		let user_info = await profile.getInfo(req, {
+			_id: 1,
+			fullname: 1,
+			email: 1,
+			mobile: 1,
+			address: 1,
+			addresses: 1,
+			points: 1,
+			wallet: 1,
+			device_token: 1,
+		}).catch(() => null);
+
+		if (user_info) {
+			req.body.user_data = user_info;
+		}
+
+		let hash = uuid().replace(/-/g, '');
+
+		if (only_validation && !req.body.hash) {
+			req.body.hash = hash;
+			req.custom.authorizationObject.hash = hash;
+			await req.custom.cache.set(req.custom.token, req.custom.authorizationObject, req.custom.config.cache.life_time.token);
+		}
+
+
+		// Validate and sanitize inputs
+		req.custom.model = req.custom.model || require('./model/month_shipping');
+		let {
+			data,
+			error
+		} = await req.custom.getValidData(req);
+
+		if (error) {
+			return res.out(error, status_message.VALIDATION_ERROR);
+		}
+
+		if (only_validation) {
+			return res.out({
+				message: true,
+				hash: hash,
+			});
+		}
+
+		if (user_info) {
+			data.user_data = user_info;
+		}
+
+		if (!data.hash) {
+			save_failed_payment(req, !data.hash ? 'NO_HASH' : 'HASH_NOT_VALID');
+			return res.out({
+				message: req.custom.local.hash_error
+			}, status_message.VALIDATION_ERROR);
+		}
+
+		if (req.body.payment_method == 'knet' && req.body.payment_details && !req.body.payment_details.trackid) {
+			save_failed_payment(req, 'TRACK_ID_NOT_VALID');
+			return res.out({
+				message: req.custom.local.hash_error
+			}, status_message.VALIDATION_ERROR);
+		}
+
+		let amount = data.amount ? parseFloat(data.amount) : 0;
+		if (req.body.payment_method == 'knet' && req.body.payment_details.amt) {
+			amount = parseFloat(req.body.payment_details.amt);
+		}
+
+		const member_collection = req.custom.db.client().collection('member');
+		await member_collection.updateOne({
+			_id: ObjectID(data.user_data._id.toString())
+		}, {
+			$set: { wallet: new_wallet }
+		}).catch(() => null)
+
+
+		res.out({});
+	} catch (err) {
+		return res.out({
+			'message': err.message
+		}, status_message.UNEXPECTED_ERROR);
+	}
 };
 
 module.exports.sendToWallet = async function (req, res) {
