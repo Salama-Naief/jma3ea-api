@@ -80,7 +80,7 @@ module.exports.list = async function (req, res) {
 				"discount_price_valid_until": 1
 			});
 		} else {
-			/* const textSearch = {
+			const textSearch = {
 				multi_match: {
 					query: name,
 					fields: ['name.en', 'name.ar'],
@@ -88,7 +88,7 @@ module.exports.list = async function (req, res) {
 					operator: 'or',
 					fuzziness: 'AUTO'
 				},
-			}; */
+			};
 
 
 			const page = parseInt(req.query.page) || 1;
