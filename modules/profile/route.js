@@ -68,6 +68,11 @@ router.put('/wallet', controller.points2wallet);
 router.post('/wallet/add', controller.chargeWallet);
 
 /**
+ * PUT /profile/shipping
+ */
+router.post('/shipping', controller.getTheMonthShipping);
+
+/**
  * PUT /profile/wallet/send
  */
  router.put('/wallet/send', controller.sendToWallet);

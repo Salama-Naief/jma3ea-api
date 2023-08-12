@@ -44,6 +44,7 @@ module.exports.buy = async function (req, res) {
 		addresses: 1,
 		points: 1,
 		wallet: 1,
+		month_shipping: 1,
 		device_token: 1,
 	}).catch(() => null);
 
@@ -226,6 +227,16 @@ module.exports.buy = async function (req, res) {
 
 			let total_coupon_value = 0;
 
+			let hasFreeShipping = false;
+
+			if (user_info && user_info.month_shipping && user_info.month_shipping.active) {
+				if (user_info.month_shipping.endDate > new Date()) {
+					hasFreeShipping = true;
+				} else {
+					await reset_free_shipping(req, user_info._id.toString());
+				}
+			}
+
 			for (let sup of productsGroupedBySupplier) {
 				let supplier_products_total = parseFloat(sup.products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
 
@@ -235,6 +246,14 @@ module.exports.buy = async function (req, res) {
 				if (sup.supplier._id.toString() == req.custom.settings['site_id'] && sup.products.findIndex(p => p.free_shipping == true) > -1) {
 					supplier_shipping_cost = 0;
 				}
+				if (hasFreeShipping/*  && req.custom.settings.orders.free_month_shipping && req.custom.settings.orders.free_month_shipping.allow */) {
+					if (req.custom.settings.orders.free_month_shipping && req.custom.settings.orders.free_month_shipping.only_jm3eia) {
+						if (sup.supplier._id.toString() == req.custom.settings['site_id']) supplier_shipping_cost = 0;
+					} else {
+						supplier_shipping_cost = 0;
+					}
+				}
+
 				shipping_cost += supplier_shipping_cost;
 
 				if (!general_coupon && suppliers_coupons && suppliers_coupons.length > 0) {
@@ -590,11 +609,6 @@ module.exports.error = async function (req, res) {
  * @param {Object} res
  */
 module.exports.list = async function (req, res) {
-	/* if (req.query.test) {
-		console.log('//////////////////////////////////////// suppliers to buy in LIST ////////////////////////////////////////:\n ', req.query.suppliers);
-	} */
-
-
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -612,6 +626,7 @@ module.exports.list = async function (req, res) {
 		addresses: 1,
 		points: 1,
 		wallet: 1,
+		month_shipping: 1,
 		device_token: 1,
 	}).catch(() => null);
 
@@ -636,7 +651,6 @@ module.exports.list = async function (req, res) {
 		'$in': prods
 	};
 	req.custom.limit = 0;
-	//req.custom.resetDiscountPrice = true;
 	req.custom.isProducts = true;
 	mainController.list(req, res, 'product', {
 		"_id": 1,
@@ -669,33 +683,17 @@ module.exports.list = async function (req, res) {
 			let products = await products_to_save(out.data, user, req, true);
 			let allProducts = [...products];
 
-			/* if (req.query.test) {
-				console.log('//////////////////////////////////////// suppliers to buy ////////////////////////////////////////:\n ', req.query.suppliers);
-			} */
 
 			if (req.query.suppliers) {
 				if (req.query.suppliers.length > 0) {
 					const suppliers_to_buy = req.query.suppliers;
 					products = products.filter(p => suppliers_to_buy.includes(p.supplier._id.toString()));
-					/* allProducts = allProducts.map(p => {
-						if (suppliers_to_buy.includes(p.supplier._id.toString()))
-							p.isSelected = true;
-						else
-							p.isSelected = false;
-
-						return p;
-					}) */
 				} else {
 					return res.out({
 						message: "No supplier selected"
 					}, status_message.VALIDATION_ERROR);
 				}
-			}/*  else {
-				allProducts = allProducts.map(p => {
-					p.isSelected = true;
-					return p;
-				});
-			} */
+			}
 
 			const should_be_gifted = products.findIndex(p => p.categories.findIndex(c => FLOWERS_CATEGORIES_IDS.includes(c._id.toString())) > -1) > -1;
 
@@ -743,6 +741,16 @@ module.exports.list = async function (req, res) {
 
 			let total_coupon_value = 0;
 
+			let hasFreeShipping = false;
+
+			if (user_info && user_info.month_shipping && user_info.month_shipping.active) {
+				if (user_info.month_shipping.endDate > new Date()) {
+					hasFreeShipping = true;
+				} else {
+					await reset_free_shipping(req, user_info._id.toString());
+				}
+			}
+
 			for (let sup of productsGroupedBySupplier) {
 				let supplier_products_total = parseFloat(sup.products.reduce((t_p, { price, quantity }) => parseFloat(t_p) + parseFloat(price) * parseInt(quantity), 0) || 0);
 
@@ -751,6 +759,13 @@ module.exports.list = async function (req, res) {
 				let supplier_shipping_cost = parseFloat(sup.supplier.shipping_cost) || city_shipping_cost;
 				if (sup.supplier._id.toString() == req.custom.settings['site_id'] && sup.products.findIndex(p => p.free_shipping) > -1) {
 					supplier_shipping_cost = 0;
+				}
+				if (hasFreeShipping/*  && req.custom.settings.orders.free_month_shipping && req.custom.settings.orders.free_month_shipping.allow */) {
+					if (req.custom.settings.orders.free_month_shipping && req.custom.settings.orders.free_month_shipping.only_jm3eia) {
+						if (sup.supplier._id.toString() == req.custom.settings['site_id']) supplier_shipping_cost = 0;
+					} else {
+						supplier_shipping_cost = 0;
+					}
 				}
 
 				if (sup.isSelected) {
@@ -767,7 +782,7 @@ module.exports.list = async function (req, res) {
 					if (sup.supplier.min_value && parseInt(sup.supplier.min_value) > supplier_products_total) {
 						message = req.custom.local.order_should_be_more_then({
 							value: sup.supplier.min_value,
-							currency: req.custom.authorizationObject.currency[req.custom.lang]
+							currency: req.custom.authorizationObject.currency ? req.custom.authorizationObject.currency[req.custom.lang] : ''
 						});
 					}
 
@@ -1327,4 +1342,17 @@ function update_remote_quantity(req, p, token) {
 		.catch(function (error) {
 			console.log(error);
 		});
+}
+
+
+async function reset_free_shipping(req, userId) {
+	const member_collection = req.custom.db.client().collection('member');
+	await member_collection.updateOne({
+		_id: ObjectID(userId.toString())
+	}, {
+		$set: {
+			'month_shipping.active': false,
+			'month_shipping.startDate': null
+		}
+	}).catch(() => null)
 }

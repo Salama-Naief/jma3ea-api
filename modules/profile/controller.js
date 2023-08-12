@@ -948,6 +948,10 @@ module.exports.getTheMonthShipping = async function (req, res) {
 			return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 		}
 
+		if (!req.custom.settings.orders.free_month_shipping || !req.custom.settings.orders.free_month_shipping.allow) {
+			return res.out({ message: 'Free month shipping is disabled' }, status_message.UNEXPECTED_ERROR);
+		}
+
 		const only_validation = req.query.validation !== undefined;
 
 		// Get the current user profile
@@ -1006,6 +1010,7 @@ module.exports.getTheMonthShipping = async function (req, res) {
 			}, status_message.VALIDATION_ERROR);
 		}
 
+
 		if (req.body.payment_method == 'knet' && req.body.payment_details && !req.body.payment_details.trackid) {
 			save_failed_payment(req, 'TRACK_ID_NOT_VALID');
 			return res.out({
@@ -1013,16 +1018,33 @@ module.exports.getTheMonthShipping = async function (req, res) {
 			}, status_message.VALIDATION_ERROR);
 		}
 
+
 		let amount = data.amount ? parseFloat(data.amount) : 0;
 		if (req.body.payment_method == 'knet' && req.body.payment_details.amt) {
 			amount = parseFloat(req.body.payment_details.amt);
 		}
 
+		console.log("free shipping: ", req.custom.settings.orders.free_month_shipping);
+
+		if (parseFloat(req.custom.settings.orders.free_month_shipping.shipping_cost) !== amount) {
+			return res.out({ message: 'The amount you paid is not equal to the month shipping cost' }, status_message.UNEXPECTED_ERROR);
+		}
+
+		const startDate = new Date();
+		const endDate = new Date();
+		endDate.setMonth(endDate.getMonth() + 1);
+
 		const member_collection = req.custom.db.client().collection('member');
 		await member_collection.updateOne({
 			_id: ObjectID(data.user_data._id.toString())
 		}, {
-			$set: { wallet: new_wallet }
+			$set: {
+				month_shipping: {
+					active: true,
+					startDate,
+					endDate
+				}
+			}
 		}).catch(() => null)
 
 

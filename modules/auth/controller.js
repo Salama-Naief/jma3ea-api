@@ -19,7 +19,6 @@ module.exports.check = function (req, res) {
 	const cache = req.custom.cache;
 	const local = req.custom.local;
 
-	console.log(req.body);
 
 	if (!req.body.appId || !req.body.appSecret) {
 		return res.out({
