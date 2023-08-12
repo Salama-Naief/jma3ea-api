@@ -80,7 +80,7 @@ module.exports.list = async function (req, res) {
 				"discount_price_valid_until": 1
 			});
 		} else {
-			const textSearch = {
+			/* const textSearch = {
 				multi_match: {
 					query: name,
 					fields: ['name.en', 'name.ar'],
@@ -88,19 +88,19 @@ module.exports.list = async function (req, res) {
 					operator: 'or',
 					fuzziness: 'AUTO'
 				},
-			};
+			}; */
 
 
 			const page = parseInt(req.query.page) || 1;
 			const from = (page - 1) * page_size;
 
-			const searchQuery = {
+			/* const searchQuery = {
 				bool: {
 					should: [textSearch],
 				},
-			};
+			}; */
 
-			/* const searchQuery = {
+			const searchQuery = {
 				bool: {
 					should: [
 						{
@@ -149,7 +149,7 @@ module.exports.list = async function (req, res) {
 						}
 					],
 				},
-			}; */
+			};
 
 			if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
 				searchQuery.bool.filter = [
