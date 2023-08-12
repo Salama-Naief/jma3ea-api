@@ -21,7 +21,7 @@ module.exports.collectionName = collectionName;
  */
 module.exports.list = async function (req, res) {
 	try {
-		//req.custom.isProducts = true;
+		req.custom.isProducts = true;
 		const name = common.parseArabicNumbers(req.query.q);
 
 		if (req.query) {
