@@ -294,14 +294,13 @@ module.exports.getAvailableOffer = async (req, total, offer_id) => {
 
     const offer = await collection.findOne(query, options);
 
-    if (offer.min_amount > total) return null;
+    if (!offer || offer.min_amount > total) return null;
 
-    if (offer) {
-        if (offer_id && offer.target_amount >= total)
-            offer.isClaimed = true;
-        else
-            offer.isClaimed = false;
-    }
+    if (offer_id && offer.target_amount >= total)
+        offer.isClaimed = true;
+    else
+        offer.isClaimed = false;
+
 
     return offer;
 }

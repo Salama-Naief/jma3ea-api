@@ -255,10 +255,6 @@ module.exports.listByCategory = function (req, res) {
 	if (req.query.featured == 'true') {
 		//req.custom.clean_filter['feature_id'] = ObjectID(req.params.Id);
 		req.custom.clean_filter['$or'] = [{ 'feature_id': ObjectID(req.params.Id) }, { 'features.feature_id': ObjectID(req.params.Id) }];
-		req.custom.clean_sort = {
-			featureSorting: 1,
-			created: -1
-		}
 	} else {
 		req.custom.clean_filter['prod_n_categoryArr.category_id'] = ObjectID(req.params.Id);
 	}
@@ -280,7 +276,7 @@ module.exports.listByCategory = function (req, res) {
 	if (req.custom.isVIP == true) {
 		req.custom.cache_key += '__vip';
 	}
-	req.custom.cache_key = false;
+
 	mainController.list(req, res, collectionName, {
 		"_id": 0,
 		"sku": 1,
@@ -538,7 +534,7 @@ module.exports.featured = async function (req, res) {
 
 						return i;
 					});
-					c.products = c.products.filter((i) => i.availability);
+					//c.products = c.products.filter((i) => i.availability);
 					featured.push(c);
 				}
 			}
