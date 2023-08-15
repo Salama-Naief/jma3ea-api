@@ -280,7 +280,7 @@ module.exports.listByCategory = function (req, res) {
 	if (req.custom.isVIP == true) {
 		req.custom.cache_key += '__vip';
 	}
-
+	req.custom.cache_key = false;
 	mainController.list(req, res, collectionName, {
 		"_id": 0,
 		"sku": 1,
