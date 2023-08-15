@@ -288,13 +288,16 @@ module.exports.getAvailableOffer = async (req, total, offer_id) => {
     }
 
     const options = {
-        sort: { target_amount: 1 }
+        sort: { target_amount: 1 },
+        projection: { _id: 1, min_amount: 1, target_amount: 1, name: 1, description: 1, expires_at: 1, product_sku: 1, type: 1 }
     };
 
     const offer = await collection.findOne(query, options);
 
+    if (offer.min_amount > total) return null;
+
     if (offer) {
-        if (offer_id)
+        if (offer_id && offer.target_amount >= total)
             offer.isClaimed = true;
         else
             offer.isClaimed = false;
@@ -304,13 +307,13 @@ module.exports.getAvailableOffer = async (req, total, offer_id) => {
 }
 
 function getRoundedDate(minutes, d = null) {
-	if (!d) {
-		d = common.getDate();
-	}
+    if (!d) {
+        d = common.getDate();
+    }
 
-	const rended_minutes = d.getMinutes() + 30;
-	d.setMinutes(rended_minutes);
+    const rended_minutes = d.getMinutes() + 30;
+    d.setMinutes(rended_minutes);
 
-	let ms = 1000 * 60 * minutes; // convert minutes to ms
-	return new Date(Math.round(d.getTime() / ms) * ms);
+    let ms = 1000 * 60 * minutes; // convert minutes to ms
+    return new Date(Math.round(d.getTime() / ms) * ms);
 }

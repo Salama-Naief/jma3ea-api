@@ -10,7 +10,7 @@ const mail_view = require("./view/mail");
 const moment = require('moment');
 const axios = require('axios');
 const shortid = require('shortid');
-const { groupBySupplier, getDeliveryTimes } = require('./utils');
+const { groupBySupplier, getDeliveryTimes, getAvailableOffer } = require('./utils');
 shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-');
 
 
@@ -320,44 +320,38 @@ module.exports.buy = async function (req, res) {
 				suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
 			};
 
-			/* const offer = await getAvailableOffer(req, total_prods, user.offer && user.offer.offer_id ? user.offer.offer_id : null);
-			if (offer) {
-				if (offer.product_sku) {
-					const product_collection = req.custom.db.client().collection('product');
-					const product = await product_collection.findOne({ sku: offer.product_sku });
-					if (product) {
-						offer.product = product;
-						if (offer.type == 'product' && offer.isClaimed) {
-							const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
-							if (jm3eiaProductIndex > -1) {
-								productsGroupedBySupplier[jm3eiaProductIndex].products.push(product);
-								products2save.push({
-									...product, supplier: {
-										_id: req.custom.settings['site_id'],
-										name: {
-											ar: req.custom.settings['site_name']['ar'],
-											en: req.custom.settings['site_name']['en'],
-										},
-										min_delivery_time: req.custom.settings.orders.min_delivery_time,
-										min_value: req.custom.settings.orders.min_value,
-										delivery_time_text: ""
-									}
-								});
-							} else {
-								productsGroupedBySupplier.push({
-									supplier: {
-										_id: req.custom.settings['site_id'],
-										name: {
-											ar: req.custom.settings['site_name']['ar'],
-											en: req.custom.settings['site_name']['en'],
-										},
-										min_delivery_time: req.custom.settings.orders.min_delivery_time,
-										min_value: req.custom.settings.orders.min_value,
-										delivery_time_text: ""
-									},
-									products: [product]
-								});
-							}
+			const offer = await getAvailableOffer(req, total_prods, user.offer && user.offer.offer_id ? user.offer.offer_id : null);
+			if (offer && offer.product_sku) {
+				const product_collection = req.custom.db.client().collection('product');
+				const product = await product_collection.findOne({ sku: offer.product_sku }, {
+					projection: {
+						"_id": 1,
+						"soft_code": 1,
+						"sku": { $ifNull: [`$sku`, `$soft_code`] }, // TODO: Change to sku
+						"name": 1,
+						"categories": "$prod_n_categoryArr",
+						"picture": 1,
+						"price": 1,
+						"old_price": 1,
+						"uom": 1,
+						"barcode": 1,
+						"weight": 1,
+						"prod_n_storeArr": 1,
+						"supplier_id": 1,
+						"variants": 1,
+						"free_shipping": 1,
+						"discount_price_valid_until": 1,
+						"floor": 1,
+						"rack_zone": 1,
+						"barcode_2": 1,
+					}
+				});
+				if (product) {
+					offer.product = product;
+					if (offer.type == 'free_product' && offer.isClaimed) {
+						const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
+						if (jm3eiaProductIndex > -1) {
+							productsGroupedBySupplier[jm3eiaProductIndex].products.push(product);
 							products2save.push({
 								...product, supplier: {
 									_id: req.custom.settings['site_id'],
@@ -370,11 +364,37 @@ module.exports.buy = async function (req, res) {
 									delivery_time_text: ""
 								}
 							});
+						} else {
+							productsGroupedBySupplier.push({
+								supplier: {
+									_id: req.custom.settings['site_id'],
+									name: {
+										ar: req.custom.settings['site_name']['ar'],
+										en: req.custom.settings['site_name']['en'],
+									},
+									min_delivery_time: req.custom.settings.orders.min_delivery_time,
+									min_value: req.custom.settings.orders.min_value,
+									delivery_time_text: ""
+								},
+								products: [product]
+							});
 						}
+						products2save.push({
+							...product, supplier: {
+								_id: req.custom.settings['site_id'],
+								name: {
+									ar: req.custom.settings['site_name']['ar'],
+									en: req.custom.settings['site_name']['en'],
+								},
+								min_delivery_time: req.custom.settings.orders.min_delivery_time,
+								min_value: req.custom.settings.orders.min_value,
+								delivery_time_text: ""
+							}
+						});
 					}
 				}
-	
-			} */
+
+			}
 
 
 			let total = parseFloat(total_prods) + parseFloat(shipping_cost) - parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
@@ -439,6 +459,7 @@ module.exports.buy = async function (req, res) {
 				cart_subtotal: total_prods,
 				shipping_cost: shipping_cost,
 				coupon: out_coupon,
+				offer: offer,
 				total: total,
 				cart_total: cart_total,
 				user_data: data.user_data,
@@ -548,6 +569,10 @@ module.exports.buy = async function (req, res) {
 			req.custom.authorizationObject.coupon = {
 				code: null,
 				value: 0,
+			};
+
+			req.custom.authorizationObject.offer = {
+				offer_id: null,
 			};
 
 			//req.custom.authorizationObject.offer = {};
@@ -855,34 +880,41 @@ module.exports.list = async function (req, res) {
 				value: general_coupon ? common.getFixedPrice(general_coupon.percent_value ? (totalToApplyCoupon * general_coupon.percent_value) / 100 : general_coupon.discount_value) : common.getFixedPrice(total_coupon_value),
 				suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
 			};
-			/* const offer = await getAvailableOffer(req, total_prods, user.offer && user.offer.offer_id ? user.offer.offer_id : null);
-			if (offer) {
-				if (offer.product_sku) {
-					const product_collection = req.custom.db.client().collection('product');
-					const product = await product_collection.findOne({ sku: offer.product_sku });
-					if (product) {
-						offer.product = product;
-						if (offer.type == 'product' && offer.isClaimed) {
-							const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
-							if (jm3eiaProductIndex > -1) {
-								productsGroupedBySupplier[jm3eiaProductIndex].products.push(product);
-							} else {
-								productsGroupedBySupplier.push({
-									supplier: {
-										_id: req.custom.settings['site_id'],
-										name: {
-											ar: req.custom.settings['site_name']['ar'],
-											en: req.custom.settings['site_name']['en'],
-										},
-										min_delivery_time: req.custom.settings.orders.min_delivery_time,
-										min_value: req.custom.settings.orders.min_value,
-										delivery_time_text: ""
-									},
-									products: [product]
-								});
-							}
-							products.push({
-								...product, supplier: {
+			const offer = await getAvailableOffer(req, total_prods, user.offer && user.offer.offer_id ? user.offer.offer_id : null);
+			if (offer && offer.product_sku) {
+				const product_collection = req.custom.db.client().collection('product');
+				const product = await product_collection.findOne({ sku: offer.product_sku }, {
+					projection: {
+						"_id": 1,
+						"soft_code": 1,
+						"sku": { $ifNull: [`$sku`, `$soft_code`] }, // TODO: Change to sku
+						"name": 1,
+						"categories": "$prod_n_categoryArr",
+						"picture": 1,
+						"price": 1,
+						"old_price": 1,
+						"uom": 1,
+						"barcode": 1,
+						"weight": 1,
+						"prod_n_storeArr": 1,
+						"supplier_id": 1,
+						"variants": 1,
+						"free_shipping": 1,
+						"discount_price_valid_until": 1,
+						"floor": 1,
+						"rack_zone": 1,
+						"barcode_2": 1,
+					}
+				});
+				if (product) {
+					offer.product = product;
+					if (offer.type == 'free_product' && offer.isClaimed) {
+						const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
+						if (jm3eiaProductIndex > -1) {
+							productsGroupedBySupplier[jm3eiaProductIndex].products.push(product);
+						} else {
+							productsGroupedBySupplier.push({
+								supplier: {
 									_id: req.custom.settings['site_id'],
 									name: {
 										ar: req.custom.settings['site_name']['ar'],
@@ -891,13 +923,25 @@ module.exports.list = async function (req, res) {
 									min_delivery_time: req.custom.settings.orders.min_delivery_time,
 									min_value: req.custom.settings.orders.min_value,
 									delivery_time_text: ""
-								}
-							})
+								},
+								products: [product]
+							});
 						}
+						products.push({
+							...product, supplier: {
+								_id: req.custom.settings['site_id'],
+								name: {
+									ar: req.custom.settings['site_name']['ar'],
+									en: req.custom.settings['site_name']['en'],
+								},
+								min_delivery_time: req.custom.settings.orders.min_delivery_time,
+								min_value: req.custom.settings.orders.min_value,
+								delivery_time_text: ""
+							}
+						})
 					}
 				}
-
-			} */
+			}
 
 			let total = parseFloat(total_prods) + parseFloat(shipping_cost);
 			if (general_coupon && parseFloat(total_prods) > out_coupon.value) {
@@ -985,7 +1029,7 @@ module.exports.list = async function (req, res) {
 				payment_methods: productsGroupedBySupplier.find(s => s.isSelected && s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
 				earliest_date_of_delivery: earliest_date_of_delivery,
 				delivery_times: delivery_times,
-				//offer: offer,
+				offer: offer,
 				data: productsGroupedBySupplier.map((data) => {
 					data.payment_methods = data.supplier.allow_cod === false ? payment_methods.filter(p => p.id !== 'cod') : payment_methods;
 					data.products = data.products.map(p => {

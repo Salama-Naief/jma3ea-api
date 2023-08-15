@@ -738,11 +738,11 @@ module.exports.offer = async function (req, res) {
 		const offer = await collection.findOne({ _id: ObjectID(data.offer_id), status: true });
 		if (!offer) {
 			return res.out({
-				//"code": req.custom.local.cart_coupon_unavailable
+				code: "Offer not found."
 			}, status_message.VALIDATION_ERROR);
 		}
 
-		if (offer.type == 'giveaway') {
+		/* if (offer.type == 'giveaway') {
 			if (!user.member_id) {
 				return res.out({
 					message: "Please login or create an account to claim the offer",
@@ -755,7 +755,7 @@ module.exports.offer = async function (req, res) {
 				member_id: ObjectID(user.member_id.toString()),
 				entry_date: common.getDate()
 			});
-		}
+		} */
 		user.offer.offer_id = data.offer_id;
 	} catch (err) {
 		res.out({
@@ -764,7 +764,7 @@ module.exports.offer = async function (req, res) {
 	}
 	req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
 		.then((response) => res.out({
-			message: req.custom.local.cart_coupon_added
+			message: req.custom.local.cart_product_added
 		}, status_message.CREATED))
 		.catch((error) => res.out({
 			'message': error.message
