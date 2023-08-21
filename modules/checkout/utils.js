@@ -348,10 +348,12 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
             const arabicStartHour = arabicNumerals[startHour];
             const arabicEndHour = arabicNumerals[endHour];
 
-            const arabicStartPeriod = startPeriod === 'AM' ? 'صباحًا' : 'مساءً';
-            const arabicEndPeriod = endPeriod === 'AM' ? 'صباحًا' : 'مساءً';
+            console.log('=============== DATA ============= ', startHour, endHour);
 
-            const arabicTime = `${arabicStartHour}${arabicStartPeriod} : ${arabicEndHour}${arabicEndPeriod}`;
+            const arabicStartPeriod = startPeriod === 'AM' ? 'ص' : 'م';
+            const arabicEndPeriod = endPeriod === 'AM' ? 'ص' : 'م';
+
+            const arabicTime = `${arabicStartHour} ${arabicStartPeriod} : ${arabicEndHour} ${arabicEndPeriod}`;
 
             return arabicTime;
         })
