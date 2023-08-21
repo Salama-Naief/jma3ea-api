@@ -339,8 +339,11 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
             const startHour = parseInt(startTimeComponents[0]);
             const endHour = parseInt(endTimeComponents[0]);
 
-            const startPeriod = startTimeComponents[1].toUpperCase();
-            const endPeriod = endTimeComponents[1].toUpperCase();
+            const startMinutes = parseInt(startTimeComponents[1]);
+            const endMinutes = parseInt(endTimeComponents[1]);
+
+            const startPeriod = startTimeComponents[2].toUpperCase();
+            const endPeriod = endTimeComponents[2].toUpperCase();
 
             // Arabic numerals
             const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -348,12 +351,15 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
             const arabicStartHour = arabicNumerals[startHour];
             const arabicEndHour = arabicNumerals[endHour];
 
+            const arabicStartMinutes = arabicNumerals[startMinutes];
+            const arabicEndMinutes = arabicNumerals[endMinutes];
+
             console.log('=============== DATA ============= ', startHour, endHour);
 
             const arabicStartPeriod = startPeriod === 'AM' ? 'ص' : 'م';
             const arabicEndPeriod = endPeriod === 'AM' ? 'ص' : 'م';
 
-            const arabicTime = `${arabicStartHour} ${arabicStartPeriod} : ${arabicEndHour} ${arabicEndPeriod}`;
+            const arabicTime = `${arabicStartHour}:${arabicStartMinutes} ${arabicStartPeriod} : ${arabicEndHour}:${arabicEndMinutes} ${arabicEndPeriod}`;
 
             return { ...t, time: arabicTime };
         })
