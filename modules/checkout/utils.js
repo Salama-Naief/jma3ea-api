@@ -319,52 +319,54 @@ function getRoundedDate(minutes, d = null) {
 
 module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
     const convertedDeliveryTimes = delivery_times.map(dt => {
-        return dt.times.map(t => {
-            //"10:00 PM : 12:00 AM"
-            const timeParts = t.time.split(' : ');
+        return {
+            day: dt.day, times: dt.times.map(t => {
+                //"10:00 PM : 12:00 AM"
+                const timeParts = t.time.split(' : ');
 
-            if (timeParts.length !== 2) {
-                return "Invalid input format";
-            }
+                if (timeParts.length !== 2) {
+                    return "Invalid input format";
+                }
 
-            //10:00 PM
-            const startTime = timeParts[0];
-            const endTime = timeParts[1];
+                //10:00 PM
+                const startTime = timeParts[0];
+                const endTime = timeParts[1];
 
-            const startTimeComponents = startTime.split(' ');
-            const endTimeComponents = endTime.split(' ');
+                const startTimeComponents = startTime.split(' ');
+                const endTimeComponents = endTime.split(' ');
 
-            if (startTimeComponents.length !== 2 || endTimeComponents.length !== 2) {
-                return "Invalid input format";
-            }
+                if (startTimeComponents.length !== 2 || endTimeComponents.length !== 2) {
+                    return "Invalid input format";
+                }
 
-            const startHAndM = startTimeComponents[0].split(':');
-            const endHAndM = endTimeComponents[0].split(':');
+                const startHAndM = startTimeComponents[0].split(':');
+                const endHAndM = endTimeComponents[0].split(':');
 
-            // 10:00
-            const startHour = startHAndM[0];
-            const endHour = endHAndM[0];
+                // 10:00
+                const startHour = startHAndM[0];
+                const endHour = endHAndM[0];
 
-            const startMinutes = startHAndM[1];
-            const endMinutes = endHAndM[1];
+                const startMinutes = startHAndM[1];
+                const endMinutes = endHAndM[1];
 
-            const startPeriod = startTimeComponents[1].toUpperCase();
-            const endPeriod = endTimeComponents[1].toUpperCase();
+                const startPeriod = startTimeComponents[1].toUpperCase();
+                const endPeriod = endTimeComponents[1].toUpperCase();
 
-            const arabicStartHour = getArabicNumber(startHour);
-            const arabicEndHour = getArabicNumber(endHour);
+                const arabicStartHour = getArabicNumber(startHour);
+                const arabicEndHour = getArabicNumber(endHour);
 
-            const arabicStartMinutes = getArabicNumber(startMinutes);
+                const arabicStartMinutes = getArabicNumber(startMinutes);
 
-            const arabicEndMinutes = getArabicNumber(endMinutes);
+                const arabicEndMinutes = getArabicNumber(endMinutes);
 
-            const arabicStartPeriod = startPeriod === 'AM' ? 'ص' : 'م';
-            const arabicEndPeriod = endPeriod === 'AM' ? 'ص' : 'م';
+                const arabicStartPeriod = startPeriod === 'AM' ? 'ص' : 'م';
+                const arabicEndPeriod = endPeriod === 'AM' ? 'ص' : 'م';
 
-            const arabicTime = `${arabicStartHour}:${arabicStartMinutes} ${arabicStartPeriod} : ${arabicEndHour}:${arabicEndMinutes} ${arabicEndPeriod}`;
+                const arabicTime = `${arabicStartHour}:${arabicStartMinutes} ${arabicStartPeriod} : ${arabicEndHour}:${arabicEndMinutes} ${arabicEndPeriod}`;
 
-            return { ...t, time: arabicTime };
-        })
+                return { ...t, time: arabicTime };
+            })
+        }
     });
 
     return convertedDeliveryTimes;
