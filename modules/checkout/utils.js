@@ -338,8 +338,8 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
                 return "Invalid input format";
             }
 
-            const startHAndM = startTimeComponents.split(':');
-            const endHAndM = endTimeComponents.split(':');
+            const startHAndM = startTimeComponents[0].split(':');
+            const endHAndM = endTimeComponents[0].split(':');
 
             // 10:00
             const startHour = startHAndM[0];
