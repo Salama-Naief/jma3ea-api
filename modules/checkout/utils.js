@@ -320,7 +320,7 @@ function getRoundedDate(minutes, d = null) {
 module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
     const convertedDeliveryTimes = delivery_times.map(dt => {
         return dt.times.map(t => {
-            const timeParts = t.split(' : ');
+            const timeParts = t.time.split(' : ');
 
             if (timeParts.length !== 2) {
                 return "Invalid input format";
