@@ -1037,6 +1037,7 @@ module.exports.list = async function (req, res) {
 						delete p.preparation_time;
 						return p;
 					});
+					data.delivery_times = req.custom.lang === 'ar' ? convertDeliveryTimeToArabic(data.delivery_times) : data.delivery_times;
 					return data;
 				}),
 				products: products.map((p) => {
