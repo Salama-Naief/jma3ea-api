@@ -320,12 +320,14 @@ function getRoundedDate(minutes, d = null) {
 module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
     const convertedDeliveryTimes = delivery_times.map(dt => {
         return dt.times.map(t => {
+            //"10:00 PM : 12:00 AM"
             const timeParts = t.time.split(' : ');
 
             if (timeParts.length !== 2) {
                 return "Invalid input format";
             }
 
+            //10:00 PM
             const startTime = timeParts[0];
             const endTime = timeParts[1];
 
@@ -336,25 +338,25 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
                 return "Invalid input format";
             }
 
-            const startHour = parseInt(startTimeComponents[0]);
-            const endHour = parseInt(endTimeComponents[0]);
+            const startHAndM = startTimeComponents.split(':');
+            const endHAndM = endTimeComponents.split(':');
 
-            const startMinutes = parseInt(startTimeComponents[1]);
-            const endMinutes = parseInt(endTimeComponents[1]);
+            // 10:00
+            const startHour = startHAndM[0];
+            const endHour = endHAndM[0];
 
-            const startPeriod = startTimeComponents[2].toUpperCase();
-            const endPeriod = endTimeComponents[2].toUpperCase();
+            const startMinutes = startHAndM[1];
+            const endMinutes = endHAndM[1];
 
-            // Arabic numerals
-            const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+            const startPeriod = startTimeComponents[1].toUpperCase();
+            const endPeriod = endTimeComponents[1].toUpperCase();
 
-            const arabicStartHour = arabicNumerals[startHour];
-            const arabicEndHour = arabicNumerals[endHour];
+            const arabicStartHour = getArabicNumber(startHour);
+            const arabicEndHour = getArabicNumber(endHour);
 
-            const arabicStartMinutes = arabicNumerals[startMinutes];
-            const arabicEndMinutes = arabicNumerals[endMinutes];
+            const arabicStartMinutes = getArabicNumber(startMinutes);
 
-            console.log('=============== DATA ============= ', startHour, endHour);
+            const arabicEndMinutes = getArabicNumber(endMinutes);
 
             const arabicStartPeriod = startPeriod === 'AM' ? 'ص' : 'م';
             const arabicEndPeriod = endPeriod === 'AM' ? 'ص' : 'م';
@@ -366,4 +368,12 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
     });
 
     return convertedDeliveryTimes;
+}
+
+function getArabicNumber(inputNumber) {
+    const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+
+    const arabicNumber = Array.from(inputNumber.toString(), digit => arabicNumerals[parseInt(digit)]).join('');
+
+    return arabicNumber;
 }
