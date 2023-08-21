@@ -355,7 +355,7 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
 
             const arabicTime = `${arabicStartHour} ${arabicStartPeriod} : ${arabicEndHour} ${arabicEndPeriod}`;
 
-            return arabicTime;
+            return { ...t, time: arabicTime };
         })
     });
 
