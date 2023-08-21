@@ -44,7 +44,7 @@ module.exports.buy = async function (req, res) {
 		addresses: 1,
 		points: 1,
 		wallet: 1,
-		month_shipping: 1,
+		pro: 1,
 		device_token: 1,
 	}).catch(() => null);
 
@@ -229,8 +229,8 @@ module.exports.buy = async function (req, res) {
 
 			let hasFreeShipping = false;
 
-			if (user_info && user_info.month_shipping && user_info.month_shipping.active) {
-				if (user_info.month_shipping.endDate > new Date()) {
+			if (user_info && user_info.pro && user_info.pro.active) {
+				if (user_info.pro.endDate > new Date()) {
 					hasFreeShipping = true;
 				} else {
 					await reset_free_shipping(req, user_info._id.toString());
@@ -246,8 +246,8 @@ module.exports.buy = async function (req, res) {
 				if (sup.supplier._id.toString() == req.custom.settings['site_id'] && sup.products.findIndex(p => p.free_shipping == true) > -1) {
 					supplier_shipping_cost = 0;
 				}
-				if (hasFreeShipping/*  && req.custom.settings.orders.free_month_shipping && req.custom.settings.orders.free_month_shipping.allow */) {
-					if (req.custom.settings.orders.free_month_shipping && req.custom.settings.orders.free_month_shipping.only_jm3eia) {
+				if (hasFreeShipping/*  && req.custom.settings.orders.jm3eia_pro && req.custom.settings.orders.jm3eia_pro.allow */) {
+					if (req.custom.settings.orders.jm3eia_pro && req.custom.settings.orders.jm3eia_pro.only_jm3eia) {
 						if (sup.supplier._id.toString() == req.custom.settings['site_id']) supplier_shipping_cost = 0;
 					} else {
 						supplier_shipping_cost = 0;
@@ -651,7 +651,7 @@ module.exports.list = async function (req, res) {
 		addresses: 1,
 		points: 1,
 		wallet: 1,
-		month_shipping: 1,
+		pro: 1,
 		device_token: 1,
 	}).catch(() => null);
 
@@ -768,8 +768,8 @@ module.exports.list = async function (req, res) {
 
 			let hasFreeShipping = false;
 
-			if (user_info && user_info.month_shipping && user_info.month_shipping.active) {
-				if (user_info.month_shipping.endDate > new Date()) {
+			if (user_info && user_info.pro && user_info.pro.active) {
+				if (user_info.pro.endDate > new Date()) {
 					hasFreeShipping = true;
 				} else {
 					await reset_free_shipping(req, user_info._id.toString());
@@ -785,8 +785,8 @@ module.exports.list = async function (req, res) {
 				if (sup.supplier._id.toString() == req.custom.settings['site_id'] && sup.products.findIndex(p => p.free_shipping) > -1) {
 					supplier_shipping_cost = 0;
 				}
-				if (hasFreeShipping/*  && req.custom.settings.orders.free_month_shipping && req.custom.settings.orders.free_month_shipping.allow */) {
-					if (req.custom.settings.orders.free_month_shipping && req.custom.settings.orders.free_month_shipping.only_jm3eia) {
+				if (hasFreeShipping/*  && req.custom.settings.orders.jm3eia_pro && req.custom.settings.orders.jm3eia_pro.allow */) {
+					if (req.custom.settings.orders.jm3eia_pro && req.custom.settings.orders.jm3eia_pro.only_jm3eia) {
 						if (sup.supplier._id.toString() == req.custom.settings['site_id']) supplier_shipping_cost = 0;
 					} else {
 						supplier_shipping_cost = 0;
@@ -1396,8 +1396,8 @@ async function reset_free_shipping(req, userId) {
 		_id: ObjectID(userId.toString())
 	}, {
 		$set: {
-			'month_shipping.active': false,
-			'month_shipping.startDate': null
+			'pro.active': false,
+			'pro.startDate': null
 		}
 	}).catch(() => null)
 }

@@ -948,7 +948,7 @@ module.exports.getTheMonthShipping = async function (req, res) {
 			return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 		}
 
-		if (!req.custom.settings.orders.free_month_shipping || !req.custom.settings.orders.free_month_shipping.allow) {
+		if (!req.custom.settings.orders.jm3eia_pro || !req.custom.settings.orders.jm3eia_pro.allow) {
 			return res.out({ message: 'Free month shipping is disabled' }, status_message.UNEXPECTED_ERROR);
 		}
 
@@ -982,7 +982,7 @@ module.exports.getTheMonthShipping = async function (req, res) {
 
 
 		// Validate and sanitize inputs
-		req.custom.model = req.custom.model || require('./model/month_shipping');
+		req.custom.model = req.custom.model || require('./model/pro');
 		let {
 			data,
 			error
@@ -1024,9 +1024,9 @@ module.exports.getTheMonthShipping = async function (req, res) {
 			amount = parseFloat(req.body.payment_details.amt);
 		}
 
-		console.log("free shipping: ", req.custom.settings.orders.free_month_shipping);
+		console.log("free shipping: ", req.custom.settings.orders.jm3eia_pro);
 
-		if (parseFloat(req.custom.settings.orders.free_month_shipping.shipping_cost) !== amount) {
+		if (parseFloat(req.custom.settings.orders.jm3eia_pro.shipping_cost) !== amount) {
 			return res.out({ message: 'The amount you paid is not equal to the month shipping cost' }, status_message.UNEXPECTED_ERROR);
 		}
 
@@ -1039,7 +1039,7 @@ module.exports.getTheMonthShipping = async function (req, res) {
 			_id: ObjectID(data.user_data._id.toString())
 		}, {
 			$set: {
-				month_shipping: {
+				pro: {
 					active: true,
 					startDate,
 					endDate
