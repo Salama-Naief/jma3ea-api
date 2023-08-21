@@ -316,3 +316,46 @@ function getRoundedDate(minutes, d = null) {
     let ms = 1000 * 60 * minutes; // convert minutes to ms
     return new Date(Math.round(d.getTime() / ms) * ms);
 }
+
+module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
+    const convertedDeliveryTimes = delivery_times.map(dt => {
+        return dt.times.map(t => {
+            const timeParts = t.split(' : ');
+
+            if (timeParts.length !== 2) {
+                return "Invalid input format";
+            }
+
+            const startTime = timeParts[0];
+            const endTime = timeParts[1];
+
+            const startTimeComponents = startTime.split(' ');
+            const endTimeComponents = endTime.split(' ');
+
+            if (startTimeComponents.length !== 2 || endTimeComponents.length !== 2) {
+                return "Invalid input format";
+            }
+
+            const startHour = parseInt(startTimeComponents[0]);
+            const endHour = parseInt(endTimeComponents[0]);
+
+            const startPeriod = startTimeComponents[1].toUpperCase();
+            const endPeriod = endTimeComponents[1].toUpperCase();
+
+            // Arabic numerals
+            const arabicNumerals = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+
+            const arabicStartHour = arabicNumerals[startHour];
+            const arabicEndHour = arabicNumerals[endHour];
+
+            const arabicStartPeriod = startPeriod === 'AM' ? 'صباحًا' : 'مساءً';
+            const arabicEndPeriod = endPeriod === 'AM' ? 'صباحًا' : 'مساءً';
+
+            const arabicTime = `${arabicStartHour}${arabicStartPeriod} : ${arabicEndHour}${arabicEndPeriod}`;
+
+            return arabicTime;
+        })
+    });
+
+    return convertedDeliveryTimes;
+}

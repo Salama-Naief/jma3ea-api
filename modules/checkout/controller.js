@@ -10,7 +10,7 @@ const mail_view = require("./view/mail");
 const moment = require('moment');
 const axios = require('axios');
 const shortid = require('shortid');
-const { groupBySupplier, getDeliveryTimes, getAvailableOffer } = require('./utils');
+const { groupBySupplier, getDeliveryTimes, getAvailableOffer, convertDeliveryTimeToArabic } = require('./utils');
 shortid.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-');
 
 
@@ -1028,7 +1028,7 @@ module.exports.list = async function (req, res) {
 				gift_note: should_be_gifted,
 				payment_methods: productsGroupedBySupplier.find(s => s.isSelected && s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
 				earliest_date_of_delivery: earliest_date_of_delivery,
-				delivery_times: delivery_times,
+				delivery_times: req.query.test ? convertDeliveryTimeToArabic(delivery_times) : delivery_times,
 				offer: offer,
 				data: productsGroupedBySupplier.map((data) => {
 					data.payment_methods = data.supplier.allow_cod === false ? payment_methods.filter(p => p.id !== 'cod') : payment_methods;
