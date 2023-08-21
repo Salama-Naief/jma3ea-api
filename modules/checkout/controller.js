@@ -1028,7 +1028,7 @@ module.exports.list = async function (req, res) {
 				gift_note: should_be_gifted,
 				payment_methods: productsGroupedBySupplier.find(s => s.isSelected && s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
 				earliest_date_of_delivery: earliest_date_of_delivery,
-				delivery_times: req.query.test ? convertDeliveryTimeToArabic(delivery_times) : delivery_times,
+				delivery_times: req.custom.lang === 'ar' ? convertDeliveryTimeToArabic(delivery_times) : delivery_times,
 				offer: offer,
 				data: productsGroupedBySupplier.map((data) => {
 					data.payment_methods = data.supplier.allow_cod === false ? payment_methods.filter(p => p.id !== 'cod') : payment_methods;
