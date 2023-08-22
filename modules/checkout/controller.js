@@ -242,7 +242,7 @@ module.exports.buy = async function (req, res) {
 
 				sup.subtotal = supplier_products_total;
 
-				let supplier_shipping_cost = sup.supplier.shipping_cost !== null ? parseFloat(sup.supplier.shipping_cost) : city_shipping_cost;
+				let supplier_shipping_cost = sup.supplier.hasOwnProperty('shipping_cost') && sup.supplier.shipping_cost !== null ? parseFloat(sup.supplier.shipping_cost) : city_shipping_cost;
 				if (sup.supplier._id.toString() == req.custom.settings['site_id'] && sup.products.findIndex(p => p.free_shipping == true) > -1) {
 					supplier_shipping_cost = 0;
 				}
@@ -781,7 +781,7 @@ module.exports.list = async function (req, res) {
 
 				sup.subtotal = supplier_products_total;
 
-				let supplier_shipping_cost = sup.supplier.shipping_cost  && sup.supplier.shipping_cost !== null ? parseFloat(sup.supplier.shipping_cost) : city_shipping_cost;
+				let supplier_shipping_cost = sup.supplier.hasOwnProperty('shipping_cost') && sup.supplier.shipping_cost !== null ? parseFloat(sup.supplier.shipping_cost) : city_shipping_cost;
 				if (sup.supplier._id.toString() == req.custom.settings['site_id'] && sup.products.findIndex(p => p.free_shipping) > -1) {
 					supplier_shipping_cost = 0;
 				}
