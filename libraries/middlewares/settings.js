@@ -12,6 +12,9 @@ module.exports = (req, res, next) => {
 			if (docs) {
 				for (const i of docs) {
 					req.custom.settings[i.key] = i.value;
+					if (i.key === 'jm3eia_pro' && i.value && i.value.content && i.value.content.length > 0) {
+						req.custom.settings[i.key] = { ...i.value, content: i.value.content.map(c => ({ ...c, image: c.image ? `${req.custom.config.media_url}${c.image}` : '' })) }
+					}
 				}
 				req.custom.settings['site_id'] = req.custom.settings['site_name'] ? req.custom.settings['site_name']['en'] : SITE_ID;
 
@@ -27,6 +30,9 @@ module.exports = (req, res, next) => {
 						req.custom.cache.set('settings', docs, req.custom.config.cache.life_time.data);
 						for (const i of docs) {
 							req.custom.settings[i.key] = i.value;
+							if (i.key === 'jm3eia_pro' && i.value && i.value.content && i.value.content.length > 0) {
+								req.custom.settings[i.key] = { ...i.value, content: i.value.content.map(c => ({ ...c, image: c.image ? `${req.custom.config.media_url}${c.image}` : '' })) }
+							}
 						}
 						req.custom.settings['site_id'] = req.custom.settings['site_name']['en'] || SITE_ID;
 					});

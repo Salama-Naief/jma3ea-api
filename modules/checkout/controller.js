@@ -907,6 +907,7 @@ module.exports.list = async function (req, res) {
 					}
 				});
 				if (product) {
+					if (product.picture) product.picture = `${req.custom.config.media_url}${product.picture}`;
 					offer.product = product;
 					if (offer.type == 'free_product' && offer.isClaimed) {
 						const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
