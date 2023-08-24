@@ -36,6 +36,11 @@ module.exports.me = function (req, res) {
 		if (decoded.password) {
 			delete decoded.password;
 		}
+		if (!decoded.pro) {
+			decoded.pro = {
+				active: false,
+			}
+		}
 		res.out(decoded);
 	}).catch((e) => {
 		res.out({
