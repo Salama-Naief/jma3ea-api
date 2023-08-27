@@ -948,6 +948,7 @@ module.exports.chargeWallet = async function (req, res) {
 
 
 module.exports.getTheMonthShipping = async function (req, res) {
+	console.log("************************ ============== FREE SHIPPING =================== *****************************", req.query.validation);
 	try {
 		if (req.custom.isAuthorized === false) {
 			return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
@@ -1029,7 +1030,6 @@ module.exports.getTheMonthShipping = async function (req, res) {
 			amount = parseFloat(req.body.payment_details.amt);
 		}
 
-		console.log("free shipping: ", req.custom.settings.orders.jm3eia_pro);
 
 		if (parseFloat(req.custom.settings.orders.jm3eia_pro.shipping_cost) !== amount) {
 			return res.out({ message: 'The amount you paid is not equal to the month shipping cost' }, status_message.UNEXPECTED_ERROR);
