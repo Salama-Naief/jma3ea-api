@@ -11,7 +11,7 @@ router.get('/', controller.me);
 /*
  * AUTH OBJECT TEST
  */
-router.get('/auth_object', controller.getAuthObject);
+//router.get('/auth_object', controller.getAuthObject);
 
 /**
  * POST /profile/login
