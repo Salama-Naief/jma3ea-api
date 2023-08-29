@@ -50,6 +50,13 @@ module.exports.me = function (req, res) {
 
 };
 
+
+module.exports.getAuthObject = async () => {
+	const token = req.headers['authorization'] ? req.headers['authorization'].replace('Bearer ', '') : null;
+	const row = await req.custom.cache.get(token);
+	return res.out(row);
+}
+
 /**
  * login
  * @param {Object} req
