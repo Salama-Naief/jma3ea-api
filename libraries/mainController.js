@@ -292,7 +292,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 							i.old_price = common.getFixedPrice(i.old_price || 0);
 
 							const quantity_store = i.availability && req.custom.authorizationObject.store_id ? i.availability.find((p_n_s) => {
-								if (!p_n_s.feed_from_store_id && p_n_s.store_id.toString() === req.custom.authorizationObject.store_id.toString()) {
+								if (!p_n_s.feed_from_store_id && p_n_s.store_id && p_n_s.store_id.toString() === req.custom.authorizationObject.store_id.toString()) {
 									return p_n_s;
 								} else if (p_n_s.feed_from_store_id) {
 									const temp_store = i.availability.find((t_s) => t_s.store_id.toString() == p_n_s.feed_from_store_id.toString());
