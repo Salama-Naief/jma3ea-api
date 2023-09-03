@@ -637,6 +637,11 @@ module.exports.list = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
+
+	if (!req.custom.authorizationObject.city_id) {
+		return res.out({ message: req.custom.local.choose_city_first }, status_message.CITY_REQUIRED)
+	}
+
 	const mainController = require("../../libraries/mainController");
 	const ObjectID = require("../../types/object_id");
 
@@ -734,6 +739,11 @@ module.exports.list = async function (req, res) {
 				})
 				.then((c) => c)
 				.catch(() => null);
+
+			if (!cityObj) {
+				return res.out({ message: req.custom.local.city_is_not_exists }, status_message.CITY_REQUIRED)
+			}
+
 			const city_shipping_cost = parseFloat(cityObj.shipping_cost);
 			let shipping_cost = 0;
 
