@@ -303,6 +303,21 @@ module.exports.buy = async function (req, res) {
 				sup.shipping_cost = supplier_shipping_cost;
 				sup.total = common.getFixedPrice(supplier_products_total);
 				sup.delivery_time = delivery_time;
+				if (sup.supplier.has_picking_time) {
+					if (!req.body.suppliers || req.body.suppliers.length < 1 || typeof req.body.suppliers[0] != 'object') {
+					 	return res.out({
+							message: "Please select a picking time"
+						}, status_message.VALIDATION_ERROR);
+					}
+					
+					const foundSup = req.body.suppliers.find(s => s.supplier_id == sup.supplier._id);
+					if (!foundSup || !foundSup.picking_time || !moment(foundSup.picking_time).isValid()) {
+						return res.out({
+							message: "Please select a valid picking time"
+						}, status_message.VALIDATION_ERROR);
+					}
+					sup.picking_time = foundSup.picking_time;
+				}
 			}
 
 			let totalWithNoDiscount = 0;
@@ -1201,7 +1216,8 @@ async function products_to_save(products, user, req, to_display = false) {
 			delivery_time_text: supplier.delivery_time_text,
 			working_times: supplier.is_external ? moment.weekdays().map((i, idx) => ({ ...supplier.working_times[idx], text: i })) : undefined,
 			available_delivery_times: supplier.available_delivery_times,
-			is_external: supplier.is_external
+			is_external: supplier.is_external,
+			has_picking_time: supplier.has_picking_time
 		} : to_display ? {
 			_id: req.custom.settings['site_id'],
 			name: {
@@ -1210,7 +1226,8 @@ async function products_to_save(products, user, req, to_display = false) {
 			},
 			min_delivery_time: req.custom.settings.orders.min_delivery_time,
 			min_value: req.custom.settings.orders.min_value,
-			delivery_time_text: ""
+			delivery_time_text: "",
+			has_picking_time: false
 		} : null;
 		prod.delivery_time = supplier ? supplier.delivery_time : req.body.delivery_time;
 

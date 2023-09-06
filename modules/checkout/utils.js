@@ -201,7 +201,7 @@ module.exports.getDeliveryTimes = async (req, cityObj, supplier = {}) => {
             }
             moment.updateLocale('en', {});
             const full_date = today.add(idx, 'hours').format(req.custom.config.date.format);
-            const time = today.format('LT') + ' : ' + today.add(2, 'hours').format('LT');
+            const time = supplier.has_picking_time ? today.format('LT') : today.format('LT') + ' : ' + today.add(2, 'hours').format('LT');
 
             const cache_key_dt = `delivery_times_${supplier.is_external ? supplier._id.toString() : ''}_${day}_${idx}`;
             const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
