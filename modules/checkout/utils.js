@@ -382,7 +382,7 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
                     const arabicEndHour = getArabicNumber(endHour);
                     const arabicEndMinutes = getArabicNumber(endMinutes);
                     const arabicEndPeriod = endPeriod === 'AM' ? 'ص' : 'م';
-                    arabicEndPeriod += ` : ${arabicEndHour}:${arabicEndMinutes} ${arabicEndPeriod}`;
+                    arabicTime += ` : ${arabicEndHour}:${arabicEndMinutes} ${arabicEndPeriod}`;
                 }
 
                 return { ...t, time: arabicTime };
