@@ -281,16 +281,16 @@ module.exports.getAvailableOffer = async (req, total, userOffer) => {
         status: true,
     };
 
-    if (!userOffer || !userOffer.viewed_offer_id || !userOffer.offer_id || (userOffer.offer_id.toString() !== userOffer.viewed_offer_id.toString())) {
+    if (!userOffer || !userOffer.viewed_offer_id /* || !userOffer.offer_id || (userOffer.offer_id.toString() !== userOffer.viewed_offer_id.toString()) */) {
         query["min_amount"] = { $lte: total },
         query["target_amount"] = { $gte: total }
     }
 
     if (userOffer && userOffer.offer_id) {
         query['_id'] = ObjectID(userOffer.offer_id.toString());
-    }/*  else if (userOffer && userOffer.viewed_offer_id) {
+    } else if (userOffer && userOffer.viewed_offer_id) {
         query['_id'] = ObjectID(userOffer.viewed_offer_id.toString());
-    } */
+    }
 
     const options = {
         sort: { target_amount: 1 },
