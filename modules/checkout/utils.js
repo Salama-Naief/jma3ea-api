@@ -360,6 +360,9 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
                 const startHour = startHAndM[0];
                 const startMinutes = startHAndM[1];
                 const arabicStartMinutes = getArabicNumber(startMinutes);
+                if (!startTimeComponents[1]) {
+                    console.log("ERROR TIME START PERIOD: ", startTimeComponents[1]);
+                }
                 const startPeriod = startTimeComponents[1].toUpperCase();
                 const arabicStartHour = getArabicNumber(startHour);
                 const arabicStartPeriod = startPeriod === 'AM' ? 'ص' : 'م';
