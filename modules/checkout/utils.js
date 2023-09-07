@@ -201,7 +201,7 @@ module.exports.getDeliveryTimes = async (req, cityObj, supplier = {}) => {
             }
             moment.updateLocale('en', {});
             const full_date = today.add(idx, 'hours').format(req.custom.config.date.format);
-            const time = supplier.has_picking_time ? today.format('LT') : today.format('LT') + ' : ' + today.add(2, 'hours').format('LT');
+            const time = supplier.has_picking_time ? today.format('LT') : (today.format('LT') + ' : ' + today.add(2, 'hours').format('LT'));
 
             const cache_key_dt = `delivery_times_${supplier.is_external ? supplier._id.toString() : ''}_${day}_${idx}`;
             const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
@@ -249,7 +249,7 @@ module.exports.getDeliveryTimes = async (req, cityObj, supplier = {}) => {
             }
             moment.updateLocale('en', {});
             const full_date = tomorrow.add(idx, 'hours').format(req.custom.config.date.format);
-            const time = tomorrow.format('LT') + ' : ' + tomorrow.add(2, 'hours').format('LT');
+            const time = supplier.has_picking_time ? tomorrow.format('LT') : (tomorrow.format('LT') + ' : ' + tomorrow.add(2, 'hours').format('LT'));
 
             const cache_key_dt = `delivery_times_${supplier.is_external ? supplier._id.toString() : ''}_${day}_${idx}`;
             const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
@@ -275,7 +275,7 @@ module.exports.getDeliveryTimes = async (req, cityObj, supplier = {}) => {
     return delivery_times;
 }
 
-module.exports.getAvailableOffer = async (req, total, offer_id) => {
+module.exports.getAvailableOffer = async (req, total, userOffer) => {
     const collection = req.custom.db.client().collection('offer');
     const query = {
         status: true,
@@ -283,8 +283,10 @@ module.exports.getAvailableOffer = async (req, total, offer_id) => {
         target_amount: { $gte: total }
     };
 
-    if (offer_id) {
-        query['_id'] = ObjectID(offer_id.toString());
+    if (userOffer && userOffer.offer_id) {
+        query['_id'] = ObjectID(userOffer.offer_id.toString());
+    } else if (userOffer && userOffer.viewed_offer_id) {
+        query['_id'] = ObjectID(userOffer.viewed_offer_id.toString());
     }
 
     const options = {
@@ -294,15 +296,39 @@ module.exports.getAvailableOffer = async (req, total, offer_id) => {
 
     const offer = await collection.findOne(query, options);
 
-    if (!offer || offer.min_amount > total) return null;
+    if (!offer) return null;
+    if (offer.min_amount > total && (!userOffer || userOffer.viewed_offer_id != offer._id.toString())) return null;
 
-    if (offer_id && offer.target_amount >= total)
+    if (userOffer && userOffer.offer_id && offer.target_amount >= total) {
         offer.isClaimed = true;
-    else
+    } else {
+        await viewOffer(req, offer._id);
         offer.isClaimed = false;
+    }
 
 
     return offer;
+}
+
+const viewOffer = async (req, offer_id) => {
+    let user = req.custom.authorizationObject;
+
+    if (!user.offer) user.offer = {
+		offer_id: null,
+        viewed_offer_id: null
+	}
+
+    const collection = req.custom.db.client().collection('offer');
+
+    try {
+		const offer = await collection.findOne({ _id: ObjectID(offer_id), status: true });
+		if (!offer) return;
+
+		user.offer.viewed_offer_id = offer_id;
+
+        await req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token);
+
+	} catch (err) { }
 }
 
 function getRoundedDate(minutes, d = null) {

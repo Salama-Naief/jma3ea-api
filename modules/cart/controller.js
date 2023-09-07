@@ -724,12 +724,13 @@ module.exports.offer = async function (req, res) {
 
 	const data = req.body;
 
-	if (!data.offer_id) {
+	if (!data.offer_id || data.offer_id != user.offer.viewed_offer_id) {
 		return res.out({}, status_message.VALIDATION_ERROR);
 	}
 
-	user.offer = {
-		offer_id: null
+	if (!user.offer) user.offer = {
+		offer_id: null,
+		viewed_offer_id: null
 	};
 
 	const collection = req.custom.db.client().collection('offer');

@@ -335,7 +335,7 @@ module.exports.buy = async function (req, res) {
 				suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
 			};
 
-			const offer = await getAvailableOffer(req, total_prods, user.offer && user.offer.offer_id ? user.offer.offer_id : null);
+			const offer = await getAvailableOffer(req, total_prods, user.offer);
 			if (offer && offer.product_sku) {
 				const product_collection = req.custom.db.client().collection('product');
 				const product = await product_collection.findOne({ sku: offer.product_sku }, {
@@ -588,6 +588,7 @@ module.exports.buy = async function (req, res) {
 
 			req.custom.authorizationObject.offer = {
 				offer_id: null,
+				viewed_offer_id: null
 			};
 
 			//req.custom.authorizationObject.offer = {};
@@ -905,7 +906,8 @@ module.exports.list = async function (req, res) {
 				value: general_coupon ? common.getFixedPrice(general_coupon.percent_value ? (totalToApplyCoupon * general_coupon.percent_value) / 100 : general_coupon.discount_value) : common.getFixedPrice(total_coupon_value),
 				suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
 			};
-			const offer = await getAvailableOffer(req, total_prods, user.offer && user.offer.offer_id ? user.offer.offer_id : null);
+			// 1) get the available offer
+			const offer = await getAvailableOffer(req, total_prods, user.offer);
 			if (offer && offer.product_sku) {
 				const product_collection = req.custom.db.client().collection('product');
 				const product = await product_collection.findOne({ sku: offer.product_sku }, {
