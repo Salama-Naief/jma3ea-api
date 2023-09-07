@@ -203,7 +203,7 @@ module.exports.getDeliveryTimes = async (req, cityObj, supplier = {}) => {
             const full_date = today.add(idx, 'hours').format(req.custom.config.date.format);
             const time = supplier.has_picking_time ? today.format('LT') : today.format('LT') + ' : ' + today.add(2, 'hours').format('LT');
             
-            if (supplier.has_picking_time) console.log("TIMES DEBUG: ", time)
+            if (!supplier.has_picking_time) console.log("TIMES DEBUG: ", time)
 
             const cache_key_dt = `delivery_times_${supplier.is_external ? supplier._id.toString() : ''}_${day}_${idx}`;
             const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
@@ -363,7 +363,7 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
                 const startMinutes = startHAndM[1];
                 const arabicStartMinutes = getArabicNumber(startMinutes);
                 if (!startTimeComponents[1]) {
-                    console.log("ERROR TIME START PERIOD: ", t.time, timeParts, startTimeComponents);
+                    console.log("ERROR TIME START PERIOD: ", t.time, timeParts);
                 }
                 const startPeriod = startTimeComponents[1].toUpperCase();
                 const arabicStartHour = getArabicNumber(startHour);
