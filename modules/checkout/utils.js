@@ -285,9 +285,9 @@ module.exports.getAvailableOffer = async (req, total, userOffer) => {
 
     if (userOffer && userOffer.offer_id) {
         query['_id'] = ObjectID(userOffer.offer_id.toString());
-    } else if (userOffer && userOffer.viewed_offer_id) {
+    }/*  else if (userOffer && userOffer.viewed_offer_id) {
         query['_id'] = ObjectID(userOffer.viewed_offer_id.toString());
-    }
+    } */
 
     const options = {
         sort: { target_amount: 1 },
@@ -300,6 +300,7 @@ module.exports.getAvailableOffer = async (req, total, userOffer) => {
     if (offer.min_amount > total && (!userOffer || userOffer.viewed_offer_id != offer._id.toString())) return null;
 
     if (userOffer && userOffer.offer_id && offer.target_amount >= total) {
+
         offer.isClaimed = true;
     } else {
         await viewOffer(req, offer._id.toString());
