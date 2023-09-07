@@ -363,7 +363,7 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
                 const startMinutes = startHAndM[1];
                 const arabicStartMinutes = getArabicNumber(startMinutes);
                 if (!startTimeComponents[1]) {
-                    console.log("ERROR TIME START PERIOD: ", t.time, startTime, startTimeComponents);
+                    console.log("ERROR TIME START PERIOD: ", t.time, timeParts, startTimeComponents);
                 }
                 const startPeriod = startTimeComponents[1].toUpperCase();
                 const arabicStartHour = getArabicNumber(startHour);
