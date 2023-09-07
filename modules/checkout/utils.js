@@ -359,6 +359,7 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
                 const startHAndM = startTimeComponents[0].split(':');
                 const startHour = startHAndM[0];
                 const startMinutes = startHAndM[1];
+                const arabicStartMinutes = getArabicNumber(startMinutes);
                 const startPeriod = startTimeComponents[1].toUpperCase();
                 const arabicStartHour = getArabicNumber(startHour);
                 const arabicStartPeriod = startPeriod === 'AM' ? 'ص' : 'م';
@@ -379,7 +380,6 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
                     const endMinutes = endHAndM[1];
                     const endPeriod = endTimeComponents[1].toUpperCase();
                     const arabicEndHour = getArabicNumber(endHour);
-                    const arabicStartMinutes = getArabicNumber(startMinutes);
                     const arabicEndMinutes = getArabicNumber(endMinutes);
                     const arabicEndPeriod = endPeriod === 'AM' ? 'ص' : 'م';
                     arabicEndPeriod += ` : ${arabicEndHour}:${arabicEndMinutes} ${arabicEndPeriod}`;
