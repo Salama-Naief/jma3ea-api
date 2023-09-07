@@ -374,6 +374,8 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
                 if (startTimeComponents.length !== 2 || endTimeComponents.length !== 2) {
                     console.log('=============================================================== ****************** TIME PARTS ********************** =========================================================: ', timeParts);
                     return "Invalid input format";
+                } else {
+                    console.log(timeParts);
                 }
 
                 const startHAndM = startTimeComponents[0].split(':');
