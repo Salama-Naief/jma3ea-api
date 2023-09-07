@@ -909,7 +909,7 @@ module.exports.list = async function (req, res) {
 			// 1) get the available offer
 			const offer = await getAvailableOffer(req, total_prods, user.offer);
 			if (user.offer) {
-				console.log('========================= OFFER =======================: ', user.offer);
+				console.log('========================= OFFER =======================: ', user.offer, user);
 			}
 			if (offer && offer.product_sku) {
 				const product_collection = req.custom.db.client().collection('product');
