@@ -279,10 +279,10 @@ module.exports.getAvailableOffer = async (req, total, userOffer) => {
     const collection = req.custom.db.client().collection('offer');
     const query = {
         status: true,
+        min_amount: { $lte: total },
     };
 
     if (!userOffer || !userOffer.viewed_offer_id /* || !userOffer.offer_id || (userOffer.offer_id.toString() !== userOffer.viewed_offer_id.toString()) */) {
-        query["min_amount"] = { $lte: total },
         query["target_amount"] = { $gte: total }
     }
 
