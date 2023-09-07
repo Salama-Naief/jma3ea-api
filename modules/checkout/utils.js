@@ -299,7 +299,10 @@ module.exports.getAvailableOffer = async (req, total, userOffer) => {
 
     const offer = await collection.findOne(query, options);
 
-    if (!offer) return null;
+    if (!offer) {
+        console.log('====== OFFER DOES NOT EXIST: ======');
+        return null
+    };
     if (offer.min_amount > total && (!userOffer || userOffer.viewed_offer_id != offer._id.toString())) {
         console.log('========= OFFER DISAPPEARED... =============: ', offer);
         return null
