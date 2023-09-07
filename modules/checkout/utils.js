@@ -302,7 +302,7 @@ module.exports.getAvailableOffer = async (req, total, userOffer) => {
     if (userOffer && userOffer.offer_id && offer.target_amount >= total) {
         offer.isClaimed = true;
     } else {
-        await viewOffer(req, offer._id);
+        await viewOffer(req, offer._id.toString());
         offer.isClaimed = false;
     }
 
