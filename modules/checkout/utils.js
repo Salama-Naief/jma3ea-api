@@ -350,40 +350,45 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
                 //"10:00 PM : 12:00 AM"
                 const timeParts = t.time.split(' : ');
 
-                /* if (timeParts.length !== 2) {
+                if (timeParts.length !== 2) {
                     return "Invalid input format";
-                } */
-
-                const startTime = timeParts[0];
-                const startTimeComponents = startTime.split(' ');
-                const startHAndM = startTimeComponents[0].split(':');
-                const startHour = startHAndM[0];
-                const startMinutes = startHAndM[1];
-                const arabicStartMinutes = getArabicNumber(startMinutes);
-                const startPeriod = startTimeComponents[1].toUpperCase();
-                const arabicStartHour = getArabicNumber(startHour);
-                const arabicStartPeriod = startPeriod === 'AM' ? 'ص' : 'م';
-
-                
-                /* if (startTimeComponents.length !== 2 || endTimeComponents.length !== 2) {
-                    return "Invalid input format";
-                } */
-                
-                
-                let arabicTime = `${arabicStartHour}:${arabicStartMinutes} ${arabicStartPeriod}`;
-                
-                if (timeParts.length > 1) {
-                    const endTime = timeParts[1];
-                    const endTimeComponents = endTime.split(' ');
-                    const endHAndM = endTimeComponents[0].split(':');
-                    const endHour = endHAndM[0];
-                    const endMinutes = endHAndM[1];
-                    const endPeriod = endTimeComponents[1].toUpperCase();
-                    const arabicEndHour = getArabicNumber(endHour);
-                    const arabicEndMinutes = getArabicNumber(endMinutes);
-                    const arabicEndPeriod = endPeriod === 'AM' ? 'ص' : 'م';
-                    arabicTime += ` : ${arabicEndHour}:${arabicEndMinutes} ${arabicEndPeriod}`;
                 }
+
+                //10:00 PM
+                const startTime = timeParts[0];
+                const endTime = timeParts[1];
+
+                const startTimeComponents = startTime.split(' ');
+                const endTimeComponents = endTime.split(' ');
+
+                if (startTimeComponents.length !== 2 || endTimeComponents.length !== 2) {
+                    return "Invalid input format";
+                }
+
+                const startHAndM = startTimeComponents[0].split(':');
+                const endHAndM = endTimeComponents[0].split(':');
+
+                // 10:00
+                const startHour = startHAndM[0];
+                const endHour = endHAndM[0];
+
+                const startMinutes = startHAndM[1];
+                const endMinutes = endHAndM[1];
+
+                const startPeriod = startTimeComponents[1].toUpperCase();
+                const endPeriod = endTimeComponents[1].toUpperCase();
+
+                const arabicStartHour = getArabicNumber(startHour);
+                const arabicEndHour = getArabicNumber(endHour);
+
+                const arabicStartMinutes = getArabicNumber(startMinutes);
+
+                const arabicEndMinutes = getArabicNumber(endMinutes);
+
+                const arabicStartPeriod = startPeriod === 'AM' ? 'ص' : 'م';
+                const arabicEndPeriod = endPeriod === 'AM' ? 'ص' : 'م';
+
+                const arabicTime = `${arabicStartHour}:${arabicStartMinutes} ${arabicStartPeriod} : ${arabicEndHour}:${arabicEndMinutes} ${arabicEndPeriod}`;
 
                 return { ...t, time: arabicTime };
             })
