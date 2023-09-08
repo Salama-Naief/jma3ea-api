@@ -475,7 +475,7 @@ module.exports.buy = async function (req, res) {
 				cart_subtotal: total_prods,
 				shipping_cost: shipping_cost,
 				coupon: out_coupon,
-				offer: offer.isClaimed ? offer : null,
+				offer: offer && offer.isClaimed ? offer : null,
 				total: total,
 				cart_total: cart_total,
 				user_data: data.user_data,
@@ -1059,7 +1059,7 @@ module.exports.list = async function (req, res) {
 				payment_methods: productsGroupedBySupplier.find(s => s.isSelected && s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
 				earliest_date_of_delivery: earliest_date_of_delivery,
 				delivery_times: req.custom.lang === 'ar' ? convertDeliveryTimeToArabic(delivery_times) : delivery_times,
-				offer: offer.isClaimed ? null : offer,
+				offer: offer && offer.isClaimed ? null : offer,
 				data: productsGroupedBySupplier.map((data) => {
 					data.payment_methods = data.supplier.allow_cod === false ? payment_methods.filter(p => p.id !== 'cod') : payment_methods;
 					data.products = data.products.map(p => {
