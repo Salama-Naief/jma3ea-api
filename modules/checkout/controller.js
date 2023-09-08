@@ -363,6 +363,7 @@ module.exports.buy = async function (req, res) {
 				});
 				if (product) {
 					offer.product = product;
+					product.price = 0;
 					if (offer.type == 'free_product' && offer.isClaimed) {
 						const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
 						if (jm3eiaProductIndex > -1) {
@@ -474,7 +475,7 @@ module.exports.buy = async function (req, res) {
 				cart_subtotal: total_prods,
 				shipping_cost: shipping_cost,
 				coupon: out_coupon,
-				offer: offer,
+				offer: offer.isClaimed ? offer : null,
 				total: total,
 				cart_total: cart_total,
 				user_data: data.user_data,
@@ -908,9 +909,6 @@ module.exports.list = async function (req, res) {
 			};
 			// 1) get the available offer
 			const offer = await getAvailableOffer(req, total_prods, user.offer);
-			if (user.offer) {
-				console.log('========================= OFFER =======================: ', user.offer, user);
-			}
 			if (offer && offer.product_sku) {
 				const product_collection = req.custom.db.client().collection('product');
 				const product = await product_collection.findOne({ sku: offer.product_sku }, {
@@ -939,6 +937,7 @@ module.exports.list = async function (req, res) {
 				if (product) {
 					if (product.picture) product.picture = `${req.custom.config.media_url}${product.picture}`;
 					offer.product = product;
+					product.price = 0;
 					if (offer.type == 'free_product' && offer.isClaimed) {
 						const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
 						if (jm3eiaProductIndex > -1) {
@@ -1060,7 +1059,7 @@ module.exports.list = async function (req, res) {
 				payment_methods: productsGroupedBySupplier.find(s => s.isSelected && s.supplier.allow_cod === false) ? payment_methods.filter(p => p.id !== 'cod') : payment_methods,
 				earliest_date_of_delivery: earliest_date_of_delivery,
 				delivery_times: req.custom.lang === 'ar' ? convertDeliveryTimeToArabic(delivery_times) : delivery_times,
-				offer: offer,
+				offer: offer.isClaimed ? null : offer,
 				data: productsGroupedBySupplier.map((data) => {
 					data.payment_methods = data.supplier.allow_cod === false ? payment_methods.filter(p => p.id !== 'cod') : payment_methods;
 					data.products = data.products.map(p => {

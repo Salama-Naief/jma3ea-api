@@ -387,7 +387,7 @@ module.exports.clear = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.list = function (req, res) {
+module.exports.list = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -400,6 +400,21 @@ module.exports.list = function (req, res) {
 			prods.push(i.split('-')[0]);
 		}
 	}
+
+	const profile = require('../profile/controller');
+	let user_info = await profile.getInfo(req, {
+		_id: 1,
+		pro: 1
+	}).catch(() => null);
+
+	let hasFreeShipping = false;
+
+	if (user_info && user_info.pro && user_info.pro.active) {
+		if (user_info.pro.endDate > new Date()) {
+			hasFreeShipping = true;
+		}
+	}
+
 	req.custom.clean_filter.sku = {
 		'$in': prods
 	};
@@ -441,7 +456,7 @@ module.exports.list = function (req, res) {
 					}, status_message.CITY_REQUIRED);
 				}
 
-				out.shipping_cost = parseInt(cityObj.shipping_cost);
+				out.shipping_cost = hasFreeShipping ? 0 : parseInt(cityObj.shipping_cost);
 				let total = 0;
 
 				// Total price of products that don't have a discount price
