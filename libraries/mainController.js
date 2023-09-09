@@ -33,7 +33,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 						if (req.custom.isProducts == true) {
 							const promises = [];
 							cached_data.data = cached_data.data.map((i) => {
-								const prod_exists_in_cart = Object.keys(user.cart).indexOf(i._id.toString()) > -1;
+								const prod_exists_in_cart = i && i._id ? (Object.keys(user.cart).indexOf(i._id.toString()) > -1) : false;
 								i.cart_status = {
 									is_exists: prod_exists_in_cart,
 									quantity: prod_exists_in_cart ? user.cart[i._id] : 0
