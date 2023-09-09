@@ -295,7 +295,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 								if (!p_n_s.feed_from_store_id && p_n_s.store_id && p_n_s.store_id.toString() === req.custom.authorizationObject.store_id.toString()) {
 									return p_n_s;
 								} else if (p_n_s.feed_from_store_id) {
-									const temp_store = i.availability.find((t_s) => t_s.store_id.toString() == p_n_s.feed_from_store_id.toString());
+									const temp_store = i.availability.find((t_s) => t_s.store_id && t_s.store_id.toString() == p_n_s.feed_from_store_id.toString());
 									p_n_s.quantity = temp_store ? parseInt(temp_store.quantity) : 0;
 									return p_n_s;
 								}
