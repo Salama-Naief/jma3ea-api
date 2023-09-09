@@ -95,7 +95,7 @@ const all_modules = fs.readdirSync(path.join(__dirname, `modules`));
 for (const moduleName of all_modules) {
 	// api
 	const moduleRouter = require(`./modules/${moduleName}/route`);
-	app.use(`/v2/${moduleName}`, moduleRouter);
+	app.use(`/v3/${moduleName}`, moduleRouter);
 }
 
 // The error handler must be before any other error middleware and after all controllers
