@@ -22,7 +22,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 	user.wishlist = Array.isArray(user.wishlist) ? user.wishlist : [];
 
 	const is_cached = new Promise((resolve, reject) => {
-		if (false/* req.custom.cache_key */) {
+		if (req.custom.cache_key) {
 			if (req.custom.isVIP == true && !req.custom.cache_key.includes('vip')) {
 				req.custom.cache_key += '__vip';
 			}
@@ -32,10 +32,11 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 					if (cached_data) {
 						if (req.custom.isProducts == true) {
 							const promises = [];
+							console.log("=============== CACHED DATA BEFORE: ", cached_data.data, " =====================")
 							cached_data.data = cached_data.data.filter((i) => {
 								return i && i._id;
 							});
-							console.log("=============== CACHED DATA: ", cached_data.data, " =====================")
+							console.log("=============== CACHED DATA AFTER: ", cached_data.data, " =====================")
 							cached_data.data = cached_data.data.map((i) => {
 								const is_exists_product = i && i._id;
 								const prod_exists_in_cart = is_exists_product ? (Object.keys(user.cart).indexOf(i._id.toString()) > -1) : false;
