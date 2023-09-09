@@ -346,7 +346,7 @@ module.exports.featured = async function (req, res) {
 
 
 	if (false) {
-		let cached_data = await cache.get(cache_key).catch(() => null);
+		let cached_data = await cache.get(cache_key).catch((e) => console.error(e));
 		if (cached_data) {
 			cached_data = cached_data.map((feature_category) => {
 
@@ -479,7 +479,7 @@ module.exports.featured = async function (req, res) {
 						}
 						resolve(results);
 					});
-				}).catch(() => null);
+				}).catch((e) => console.error(e));
 				if (c.products.length > 0) {
 					c.products = c.products.map((i) => {
 						if (i.picture) {
@@ -540,7 +540,7 @@ module.exports.featured = async function (req, res) {
 			}
 
 			if (cache_key && featured.length > 0) {
-				cache.set(cache_key, featured, req.custom.config.cache.life_time).catch(() => null);
+				cache.set(cache_key, featured, req.custom.config.cache.life_time).catch((e) => console.error(e));
 			}
 
 			res.out(featured.filter(f => !f.expiration_date || f.expiration_date > new Date()));
@@ -800,7 +800,7 @@ module.exports.read = async function (req, res) {
 				results.old_price = common.getFixedPrice(results.old_price || 0);
 
 				if (cache_key && Object.keys(results).length > 0) {
-					cache.set(cache_key, results, req.custom.config.cache.life_time).catch(() => null);
+					cache.set(cache_key, results, req.custom.config.cache.life_time).catch((e) => console.error(e));
 				}
 
 				results.cart_status = {

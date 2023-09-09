@@ -46,7 +46,7 @@ module.exports.buy = async function (req, res) {
 		wallet: 1,
 		pro: 1,
 		device_token: 1,
-	}).catch((e) => console.log('[Error.Checkout]', e));
+	}).catch((e) => console.error(e));
 
 	if (user_info) {
 		req.body.user_data = user_info;
@@ -191,7 +191,7 @@ module.exports.buy = async function (req, res) {
 					_id: ObjectID(user_city_id)
 				})
 				.then((c) => c)
-				.catch((e) => console.log('[Error.Checkout]', e));
+				.catch((e) => console.error(e));
 
 			data.user_data.address.city_name = cityObj.name[req.custom.lang];
 
@@ -295,7 +295,7 @@ module.exports.buy = async function (req, res) {
 				const day = moment(supplier_delivery_time).format('d');
 				const hour = moment(supplier_delivery_time).format('H');
 				const cache_key_dt = `delivery_times_${sup.supplier.is_external ? sup.supplier._id.toString() : ''}_${day}_${hour}`;
-				const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch((e) => console.log('[Error.Checkout]', e)) || 0) + 1;
+				const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch((e) => console.error(e)) || 0) + 1;
 				const expired = 24;
 				await cache.set(cache_key_dt, cached_delivery_times, expired);
 
@@ -450,12 +450,12 @@ module.exports.buy = async function (req, res) {
 					}).catch(() => { });
 
 					const coupon_token_collection = req.custom.db.client().collection('coupon_token');
-					const coupon_token = await coupon_token_collection.findOne({ coupon: coupon.code, token: req.custom.token }).catch((e) => console.log('[Error.Checkout]', e));
+					const coupon_token = await coupon_token_collection.findOne({ coupon: coupon.code, token: req.custom.token }).catch((e) => console.error(e));
 					coupon_token ? await coupon_token_collection.updateOne({
 						_id: ObjectID(coupon_token._id.toString())
 					}, {
 						$set: { coupon: coupon.code, number_of_uses: parseInt(coupon_token.number_of_uses) + 1 }
-					}).catch((e) => console.log('[Error.Checkout]', e)) : await coupon_token_collection.insertOne({
+					}).catch((e) => console.error(e)) : await coupon_token_collection.insertOne({
 						token: req.custom.token,
 						coupon: coupon.code,
 						number_of_uses: 1
@@ -522,7 +522,7 @@ module.exports.buy = async function (req, res) {
 			const day = moment(req.body.delivery_time).format('d');
 			const hour = moment(req.body.delivery_time).format('H');
 			const cache_key_dt = `delivery_times_${day}_${hour}`;
-			const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch((e) => console.log('[Error.Checkout]', e)) || 0) + 1;
+			const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch((e) => console.error(e)) || 0) + 1;
 			const expired = 24;
 			await cache.set(cache_key_dt, cached_delivery_times, expired); */
 
@@ -557,7 +557,7 @@ module.exports.buy = async function (req, res) {
 					_id: ObjectID(data.user_data._id.toString())
 				}, {
 					$set: { wallet: new_wallet }
-				}).catch((e) => console.log('[Error.Checkout]', e))
+				}).catch((e) => console.error(e))
 			}
 
 			const products2view = products2save.map((p) => {
@@ -598,17 +598,17 @@ module.exports.buy = async function (req, res) {
 
 			// Copy to client
 			if (data.user_data.email) {
-				await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], data.user_data.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch((e) => console.log('[Error.Checkout]', e));
+				await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], data.user_data.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch((e) => console.error(e));
 			}
 
 			// Copy to admin
-			await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], req.custom.settings.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch((e) => console.log('[Error.Checkout]', e));
+			await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], req.custom.settings.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch((e) => console.error(e));
 
-			const token = await get_remote_token(req);//.catch((e) => console.log('[Error.Checkout]', e));
+			const token = await get_remote_token(req);//.catch((e) => console.error(e));
 
 			//if (token) {
 			// Update quantities
-			await update_quantities(req, up_products, up_cart, token).catch((e) => console.log('[Error.Checkout]', e));
+			await update_quantities(req, up_products, up_cart, token).catch((e) => console.error(e));
 			//}
 			return res.out(order_data);
 		} catch (err) {
@@ -675,7 +675,7 @@ module.exports.list = async function (req, res) {
 		wallet: 1,
 		pro: 1,
 		device_token: 1,
-	}).catch((e) => console.log('[Error.Checkout]', e));
+	}).catch((e) => console.error(e));
 
 	let data = {};
 	if (user_info) {
@@ -755,7 +755,7 @@ module.exports.list = async function (req, res) {
 					_id: ObjectID(user_city_id)
 				})
 				.then((c) => c)
-				.catch((e) => console.log('[Error.Checkout]', e));
+				.catch((e) => console.error(e));
 
 			if (!cityObj) {
 				return res.out({ message: req.custom.local.city_is_not_exists }, status_message.CITY_REQUIRED)
@@ -985,7 +985,7 @@ module.exports.list = async function (req, res) {
 					_id: ObjectID(req.custom.authorizationObject.member_id.toString())
 				})
 				.then((c) => c)
-				.catch((e) => console.log('[Error.Checkout]', e)) : null;
+				.catch((e) => console.error(e)) : null;
 
 			const user_wallet = userObj ? parseFloat(total > userObj.wallet ? userObj.wallet : parseFloat(total)) : 0;
 
@@ -1135,7 +1135,7 @@ async function products_to_save(products, user, req, to_display = false) {
 	await (async () => {
 		const cache = req.custom.cache;
 		const cache_key = `category_all_solid`;
-		all_categories = await cache.get(cache_key).catch((e) => console.log('[Error.Checkout]', e));
+		all_categories = await cache.get(cache_key).catch((e) => console.error(e));
 		if (!all_categories) {
 			const category_collection = req.custom.db.client().collection('category');
 			all_categories = await category_collection.find({
@@ -1143,7 +1143,7 @@ async function products_to_save(products, user, req, to_display = false) {
 			})
 				.toArray() || [];
 			if (all_categories) {
-				cache.set(cache_key, all_categories, req.custom.config.cache.life_time).catch((e) => console.log('[Error.Checkout]', e));
+				cache.set(cache_key, all_categories, req.custom.config.cache.life_time).catch((e) => console.error(e));
 			}
 		}
 	})();
@@ -1153,12 +1153,12 @@ async function products_to_save(products, user, req, to_display = false) {
 
 		const cache = req.custom.cache;
 		const cache_key = `supplier_all_solid`;
-		all_suppliers = await cache.get(cache_key).catch((e) => console.log('[Error.Checkout]', e));
+		all_suppliers = await cache.get(cache_key).catch((e) => console.error(e));
 		if (!all_suppliers) {
 			const supplier_collection = req.custom.db.client().collection('supplier');
 			all_suppliers = await supplier_collection.find({}).toArray() || [];
 			if (all_suppliers) {
-				cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch((e) => console.log('[Error.Checkout]', e));
+				cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch((e) => console.error(e));
 			}
 		}
 
@@ -1319,7 +1319,7 @@ function update_quantities(req, the_products, cart, token) {
 				_id: ObjectID(p._id.toString())
 			}, {
 				$set: { variants: variants, prod_n_storeArr: parent_prod_n_storeArr }
-			}).catch((e) => console.log('[Error.Checkout]', e));
+			}).catch((e) => console.error(e));
 			promises.push(update);
 
 		} else {
@@ -1348,7 +1348,7 @@ function update_quantities(req, the_products, cart, token) {
 				_id: ObjectID(p._id.toString())
 			}, {
 				$set: { prod_n_storeArr: prod_n_storeArr }
-			}).catch((e) => console.log('[Error.Checkout]', e));
+			}).catch((e) => console.error(e));
 			promises.push(update);
 			remote_product.quantity = quantity;
 			if (token) {
@@ -1431,5 +1431,5 @@ async function reset_free_shipping(req, userId) {
 			'pro.active': false,
 			'pro.startDate': null
 		}
-	}).catch((e) => console.log('[Error.Checkout]', e))
+	}).catch((e) => console.error(e))
 }

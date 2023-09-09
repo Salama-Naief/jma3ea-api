@@ -14,7 +14,7 @@ module.exports.list = async function (req, res) {
     const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
 
     if (cache_key) {
-        const cached_data = await cache.get(cache_key).catch(() => null);
+        const cached_data = await cache.get(cache_key).catch((e) => console.error(e));
         if (cached_data) {
             return res.out({ count: cached_data.length, data: cached_data });
         }
@@ -163,7 +163,7 @@ module.exports.list = async function (req, res) {
                     //console.log('SUPPLIERS RESULTS: ', results);
                     resolve(results);
                 });
-            }).catch(() => null);
+            }).catch((e) => console.error(e));
             if (inventory && inventory.suppliers && inventory.suppliers.length > 0) {
                 inventory.suppliers = inventory.suppliers.map(i => {
                     if (i.picture && i.picture != undefined) {
@@ -186,7 +186,7 @@ module.exports.list = async function (req, res) {
         out.count = inventories.length;
 
         if (cache_key && inventories.length > 0) {
-            await cache.set(cache_key, inventories, req.custom.config.cache.life_time).catch(() => null);
+            await cache.set(cache_key, inventories, req.custom.config.cache.life_time).catch((e) => console.error(e));
         }
 
         return res.out(out);

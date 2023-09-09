@@ -321,12 +321,12 @@ module.exports.clear = async function (req, res) {
 
 	const cache = req.custom.cache;
 	const cache_key = `supplier_all_solid`;
-	all_suppliers = await cache.get(cache_key).catch(() => null);
+	all_suppliers = await cache.get(cache_key).catch((e) => console.error(e));
 	if (!all_suppliers) {
 		const supplier_collection = req.custom.db.client().collection('supplier');
 		all_suppliers = await supplier_collection.find({}).toArray() || [];
 		if (all_suppliers) {
-			cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch(() => null);
+			cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch((e) => console.error(e));
 		}
 	}
 
@@ -405,7 +405,7 @@ module.exports.list = async function (req, res) {
 	let user_info = await profile.getInfo(req, {
 		_id: 1,
 		pro: 1
-	}).catch(() => null);
+	}).catch((e) => console.error(e));
 
 	let hasFreeShipping = false;
 

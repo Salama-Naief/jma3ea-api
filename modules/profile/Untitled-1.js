@@ -135,7 +135,7 @@ module.exports.logout = function (req, res) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
-	req.custom.cache.unset(req.custom.token).catch(() => null);
+	req.custom.cache.unset(req.custom.token).catch((e) => console.error(e));
 
 	return res.out({
 		'message': req.custom.local.logout_done
@@ -185,7 +185,7 @@ module.exports.register = function (req, res) {
 					collection.insertOne(data)
 						.then((response) => {
 
-							mail.send_mail(req.custom.settings.sender_emails.register, req.custom.settings.site_name[req.custom.lang], data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch(() => null);
+							mail.send_mail(req.custom.settings.sender_emails.register, req.custom.settings.site_name[req.custom.lang], data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch((e) => console.error(e));
 
 							registered_mobile_collection.insertOne({
 								mobile: req.body.mobile,
@@ -368,7 +368,7 @@ module.exports.forgotpassword = function (req, res) {
 
 					mail.send_mail(req.custom.settings.sender_emails.reset_password, req.custom.settings.site_name[req.custom.lang], data.email,
 						req.custom.local.mail.reset_password_subject,
-						mail_forgotpassword_view.newpasswordrequest(forgotpassword_data, req.custom)).catch(() => null);
+						mail_forgotpassword_view.newpasswordrequest(forgotpassword_data, req.custom)).catch((e) => console.error(e));
 
 					res.out({
 						message: req.custom.local.mail.reset_password_otp_sent,
@@ -782,7 +782,7 @@ function fix_user_data(req, userObj, city_id) {
 			wallet: wallet,
 		}
 	})
-		.catch(() => null);
+		.catch((e) => console.error(e));
 }
 
 function getInfo(req, projection = {}) {

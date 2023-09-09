@@ -15,7 +15,7 @@ module.exports.add = async (req, res) => {
     let user_info = await profile.getInfo(req, {
         _id: 1,
         fullname: 1,
-    }).catch(() => null);
+    }).catch((e) => console.error(e));
 
     if (user_info) {
         if (user_info.fullname)

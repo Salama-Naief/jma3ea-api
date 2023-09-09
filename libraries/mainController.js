@@ -331,7 +331,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 					} else {
 
 						if (req.custom.cache_key && results.length > 0) {
-							cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time).catch(() => null);
+							cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time).catch((e) => console.error(e));
 						}
 						const message = results.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
 						res.out(out, message);
@@ -431,7 +431,7 @@ module.exports.list_all = function (req, res, collectionName, projection, callba
 			} else {
 
 				if (req.custom.cache_key && results.length > 0) {
-					cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time).catch(() => null);
+					cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time).catch((e) => console.error(e));
 				}
 
 				res.out(out, message);
@@ -531,7 +531,7 @@ module.exports.read = function (req, res, collectionName, projection, callback) 
 			} else {
 
 				if (req.custom.cache_key && Object.keys(row).length > 0) {
-					cache.set(req.custom.cache_key, row, req.custom.config.cache.life_time).catch(() => null);
+					cache.set(req.custom.cache_key, row, req.custom.config.cache.life_time).catch((e) => console.error(e));
 				}
 
 				const message = Object.keys(row) > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;

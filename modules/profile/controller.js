@@ -160,7 +160,7 @@ module.exports.logout = function (req, res) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
-	req.custom.cache.unset(req.custom.token).catch(() => null);
+	req.custom.cache.unset(req.custom.token).catch((e) => console.error(e));
 
 	return res.out({
 		'message': req.custom.local.logout_done
@@ -207,7 +207,7 @@ module.exports.register = function (req, res) {
 					data.password = sha1(md5(data.password));
 					collection.insertOne(data)
 						.then((response) => {
-							mail.send_mail(req.custom.settings.sender_emails.register, req.custom.settings.site_name[req.custom.lang], data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch(() => null);
+							mail.send_mail(req.custom.settings.sender_emails.register, req.custom.settings.site_name[req.custom.lang], data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch((e) => console.error(e));
 							const point_transactions_collection = req.custom.db.client().collection('point_transactions');
 							point_transactions_collection.insertOne({
 								member_id: ObjectID(response.insertedId.toString()),
@@ -428,7 +428,7 @@ module.exports.forgotpassword = function (req, res) {
 					if (searchColumn == 'email') {
 						mail.send_mail(req.custom.settings.sender_emails.reset_password, req.custom.settings.site_name[req.custom.lang], data[searchColumn],
 							req.custom.local.mail.reset_password_subject,
-							newpasswordrequest.newpasswordrequest(forgotpassword_data, req.custom)).catch(() => null);
+							newpasswordrequest.newpasswordrequest(forgotpassword_data, req.custom)).catch((e) => console.error(e));
 
 						res.out({
 							message: req.custom.local.mail.reset_password_otp_sent,
@@ -865,7 +865,7 @@ module.exports.chargeWallet = async function (req, res) {
 			points: 1,
 			wallet: 1,
 			device_token: 1,
-		}).catch(() => null);
+		}).catch((e) => console.error(e));
 
 		if (user_info) {
 			req.body.user_data = user_info;
@@ -942,7 +942,7 @@ module.exports.chargeWallet = async function (req, res) {
 			_id: ObjectID(data.user_data._id.toString())
 		}, {
 			$set: { wallet: new_wallet }
-		}).catch(() => null)
+		}).catch((e) => console.error(e))
 
 
 		res.out({ ...wallet_data, total: data.amount });
@@ -979,7 +979,7 @@ module.exports.getTheMonthShipping = async function (req, res) {
 			points: 1,
 			wallet: 1,
 			device_token: 1,
-		}).catch(() => null);
+		}).catch((e) => console.error(e));
 
 		if (user_info) {
 			req.body.user_data = user_info;
@@ -1057,7 +1057,7 @@ module.exports.getTheMonthShipping = async function (req, res) {
 					endDate
 				}
 			}
-		}).catch(() => null)
+		}).catch((e) => console.error(e))
 
 
 		res.out({});
@@ -1084,7 +1084,7 @@ module.exports.sendToWallet = async function (req, res) {
 		points: 1,
 		wallet: 1,
 		device_token: 1,
-	}).catch(() => null);
+	}).catch((e) => console.error(e));
 
 	if (!user_info) {
 		return res.out({
@@ -1129,7 +1129,7 @@ module.exports.sendToWallet = async function (req, res) {
 
 	const member_collection = req.custom.db.client().collection('member');
 
-	const receiver = await member_collection.findOne({ mobile: data.mobile }).catch(() => null);
+	const receiver = await member_collection.findOne({ mobile: data.mobile }).catch((e) => console.error(e));
 	if (!receiver) {
 		// No user found with this mobile
 		return res.out({
@@ -1168,13 +1168,13 @@ module.exports.sendToWallet = async function (req, res) {
 		_id: ObjectID(data.user_data._id.toString())
 	}, {
 		$set: { wallet: new_sender_wallet }
-	}).catch(() => null);
+	}).catch((e) => console.error(e));
 
 	await member_collection.updateOne({
 		_id: ObjectID(receiver._id.toString())
 	}, {
 		$set: { wallet: new_receiver_wallet }
-	}).catch(() => null);
+	}).catch((e) => console.error(e));
 
 	res.out(sender_wallet_data);
 
@@ -1211,7 +1211,7 @@ module.exports.delete = async function (req, res) {
 	const userId = ObjectID(req.custom.authorizationObject.member_id);
 	collection.deleteOne({ _id: userId }).then(response => {
 		if (response.deletedCount > 0) {
-			req.custom.cache.unset(req.custom.token).catch(() => null);
+			req.custom.cache.unset(req.custom.token).catch((e) => console.error(e));
 			return res.out({ message: req.custom.local.account_deleted }, status_message.DELETED);
 		} else {
 			return res.out({ message: req.custom.local.no_user_found }, status_message.VALIDATION_ERROR);
@@ -1248,7 +1248,7 @@ function fix_user_data(req, userObj, city_id) {
 			wallet: wallet,
 		}
 	})
-		.catch(() => null);
+		.catch((e) => console.error(e));
 }
 
 function getInfo(req, projection = {}) {

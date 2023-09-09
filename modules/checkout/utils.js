@@ -204,7 +204,7 @@ module.exports.getDeliveryTimes = async (req, cityObj, supplier = {}) => {
             const time = today.format('LT') + ' : ' + today.add(2, 'hours').format('LT');
 
             const cache_key_dt = `delivery_times_${supplier.is_external ? supplier._id.toString() : ''}_${day}_${idx}`;
-            const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
+            const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch((e) => console.error(e)) || 0);
 
             if (available_delivery_times[idx].max_orders > cached_delivery_times) {
                 times.push({
@@ -252,7 +252,7 @@ module.exports.getDeliveryTimes = async (req, cityObj, supplier = {}) => {
             const time = tomorrow.format('LT') + ' : ' + tomorrow.add(2, 'hours').format('LT');
 
             const cache_key_dt = `delivery_times_${supplier.is_external ? supplier._id.toString() : ''}_${day}_${idx}`;
-            const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch(() => null) || 0);
+            const cached_delivery_times = parseInt(await cache.get(cache_key_dt).catch((e) => console.error(e)) || 0);
             if (tomorrow_available_delivery_times && tomorrow_available_delivery_times[idx] && tomorrow_available_delivery_times[idx].max_orders > cached_delivery_times) {
                 times.push({
                     'time': time,

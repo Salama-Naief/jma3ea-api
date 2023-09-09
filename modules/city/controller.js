@@ -35,7 +35,7 @@ module.exports.list = function (req, res) {
 				"data": out.data
 			};
 			if (req.custom.cache_key && rows.length > 0) {
-				req.custom.cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time.token).catch(() => null);
+				req.custom.cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time.token).catch((e) => console.error(e));
 			}
 			return res.out(out);
 		}
@@ -62,7 +62,7 @@ module.exports.list = function (req, res) {
 			"data": rows
 		};
 		if (req.custom.cache_key && rows.length > 0) {
-			req.custom.cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time.token).catch(() => null);
+			req.custom.cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time.token).catch((e) => console.error(e));
 		}
 		res.out(out);
 	});
@@ -105,7 +105,7 @@ module.exports.listByCountry = function (req, res) {
 			req.custom.cache.set(req.custom.cache_key, {
 				"count": rows.length,
 				"data": rows
-			}, req.custom.config.cache.life_time.data).catch(() => null);
+			}, req.custom.config.cache.life_time.data).catch((e) => console.error(e));
 		}
 
 		res.out({

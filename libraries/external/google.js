@@ -47,7 +47,7 @@ module.exports.valid_gmap_address = async function (req, res, body) {
 			}
 			return false;
 		}
-	}).then((c) => c).catch(() => null);
+	}).then((c) => c).catch((e) => console.error(e));
 	if (!cityObj) {
 		res.out({
 			message: req.custom.local.invalid_location
