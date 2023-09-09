@@ -234,8 +234,8 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 				}
 
 				collection.aggregate(pipeline, options).toArray((e, results) => {
-					console.error(e)
 					if (e) {
+						console.error(e)
 						return res.out({
 							'message': e.message
 						}, status_message.UNEXPECTED_ERROR);
@@ -496,8 +496,8 @@ module.exports.read = function (req, res, collectionName, projection, callback) 
 					}
 				}).
 				catch((e) => {
-					resolve(false);
 					console.error(e)
+					resolve(false);
 				});
 		} else {
 			resolve(false);
