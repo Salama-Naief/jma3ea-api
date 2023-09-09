@@ -22,7 +22,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 	user.wishlist = Array.isArray(user.wishlist) ? user.wishlist : [];
 
 	const is_cached = new Promise((resolve, reject) => {
-		if (req.custom.cache_key) {
+		if (false/* req.custom.cache_key */) {
 			if (req.custom.isVIP == true && !req.custom.cache_key.includes('vip')) {
 				req.custom.cache_key += '__vip';
 			}
