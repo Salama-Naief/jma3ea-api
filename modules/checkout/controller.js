@@ -1066,16 +1066,17 @@ module.exports.list = async function (req, res) {
 					data.products = data.products.map(p => {
 						delete p.variants;
 						delete p.preparation_time;
+						if (p.supplier) delete p.supplier;
 						return p;
 					});
 					data.delivery_times = req.custom.lang === 'ar' ? convertDeliveryTimeToArabic(data.delivery_times) : data.delivery_times;
 					return data;
 				}),
-				products: products.map((p) => {
+				/* products: products.map((p) => {
 					delete p.variants;
 					delete p.preparation_time;
 					return p;
-				}),
+				}), */
 
 			});
 		} catch (e) {
