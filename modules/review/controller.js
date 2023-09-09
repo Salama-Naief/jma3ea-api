@@ -95,10 +95,10 @@ module.exports.add = async (req, res) => {
         }, status_message.CREATED);
 
 
-    } catch (err) {
-        console.log('err: ', err);
+    } catch (e) {
+        console.error(e);
         return res.out({
-            'message': err.message
+            'message': e.message
         }, status_message.UNEXPECTED_ERROR);
     }
 }
@@ -132,8 +132,9 @@ module.exports.list = (req, res) => {
             out.avg_rating = supplier.avg_rating;
             out.reviews_count = supplier.reviews_count;
             return res.out(out);
-        }).catch(err => {
-            return res.out({ message: err.message }, status_message.UNEXPECTED_ERROR)
+        }).catch(e => {
+            console.error(e);
+            return res.out({ message: e.message }, status_message.UNEXPECTED_ERROR)
         });
 
 

@@ -34,7 +34,10 @@ module.exports.check = function (req, res) {
 		appId: appId
 	};
 
-	collection.findOne(where).catch(() => res.out({ message: local.failed_create_auth_app }, status_message.UNEXPECTED_ERROR)).
+	collection.findOne(where).catch((e) => {
+		console.error(e)
+		return res.out({ message: local.failed_create_auth_app }, status_message.UNEXPECTED_ERROR);
+	}).
 		then((theapp) => {
 
 			if (!theapp) {
@@ -59,9 +62,12 @@ module.exports.check = function (req, res) {
 						.then(() => res.out({
 							token: token
 						}))
-						.catch(() => res.out({
-							message: local.failed_create_auth_app
-						}, status_message.UNEXPECTED_ERROR))
+						.catch((e) => {
+							console.error(e);
+							res.out({
+								message: local.failed_create_auth_app
+							}, status_message.UNEXPECTED_ERROR);
+						})
 				};
 
 				const data = {

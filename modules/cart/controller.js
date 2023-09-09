@@ -773,16 +773,20 @@ module.exports.offer = async function (req, res) {
 			});
 		} */
 		user.offer.offer_id = data.offer_id;
-	} catch (err) {
+	} catch (e) {
+		console.error(e);
 		res.out({
-			'message': err.message
+			'message': e.message
 		}, status_message.UNEXPECTED_ERROR)
 	}
 	req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
 		.then((response) => res.out({
 			message: req.custom.local.cart_product_added
 		}, status_message.CREATED))
-		.catch((error) => res.out({
-			'message': error.message
-		}, status_message.UNEXPECTED_ERROR));
+		.catch((e) => {
+			console.error(e);
+			res.out({
+				'message': e.message
+			}, status_message.UNEXPECTED_ERROR)
+		});
 }

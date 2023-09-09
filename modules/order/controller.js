@@ -92,9 +92,12 @@ module.exports.read = function (req, res) {
 			order['all_statuses'] = req.custom.local.order_status_list;
 			res.out(order);
 		})
-		.catch((err) => res.out({
-			'message': err.message
-		}, status_message.UNEXPECTED_ERROR));
+		.catch((e) => {
+			console.error(e);
+			res.out({
+				'message': e.message
+			}, status_message.UNEXPECTED_ERROR)
+		});
 };
 
 /**
@@ -191,9 +194,11 @@ module.exports.repeat = function (req, res) {
 
 
 		})
-		.catch((err) => res.out({
-			'message': err.message
-		}, status_message.UNEXPECTED_ERROR));
+		.catch((e) => {
+			console.error(e);
+			res.out({
+			'message': e.message
+		}, status_message.UNEXPECTED_ERROR)});
 };
 
 async function reformatOrderSuppliers(products, req) {

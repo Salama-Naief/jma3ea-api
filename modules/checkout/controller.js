@@ -447,7 +447,7 @@ module.exports.buy = async function (req, res) {
 						$set: {
 							number_of_uses: parseInt(coupon.number_of_uses || 0) + 1
 						}
-					}).catch(() => { });
+					}).catch((e) => console.error(e));
 
 					const coupon_token_collection = req.custom.db.client().collection('coupon_token');
 					const coupon_token = await coupon_token_collection.findOne({ coupon: coupon.code, token: req.custom.token }).catch((e) => console.error(e));
@@ -611,15 +611,16 @@ module.exports.buy = async function (req, res) {
 			await update_quantities(req, up_products, up_cart, token).catch((e) => console.error(e));
 			//}
 			return res.out(order_data);
-		} catch (err) {
+		} catch (e) {
 			if (req.query.web == 'true') {
-				console.log('======================================= WEB LOG ==================================\n', err, req.body, order_data);
+				console.error('======================================= WEB LOG ==================================\n', e, req.body, order_data);
 			}
 			if (isOrderInsertedCorrectly) {
 				return res.out(order_data);
 			} else {
+				console.error(e);
 				return res.out({
-					'message': err.message
+					'message': e.message
 				}, status_message.UNEXPECTED_ERROR);
 			}
 		}
@@ -1077,10 +1078,10 @@ module.exports.list = async function (req, res) {
 				}),
 
 			});
-		} catch (err) {
-			console.log('ERROR FOUND: ', err);
+		} catch (e) {
+			console.error(e);
 			return res.out({
-				'message': err.message
+				'message': e.message
 			}, status_message.UNEXPECTED_ERROR);
 		}
 	});

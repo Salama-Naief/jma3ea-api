@@ -544,9 +544,10 @@ module.exports.featured = async function (req, res) {
 			}
 
 			res.out(featured.filter(f => !f.expiration_date || f.expiration_date > new Date()));
-		} catch (err) {
+		} catch (e) {
+			console.error(e);
 			return res.out({
-				'message': err.message
+				'message': e.message
 			}, status_message.UNEXPECTED_ERROR);
 		}
 	});
@@ -745,7 +746,10 @@ module.exports.read = async function (req, res) {
 					const brand_collection = req.custom.db.client().collection('brand');
 					const brand = await brand_collection.findOne({
 						status: true
-					}).then((b) => b).catch(() => { });
+					}).then((b) => b).catch((e) => {
+						console.error(e);
+						return {};
+					});
 					results.brand = brand ? brand.name[req.custom.local] || brand.name[req.custom.config.local] : null;
 				} else {
 					results.brand = null;
@@ -815,7 +819,10 @@ module.exports.read = async function (req, res) {
 			});
 
 		}).
-		catch(() => res.out({
-			'message': err.message
-		}, status_message.UNEXPECTED_ERROR));
+		catch((e) => {
+			console.error(e);
+			res.out({
+				'message': e.message
+			}, status_message.UNEXPECTED_ERROR)
+		});
 };

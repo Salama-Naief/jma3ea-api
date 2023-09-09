@@ -21,10 +21,11 @@ module.exports = (req, res, next) => {
 			} else {
 				const collection = req.custom.db.client().collection('setting');
 				collection.find()
-					.toArray(function (err, docs) {
-						if (err) {
+					.toArray(function (e, docs) {
+						if (e) {
+							console.error(e);
 							return res.out({
-								message: err.message
+								message: e.message
 							}, status_message.UNEXPECTED_ERROR);
 						}
 						req.custom.cache.set('settings', docs, req.custom.config.cache.life_time.data);

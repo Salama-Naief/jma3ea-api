@@ -93,7 +93,10 @@ async function update_user(req, res, action = 'insert') {
 		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
-	const user = await profile.getInfo(req).catch(() => { });
+	const user = await profile.getInfo(req).catch((e) => {
+		console.error(e);
+		return null;
+	});
 
 	if (!user) {
 		return res.out({
@@ -163,5 +166,8 @@ async function update_user(req, res, action = 'insert') {
 		.then((response) => res.out({
 			message: req.custom.local.saved_done
 		})).
-		catch((err) => res.out({ 'message': err.message }, status_message.UNEXPECTED_ERROR));
+		catch((e) => {
+			console.error(e);
+			res.out({ 'message': e.message }, status_message.UNEXPECTED_ERROR)
+		});
 }

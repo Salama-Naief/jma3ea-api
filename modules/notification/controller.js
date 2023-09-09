@@ -12,9 +12,10 @@ const collectionName = 'notification';
  */
 module.exports.read = function (req, res) {
     const collection = req.custom.db.client().collection(collectionName);
-    collection.findOne({ "sent": { $eq: null } }, function (err, result) {
-        if (err) {
-            return res.out({ 'error': err.message }, status_message.UNEXPECTED_ERROR);
+    collection.findOne({ "sent": { $eq: null } }, function (e, result) {
+        if (e) {
+            console.error(e);
+            return res.out({ 'error': e.message }, status_message.UNEXPECTED_ERROR);
         }
         res.out(result);
     });

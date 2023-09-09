@@ -43,9 +43,12 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 								};
 
 
-								promises.push(resetPrice(req, i).catch(() => res.out({
-									message: req.custom.local.unexpected_error
-								}, status_message.UNEXPECTED_ERROR)));
+								promises.push(resetPrice(req, i).catch((e) => {
+									console.error(e);
+									return res.out({
+										message: req.custom.local.unexpected_error
+									}, status_message.UNEXPECTED_ERROR);
+								}));
 
 								if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
 									const oldPrice = parseFloat(i.old_price);
@@ -93,7 +96,10 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 					}
 
 				}).
-				catch(() => resolve(false));
+				catch((e) => {
+					console.error(e);
+					resolve(false);
+				});
 		}
 		resolve(false);
 	});
@@ -223,10 +229,11 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 					});
 				}
 
-				collection.aggregate(pipeline, options).toArray((err, results) => {
-					if (err) {
+				collection.aggregate(pipeline, options).toArray((e, results) => {
+					console.error(e)
+					if (e) {
 						return res.out({
-							'message': err.message
+							'message': e.message
 						}, status_message.UNEXPECTED_ERROR);
 					}
 
@@ -242,9 +249,12 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 						} */
 
 						if (req.custom.isProducts == true || collectionName == 'product') {
-							promises.push(resetPrice(req, i).catch(() => res.out({
-								message: req.custom.local.unexpected_error
-							}, status_message.UNEXPECTED_ERROR)));
+							promises.push(resetPrice(req, i).catch((e) => {
+								console.error(e);
+								res.out({
+									message: req.custom.local.unexpected_error
+								}, status_message.UNEXPECTED_ERROR);
+							}));
 
 							if (i.old_price && i.discount_price_valid_until && i.discount_price_valid_until < new Date()) {
 								const oldPrice = parseFloat(i.old_price);
@@ -343,7 +353,10 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 
 	}).
-		catch((err) => res.out({ 'message': err.message }, status_message.UNEXPECTED_ERROR));
+		catch((e) => {
+			console.error(e)
+			res.out({ 'message': e.message }, status_message.UNEXPECTED_ERROR);
+		});
 
 };
 
@@ -369,7 +382,10 @@ module.exports.list_all = function (req, res, collectionName, projection, callba
 						resolve(false);
 					}
 				}).
-				catch(() => resolve(false));
+				catch((e) => {
+					console.error(e);
+					resolve(false);
+				});
 		} else {
 			resolve(false);
 		}
@@ -409,10 +425,11 @@ module.exports.list_all = function (req, res, collectionName, projection, callba
 			"allowDiskUse": true
 		};
 
-		collection.aggregate(pipeline, options).toArray((err, results) => {
-			if (err) {
+		collection.aggregate(pipeline, options).toArray((e, results) => {
+			if (e) {
+				console.error(e)
 				return res.out({
-					'message': err.message
+					'message': e.message
 				}, status_message.UNEXPECTED_ERROR);
 			}
 			const out = {
@@ -438,9 +455,12 @@ module.exports.list_all = function (req, res, collectionName, projection, callba
 			}
 		});
 
-	}).catch(() => res.out({
-		'message': err.message
-	}, status_message.UNEXPECTED_ERROR));
+	}).catch((e) => {
+		console.error(e)
+		res.out({
+			'message': e.message
+		}, status_message.UNEXPECTED_ERROR);
+	});
 };
 
 /**
@@ -471,7 +491,10 @@ module.exports.read = function (req, res, collectionName, projection, callback) 
 						resolve(false);
 					}
 				}).
-				catch(() => resolve(false));
+				catch((e) => {
+					resolve(false);
+					console.error(e)
+				});
 		} else {
 			resolve(false);
 		}
@@ -515,10 +538,10 @@ module.exports.read = function (req, res, collectionName, projection, callback) 
 		const options = {
 			"allowDiskUse": true
 		};
-		collection.aggregate(pipeline, options).toArray((err, results) => {
-			if (err) {
+		collection.aggregate(pipeline, options).toArray((e, results) => {
+			if (e) {
 				return res.out({
-					'error': err.message
+					'error': e.message
 				}, status_message.UNEXPECTED_ERROR);
 			}
 			const row = results[0] || {};

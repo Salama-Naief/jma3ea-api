@@ -141,13 +141,19 @@ module.exports.login = function (req, res) {
 					user: theuser
 				});
 			})
-			.catch(() => res.out({
-				message: local.failed_create_auth_app
-			}, status_message.UNEXPECTED_ERROR));
+			.catch((e) => {
+				console.error(e)
+				res.out({
+					message: local.failed_create_auth_app
+				}, status_message.UNEXPECTED_ERROR);
+			});
 
-	}).catch(() => res.out({
-		error: local.failed_auth_user
-	}, status_message.UNEXPECTED_ERROR));
+	}).catch((e) => {
+		console.error(e)
+		res.out({
+			error: local.failed_auth_user
+		}, status_message.UNEXPECTED_ERROR)
+	});
 };
 
 /**
@@ -233,7 +239,7 @@ module.exports.register = function (req, res) {
 								mobile: req.body.mobile,
 								created: new Date(),
 							})
-								.catch(() => { }).then(() => {
+								.catch((e) => console.error(e)).then(() => {
 									req.body.city_id = req.body.address.city_id;
 									updateUserCity(req, res);
 									return res.out({
@@ -244,9 +250,12 @@ module.exports.register = function (req, res) {
 								});
 
 						})
-						.catch((error) => res.out({
-							'message': error.message
-						}, status_message.UNEXPECTED_ERROR));
+						.catch((e) => {
+							console.error(e)
+							res.out({
+								'message': error.message
+							}, status_message.UNEXPECTED_ERROR)
+						});
 
 
 				});
@@ -300,12 +309,15 @@ module.exports.update = async function (req, res) {
 							mobile: req.body.mobile,
 							created: new Date(),
 						})
-							.catch(() => { })
+							.catch((e) => console.error(e))
 					});
 
-			}).catch(() => res.out({
-				'message': error.message
-			}, status_message.UNEXPECTED_ERROR));
+			}).catch((e) => {
+				console.error(e)
+				res.out({
+					'message': error.message
+				}, status_message.UNEXPECTED_ERROR)
+			});
 
 		});
 };
@@ -330,7 +342,7 @@ module.exports.updatepassword = async function (req, res) {
 				return res.out(error, status_message.VALIDATION_ERROR);
 			}
 
-			const user_info = getInfo(req).catch(() => { });
+			const user_info = getInfo(req).catch((e) => console.error(e));
 			user_info.then((userdecode) => {
 
 				userdecode = userdecode || {};
@@ -443,13 +455,19 @@ module.exports.forgotpassword = function (req, res) {
 
 
 				})
-				.catch((error) => res.out({
-					'message': error.message
-				}, status_message.UNEXPECTED_ERROR));
+				.catch((e) => {
+					console.error(e);
+					res.out({
+						'message': e.message
+					}, status_message.UNEXPECTED_ERROR);
+				});
 
-		}).catch(() => res.out({
-			'message': error.message
-		}, status_message.UNEXPECTED_ERROR));
+		}).catch((e) => {
+			console.error(e);
+			res.out({
+				'message': e.message
+			}, status_message.UNEXPECTED_ERROR)
+		});
 	});
 };
 /**
@@ -490,9 +508,12 @@ module.exports.verifyOtp = function (req, res) {
 			verified: true,
 			message: req.custom.local.mail.reset_password_otp_correct,
 		});
-	}).catch(() => res.out({
-		'message': error.message
-	}, status_message.UNEXPECTED_ERROR));
+	}).catch((e) => {
+		console.error(e);
+		res.out({
+			'message': e.message
+		}, status_message.UNEXPECTED_ERROR)
+	});
 };
 
 /**
@@ -549,15 +570,21 @@ module.exports.resetpassword = async function (req, res) {
 					.then((response) => res.out({
 						message: req.custom.local.password_has_been_updated
 					}))
-					.catch((error) => res.out({
-						'error': error,
-						'message': error.message
-					}, status_message.UNEXPECTED_ERROR));
+					.catch((e) => {
+						console.error(e);
+						res.out({
+							'error': e,
+							'message': e.message
+						}, status_message.UNEXPECTED_ERROR)
+					});
 
 
-			}).catch(() => res.out({
-				'message': error.message
-			}, status_message.UNEXPECTED_ERROR));
+			}).catch((e) => {
+				console.error(e);
+				res.out({
+					'message': e.message
+				}, status_message.UNEXPECTED_ERROR)
+			});
 
 		});
 };
@@ -647,10 +674,11 @@ module.exports.updatecity = function (req, res) {
 								}
 							}
 						]).
-							toArray((err, prods) => {
-								if (err) {
+							toArray((e, prods) => {
+								if (e) {
+									console.error(e);
 									return res.out({
-										'message': err.message
+										'message': e.message
 									}, status_message.UNEXPECTED_ERROR)
 								}
 
@@ -692,7 +720,7 @@ module.exports.updatecity = function (req, res) {
 										row.member_id = userObj._id.toString();
 										set_cache(row);
 										fix_user_data(req, userObj, data.city_id);
-									}).catch(() => { });
+									}).catch((e) => console.error(e));
 								} else {
 									set_cache(row);
 								}
@@ -833,14 +861,20 @@ module.exports.points2wallet = async function (req, res) {
 							wallet: wallet,
 						}, status_message.UPDATED));
 					})
-					.catch((error) => res.out({
-						'message': error.message
-					}, status_message.UNEXPECTED_ERROR));
+					.catch((e) => {
+						console.error(e);
+						res.out({
+							'message': e.message
+						}, status_message.UNEXPECTED_ERROR)
+					});
 
 
-			}).catch(() => res.out({
-				'message': error.message
-			}, status_message.UNEXPECTED_ERROR));
+			}).catch((e) => {
+				console.error(e);
+				res.out({
+					'message': e.message
+				}, status_message.UNEXPECTED_ERROR);
+			});
 
 		});
 };
@@ -946,9 +980,10 @@ module.exports.chargeWallet = async function (req, res) {
 
 
 		res.out({ ...wallet_data, total: data.amount });
-	} catch (err) {
+	} catch (e) {
+		console.error(e);
 		return res.out({
-			'message': err.message
+			'message': e.message
 		}, status_message.UNEXPECTED_ERROR);
 	}
 };
@@ -1061,9 +1096,10 @@ module.exports.getTheMonthShipping = async function (req, res) {
 
 
 		res.out({});
-	} catch (err) {
+	} catch (e) {
+		console.error(e);
 		return res.out({
-			'message': err.message
+			'message': e.message
 		}, status_message.UNEXPECTED_ERROR);
 	}
 };
@@ -1381,10 +1417,11 @@ function updateUserCity(req, res) {
 								}
 							}
 						]).
-							toArray((err, prods) => {
-								if (err) {
+							toArray((e, prods) => {
+								if (e) {
+									console.error(e);
 									return res.out({
-										'message': err.message
+										'message': e.message
 									}, status_message.UNEXPECTED_ERROR)
 								}
 
@@ -1426,7 +1463,7 @@ function updateUserCity(req, res) {
 										row.member_id = userObj._id.toString();
 										set_cache(row);
 										fix_user_data(req, userObj, data.city_id);
-									}).catch(() => { });
+									}).catch((e) => console.error(e));
 								} else {
 									set_cache(row);
 								}
