@@ -35,6 +35,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 							cached_data.data = cached_data.data.filter((i) => {
 								return i && i._id;
 							});
+							console.log("=============== CACHED DATA: ", cached_data.data, " =====================")
 							cached_data.data = cached_data.data.map((i) => {
 								const is_exists_product = i && i._id;
 								const prod_exists_in_cart = is_exists_product ? (Object.keys(user.cart).indexOf(i._id.toString()) > -1) : false;
