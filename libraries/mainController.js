@@ -301,7 +301,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 							}
 
 							if (i.prod_n_storeArr && i.prod_n_storeArr.length > 0) {
-								i.prod_n_storeArr = i.prod_n_storeArr.map(p => ({ ...p, quantity: parseInt(p.quantity.toString()) }));
+								i.prod_n_storeArr = i.prod_n_storeArr.map(p => ({ ...p, quantity: parseInt(p.quantity?.toString() || '0') }));
 							}
 
 							i.price = common.getFixedPrice(i.price);
