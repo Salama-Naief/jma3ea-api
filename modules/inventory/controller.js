@@ -155,12 +155,11 @@ module.exports.list = async function (req, res) {
             inventory.suppliers = await new Promise((resolve, reject) => {
                 collection.aggregate([{ $match: req.custom.clean_filter }, ...pipeline], options).toArray((err, results) => {
                     if (err) {
-                        console.log('SUPPLIERS ERROR: ', err);
+                        console.error(err);
                         reject(err);
                     }
 
                     //results.unshift({ _id: req.custom.settings.site_name['en'], name: req.custom.settings.site_name[req.custom.lang || req.custom.config.local], picture: "https://jm3eia.com/assets/img/logo.png" });
-                    //console.log('SUPPLIERS RESULTS: ', results);
                     resolve(results);
                 });
             }).catch((e) => console.error(e));

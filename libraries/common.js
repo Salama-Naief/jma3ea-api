@@ -156,7 +156,7 @@ module.exports.filter_internal_suppliers_by_city = async function (req) {
 
 		return req.custom.clean_filter;
 	} catch (err) {
-		console.log('ERROR: ', err);
+		console.error(err);
 		return req.custom.clean_filter;
 	}
 }

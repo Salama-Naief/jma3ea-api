@@ -178,7 +178,6 @@ module.exports.list = async function (req, res) {
 
 			if (!isInstantSearch) {
 				const skus = searchResults.map((p) => p.sku);
-				console.log('================================ SKUS BEFORE ===========================', name, skus.includes('60003129'));
 				req.custom.clean_filter['sku'] = { $in: skus };
 				mainController.list(req, res, collectionName, {
 					"_id": 0,
@@ -369,10 +368,6 @@ module.exports.featured = async function (req, res) {
 					return feature_category;
 				} */
 
-				if (feature_category.expiration_date) {
-					console.log('============================== EXPIRATION DATE ============================== ', feature_category._id.toString(), feature_category.name, feature_category.expiration_date, new Date(), common.getDate());
-				}
-
 				return feature_category;
 			});
 			return res.out(cached_data.filter(f => !f.expiration_date || f.expiration_date > new Date()));
@@ -398,9 +393,6 @@ module.exports.featured = async function (req, res) {
 			const featured = [];
 			for (const c of features.data) {
 				const filteredSlides = slides.filter(s => s.features && s.features.map(f => f.toString()).includes(c._id.toString()) && s.language_code == req.custom.lang);
-				/* if (c._id.toString() == '6455fffd20ed6601d895d416') {
-					console.log('slides: ', slides.length, features.data.map(f => ObjectID(f._id.toString())));
-				} */
 				c.slides = filteredSlides.map(s => ({ _id: s._id, name: s.name, picture: `${req.custom.config.media_url}${s.picture}`, url: s.url }));
 				const filter = {};
 				filter['status'] = true;
@@ -474,7 +466,7 @@ module.exports.featured = async function (req, res) {
 				c.products = await new Promise((resolve, reject) => {
 					collection.aggregate(pipeline, options).toArray((err, results) => {
 						if (err) {
-							console.log('ERROR: ', err);
+							console.error(err);
 							reject(err);
 						}
 						resolve(results);

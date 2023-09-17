@@ -35,7 +35,7 @@ module.exports.cleanProductsQuantities = async function (req, res) {
 
         return res.out(results.length);
     } catch (err) {
-        console.log('Error: ', err);
+        console.error(err);
         return res.send('error')
     }
 }
@@ -76,7 +76,7 @@ module.exports.cleanProductsStatuses = async function (req, res) {
 
         return res.out(results.length);
     } catch (err) {
-        console.log('Error: ', err);
+        console.error(err);
         return res.send('error')
     }
 }
@@ -97,7 +97,7 @@ module.exports.convertStrToInt = async function (req, res) {
         res.out("Success");
 
     } catch (err) {
-        console.log(err);
+        console.error(err);
         res.Send("Error");
     }
 }
@@ -113,7 +113,7 @@ module.exports.convertWalletStrToFloat = async function (req, res) {
         res.out("Success");
 
     } catch (err) {
-        console.log(err);
+        console.error(err);
         res.Send("Error");
     }
 }
@@ -125,7 +125,6 @@ module.exports.pointsToTransaction = async (req, res) => {
     //.aggregate([ { $project: { member_id:'$_id', points: '$points', createdAt: { $literal:new Date() }, expiresAt: { $literal: new Date(new Date().setMonth(new Date().getMonth() + 9)) }, used: { $literal:false }, trashed: { $literal:false } } }, {$out:'point_transactions'} ])
 
     cron.schedule('59 23 * * *', async () => {
-        console.log('running the points task....');
         try {
             const point_transactions_collection = req.custom.db.client().collection('point_transactions');
             const expiredTransactions = await point_transactions_collection.find({ trashed: false, expiresAt: { $lt: common.getDate() } }).toArray() || [];
@@ -171,7 +170,6 @@ module.exports.pointsToTransaction = async (req, res) => {
 
                 if (pointsToRmove > 0 && memberPoints > 0) {
                     memberPoints -= pointsToRmove;
-                    console.log(memberPoints);
                     promises.push(member_collection.updateOne({ _id: ObjectID(m._id.toString()) }, { $set: { points: memberPoints, convertedPoints } }));
                 }
 
@@ -183,7 +181,7 @@ module.exports.pointsToTransaction = async (req, res) => {
 
 
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     });
 
@@ -196,10 +194,9 @@ module.exports.normalize = async (req, res) => {
 
     try {
         const resposne = await collection.updateMany({}, { $set: { free_shipping: false, is_gift: false, fast_shipping: false } });
-        console.log('DONE: ', resposne);
         return res.out('DONE: ' + resposne.modifiedCount);
     } catch (err) {
-        console.log('ERROR: ', err);
+        console.error(err);
         return res.out(err);
     }
 }
@@ -213,8 +210,6 @@ module.exports.indexProducts = async (req, res) => {
         const skip = (currentPage - 1) * PAGE_SIZE;
 
         const products = await collection.find({ status: true }).skip(skip).limit(PAGE_SIZE).toArray();
-
-        console.log('======================= Start indexing.... ========================  ', products.length);
 
         for (const product of products) {
             const body = {
@@ -233,11 +228,9 @@ module.exports.indexProducts = async (req, res) => {
                 body: body,
             });
         }
-
-        console.log('=============================================== Indexing completed. =====================================================');
         return res.out({ message: 'Indexing completed', count: products.length, skip: skip });
     } catch (error) {
-        console.error('Error indexing products:', error);
+        console.error(error);
         return res.out(error);
     }
 }
@@ -246,10 +239,9 @@ module.exports.indexProducts = async (req, res) => {
 module.exports.deleteIndexes = async (req, res) => {
     try {
         await esClient.indices.delete({ index: 'products' });
-        console.log('Index deleted successfully.');
         return res.out({ message: 'Index deleted successfully.' });
     } catch (error) {
-        console.error('Error deleting index:', error);
+        console.error(error);
         return res.out(error);
     }
 }
@@ -293,12 +285,10 @@ module.exports.convertOrderNumbersToString = async (req, res) => {
         const result = await collection.updateMany(filter, update);
         //const result = await collection.updateMany(filter, { $set: { order_number: Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000 } });
 
-        console.log(`${result.modifiedCount} documents updated.`);
-
         return res.out(`${result.modifiedCount} documents updated.`);
 
     } catch (err) {
-        console.log('Convert order numbers error: ', err);
+        console.error(err);
         return res.out(err);
     }
 }

@@ -32,11 +32,9 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 					if (cached_data) {
 						if (req.custom.isProducts == true) {
 							const promises = [];
-							console.log("=============== CACHED DATA BEFORE: ", cached_data.data, " =====================")
 							cached_data.data = cached_data.data.filter((i) => {
 								return i && i.sku;
 							});
-							console.log("=============== CACHED DATA AFTER: ", cached_data.data, " =====================")
 							cached_data.data = cached_data.data.map((i) => {
 								const is_exists_product = i && i.sku;
 								const prod_exists_in_cart = is_exists_product ? (Object.keys(user.cart).indexOf(i.sku.toString()) > -1) : false;

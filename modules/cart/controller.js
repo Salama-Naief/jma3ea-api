@@ -47,7 +47,6 @@ module.exports.add = function (req, res) {
 			}).then((prod) => {
 
 				if (!prod) {
-					console.log('No product! ', sku);
 					return res.out({
 						'message': req.custom.local.cart_product_unavailable,
 						cart_products: user.cart
@@ -59,15 +58,11 @@ module.exports.add = function (req, res) {
 					const variant = prod.variants.find((i) => i.sku.toString() === data.sku.toString());
 
 					if (!variant) {
-						console.log('No variant!');
 						return res.out({
 							'message': req.custom.local.cart_product_unavailable,
 							cart_products: user.cart
 						}, status_message.VALIDATION_ERROR);
 					}
-
-					console.log('PROD: ', prod);
-					console.log('VARIANT: ', variant);
 
 					selected_product = {
 						sku: variant.sku,
@@ -672,8 +667,6 @@ module.exports.coupon = function (req, res) {
 								}
 							} else if (coupon.only_for_jm3eia) {
 								try {
-									console.log('it is only for jm3eia!');
-									console.log('Before: ', user.coupon);
 									user.coupon.member_id = coupon ? (coupon.member_id || null) : null;
 									const index = user.coupon.suppliers_coupons.findIndex(c => c.code === coupon.code);
 									if (index < 0) {
@@ -690,9 +683,8 @@ module.exports.coupon = function (req, res) {
 											value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0
 										});
 									}
-									console.log('After: ', user.coupon);
 								} catch (err) {
-									console.log(err);
+									console.error(err);
 								}
 							} else {
 								user.coupon = {

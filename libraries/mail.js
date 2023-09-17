@@ -3,7 +3,6 @@ const nodemailer = require('nodemailer');
 
 module.exports.send_mail = async function (from, from_name, to, subject, body) {
 	// const valid_sender = from.host && from.port && from.secure && from.username && from.password;
-	// console.log(valid_sender);
 	const host = config.mail.host;
 	const port = config.mail.port;
 	const secure = config.mail.secure;
@@ -31,9 +30,8 @@ module.exports.send_mail = async function (from, from_name, to, subject, body) {
 	};
 	transporter.sendMail(mailOptions, function(error, info){
 		if(error){
-			console.log(error, 'to:' + to);
+			console.error(error);
 		}else{
-			console.log(info,'to:' + to);
 			resolve( info);
 		}
 	});

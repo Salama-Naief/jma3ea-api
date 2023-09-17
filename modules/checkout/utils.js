@@ -141,7 +141,7 @@ module.exports.cleanProduct = async function (req, cart) {
             }
         ], { multi: true })); */
     } catch (err) {
-        console.log(err);
+        console.error(err);
     }
 }
 
@@ -300,16 +300,13 @@ module.exports.getAvailableOffer = async (req, total, userOffer) => {
     const offer = await collection.findOne(query, options);
 
     if (!offer) {
-        console.log('====== OFFER DOES NOT EXIST: ======');
         return null
     };
     if (offer.min_amount > total && (!userOffer || userOffer.viewed_offer_id != offer._id.toString())) {
-        console.log('========= OFFER DISAPPEARED... =============: ', offer);
         return null
     };
 
     if (userOffer && userOffer.offer_id && offer.target_amount >= total) {
-        console.log('========= IT IS ALREADY CLAIMED ========');
         offer.isClaimed = true;
     } else {
         await viewOffer(req, offer._id.toString());
@@ -372,7 +369,6 @@ module.exports.convertDeliveryTimeToArabic = (delivery_times) => {
                 const endTimeComponents = endTime.split(' ');
 
                 if (startTimeComponents.length !== 2 || endTimeComponents.length !== 2) {
-                    console.log('=============================================================== ****************** TIME PARTS ********************** =========================================================: ', timeParts);
                     return;
                 }
 

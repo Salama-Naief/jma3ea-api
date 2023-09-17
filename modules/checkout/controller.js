@@ -1044,8 +1044,6 @@ module.exports.list = async function (req, res) {
 
 			earliest_date_of_delivery = earliest_date_of_delivery ? earliest_date_of_delivery + 10 : 0;
 
-			if (out_coupon.code === 'SH22') console.log('OUT COUPON: ', out_coupon, products.map(p => p.sku));
-
 			res.out({
 				subtotal: common.getFixedPrice(total_prods),
 				shipping_cost: common.getFixedPrice(shipping_cost),
@@ -1394,7 +1392,7 @@ function get_remote_token(req) {
 			return response.data && response.data.results && response.data.results.token;
 		})
 		.catch(function (error) {
-			console.log(error);
+			console.error(error);
 		});
 
 }
@@ -1419,7 +1417,7 @@ function update_remote_quantity(req, p, token) {
 
 	return axios(config)
 		.catch(function (error) {
-			console.log(error);
+			console.error(error);
 		});
 }
 

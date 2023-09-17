@@ -222,7 +222,7 @@ module.exports.register = function (req, res) {
 								expiresAt: moment(common.getDate()).add(9, 'months').toDate(),
 								used: false,
 								trashed: false
-							}).catch((err) => { console.log('Points transaction error: ', err) });
+							}).catch((err) => { console.error(err) });
 
 							const point_history_collection = req.custom.db.client().collection('point_history');
 							point_history_collection.insertOne({
@@ -234,7 +234,7 @@ module.exports.register = function (req, res) {
 								notes: "User registration",
 								type: "register",
 								created: new Date(),
-							}).catch((err) => { console.log('Points history error: ', err) });
+							}).catch((err) => { console.error(err) });
 							registered_mobile_collection.insertOne({
 								mobile: req.body.mobile,
 								created: new Date(),
@@ -386,8 +386,6 @@ module.exports.updatepassword = async function (req, res) {
  * @param {Object} res
  */
 module.exports.forgotpassword = function (req, res) {
-	console.log('SMSMSMSMSM****');
-	console.log(req.body);
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -549,7 +547,6 @@ module.exports.resetpassword = async function (req, res) {
 			}).then((user) => {
 
 				if (!user) {
-					console.log('no user');
 					res.out({
 						'message': error.message
 					}, status_message.UNEXPECTED_ERROR);
@@ -990,7 +987,6 @@ module.exports.chargeWallet = async function (req, res) {
 
 
 module.exports.getTheMonthShipping = async function (req, res) {
-	console.log("************************ ============== FREE SHIPPING =================== *****************************", req.query.validation);
 	try {
 		if (req.custom.isAuthorized === false) {
 			return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
@@ -1127,8 +1123,6 @@ module.exports.sendToWallet = async function (req, res) {
 			message: false
 		}, status_message.UNEXPECTED_ERROR)
 	}
-
-	console.log('Request body: ', req.body);
 
 	req.body.user_data = user_info;
 
