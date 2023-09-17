@@ -5,11 +5,12 @@ const mainController = require("../../libraries/mainController");
 const common = require('../../libraries/common');
 const status_message = require('../../enums/status_message');
 const ObjectID = require("../../types/object_id");
+require('events').EventEmitter.setMaxListeners(20);
+process.setMaxListeners(20);
 const { Client } = require('@elastic/elasticsearch');
 
 const collectionName = 'product';
 
-process.setMaxListeners(20);
 const esClient = new Client({ node: 'http://143.198.140.3:9200' });
 
 module.exports.collectionName = collectionName;
