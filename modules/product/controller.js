@@ -6,10 +6,10 @@ const common = require('../../libraries/common');
 const status_message = require('../../enums/status_message');
 const ObjectID = require("../../types/object_id");
 const { Client } = require('@elastic/elasticsearch');
-const { getTermLang } = require("./utils");
 
 const collectionName = 'product';
 
+process.setMaxListeners(20);
 const esClient = new Client({ node: 'http://143.198.140.3:9200' });
 
 module.exports.collectionName = collectionName;
