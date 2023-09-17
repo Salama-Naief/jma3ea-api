@@ -14,7 +14,7 @@ module.exports.read = function (req, res) {
     const collection = req.custom.db.client().collection(collectionName);
     collection.findOne({ "sent": { $eq: null } }, function (e, result) {
         if (e) {
-            console.error(e);
+            console.error(req.originalUrl, e);
             return res.out({ 'error': e.message }, status_message.UNEXPECTED_ERROR);
         }
         res.out(result);

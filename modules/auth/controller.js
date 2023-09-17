@@ -35,7 +35,7 @@ module.exports.check = function (req, res) {
 	};
 
 	collection.findOne(where).catch((e) => {
-		console.error(e)
+		console.error(req.originalUrl, e)
 		return res.out({ message: local.failed_create_auth_app }, status_message.UNEXPECTED_ERROR);
 	}).
 		then((theapp) => {
@@ -63,7 +63,7 @@ module.exports.check = function (req, res) {
 							token: token
 						}))
 						.catch((e) => {
-							console.error(e);
+							console.error(req.originalUrl, e);
 							res.out({
 								message: local.failed_create_auth_app
 							}, status_message.UNEXPECTED_ERROR);

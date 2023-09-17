@@ -316,12 +316,12 @@ module.exports.clear = async function (req, res) {
 
 	const cache = req.custom.cache;
 	const cache_key = `supplier_all_solid`;
-	all_suppliers = await cache.get(cache_key).catch((e) => console.error(e));
+	all_suppliers = await cache.get(cache_key).catch((e) => console.error(req.originalUrl, e));
 	if (!all_suppliers) {
 		const supplier_collection = req.custom.db.client().collection('supplier');
 		all_suppliers = await supplier_collection.find({}).toArray() || [];
 		if (all_suppliers) {
-			cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch((e) => console.error(e));
+			cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch((e) => console.error(req.originalUrl, e));
 		}
 	}
 
@@ -400,7 +400,7 @@ module.exports.list = async function (req, res) {
 	let user_info = await profile.getInfo(req, {
 		_id: 1,
 		pro: 1
-	}).catch((e) => console.error(e));
+	}).catch((e) => console.error(req.originalUrl, e));
 
 	let hasFreeShipping = false;
 
@@ -684,7 +684,7 @@ module.exports.coupon = function (req, res) {
 										});
 									}
 								} catch (err) {
-									console.error(err);
+									console.error(req.originalUrl, err);
 								}
 							} else {
 								user.coupon = {
@@ -766,7 +766,7 @@ module.exports.offer = async function (req, res) {
 		} */
 		user.offer.offer_id = data.offer_id;
 	} catch (e) {
-		console.error(e);
+		console.error(req.originalUrl, e);
 		res.out({
 			'message': e.message
 		}, status_message.UNEXPECTED_ERROR)
@@ -776,7 +776,7 @@ module.exports.offer = async function (req, res) {
 			message: req.custom.local.cart_product_added
 		}, status_message.CREATED))
 		.catch((e) => {
-			console.error(e);
+			console.error(req.originalUrl, e);
 			res.out({
 				'message': e.message
 			}, status_message.UNEXPECTED_ERROR)

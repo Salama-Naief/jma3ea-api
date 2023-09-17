@@ -15,7 +15,7 @@ module.exports.add = async (req, res) => {
     let user_info = await profile.getInfo(req, {
         _id: 1,
         fullname: 1,
-    }).catch((e) => console.error(e));
+    }).catch((e) => console.error(req.originalUrl, e));
 
     if (user_info) {
         if (user_info.fullname)
@@ -96,7 +96,7 @@ module.exports.add = async (req, res) => {
 
 
     } catch (e) {
-        console.error(e);
+        console.error(req.originalUrl, e);
         return res.out({
             'message': e.message
         }, status_message.UNEXPECTED_ERROR);
@@ -133,7 +133,7 @@ module.exports.list = (req, res) => {
             out.reviews_count = supplier.reviews_count;
             return res.out(out);
         }).catch(e => {
-            console.error(e);
+            console.error(req.originalUrl, e);
             return res.out({ message: e.message }, status_message.UNEXPECTED_ERROR)
         });
 

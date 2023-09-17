@@ -48,7 +48,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 
 								promises.push(resetPrice(req, i).catch((e) => {
-									console.error(e);
+									console.error(req.originalUrl, e);
 									return res.out({
 										message: req.custom.local.unexpected_error
 									}, status_message.UNEXPECTED_ERROR);
@@ -101,7 +101,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 				}).
 				catch((e) => {
-					console.error(e);
+					console.error(req.originalUrl, e);
 					resolve(false);
 				});
 		}
@@ -235,7 +235,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 				collection.aggregate(pipeline, options).toArray((e, results) => {
 					if (e) {
-						console.error(e)
+						console.error(req.originalUrl, e)
 						return res.out({
 							'message': e.message
 						}, status_message.UNEXPECTED_ERROR);
@@ -254,7 +254,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 						if (req.custom.isProducts == true || collectionName == 'product') {
 							promises.push(resetPrice(req, i).catch((e) => {
-								console.error(e);
+								console.error(req.originalUrl, e);
 								res.out({
 									message: req.custom.local.unexpected_error
 								}, status_message.UNEXPECTED_ERROR);
@@ -345,7 +345,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 					} else {
 
 						if (req.custom.cache_key && results.length > 0) {
-							cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time).catch((e) => console.error(e));
+							cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time).catch((e) => console.error(req.originalUrl, e));
 						}
 						const message = results.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
 						res.out(out, message);
@@ -358,7 +358,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 
 	}).
 		catch((e) => {
-			console.error(e)
+			console.error(req.originalUrl, e)
 			res.out({ 'message': e.message }, status_message.UNEXPECTED_ERROR);
 		});
 
@@ -387,7 +387,7 @@ module.exports.list_all = function (req, res, collectionName, projection, callba
 					}
 				}).
 				catch((e) => {
-					console.error(e);
+					console.error(req.originalUrl, e);
 					resolve(false);
 				});
 		} else {
@@ -431,7 +431,7 @@ module.exports.list_all = function (req, res, collectionName, projection, callba
 
 		collection.aggregate(pipeline, options).toArray((e, results) => {
 			if (e) {
-				console.error(e)
+				console.error(req.originalUrl, e)
 				return res.out({
 					'message': e.message
 				}, status_message.UNEXPECTED_ERROR);
@@ -452,7 +452,7 @@ module.exports.list_all = function (req, res, collectionName, projection, callba
 			} else {
 
 				if (req.custom.cache_key && results.length > 0) {
-					cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time).catch((e) => console.error(e));
+					cache.set(req.custom.cache_key, out, req.custom.config.cache.life_time).catch((e) => console.error(req.originalUrl, e));
 				}
 
 				res.out(out, message);
@@ -460,7 +460,7 @@ module.exports.list_all = function (req, res, collectionName, projection, callba
 		});
 
 	}).catch((e) => {
-		console.error(e)
+		console.error(req.originalUrl, e)
 		res.out({
 			'message': e.message
 		}, status_message.UNEXPECTED_ERROR);
@@ -496,7 +496,7 @@ module.exports.read = function (req, res, collectionName, projection, callback) 
 					}
 				}).
 				catch((e) => {
-					console.error(e)
+					console.error(req.originalUrl, e)
 					resolve(false);
 				});
 		} else {
@@ -558,7 +558,7 @@ module.exports.read = function (req, res, collectionName, projection, callback) 
 			} else {
 
 				if (req.custom.cache_key && Object.keys(row).length > 0) {
-					cache.set(req.custom.cache_key, row, req.custom.config.cache.life_time).catch((e) => console.error(e));
+					cache.set(req.custom.cache_key, row, req.custom.config.cache.life_time).catch((e) => console.error(req.originalUrl, e));
 				}
 
 				const message = Object.keys(row) > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;

@@ -93,7 +93,7 @@ module.exports.read = function (req, res) {
 			res.out(order);
 		})
 		.catch((e) => {
-			console.error(e);
+			console.error(req.originalUrl, e);
 			res.out({
 				'message': e.message
 			}, status_message.UNEXPECTED_ERROR)
@@ -195,7 +195,7 @@ module.exports.repeat = function (req, res) {
 
 		})
 		.catch((e) => {
-			console.error(e);
+			console.error(req.originalUrl, e);
 			res.out({
 			'message': e.message
 		}, status_message.UNEXPECTED_ERROR)});
@@ -208,12 +208,12 @@ async function reformatOrderSuppliers(products, req) {
 
 		const cache = req.custom.cache;
 		const cache_key = `supplier_all_solid`;
-		all_suppliers = false;//await cache.get(cache_key).catch((e) => console.error(e));
+		all_suppliers = false;//await cache.get(cache_key).catch((e) => console.error(req.originalUrl, e));
 		if (!all_suppliers) {
 			const supplier_collection = req.custom.db.client().collection('supplier');
 			all_suppliers = await supplier_collection.find({}).toArray() || [];
 			if (all_suppliers) {
-				cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch((e) => console.error(e));
+				cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch((e) => console.error(req.originalUrl, e));
 			}
 		}
 

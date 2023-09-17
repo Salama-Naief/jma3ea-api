@@ -23,7 +23,7 @@ module.exports = (req, res, next) => {
 				collection.find()
 					.toArray(function (e, docs) {
 						if (e) {
-							console.error(e);
+							console.error(req.originalUrl, e);
 							return res.out({
 								message: e.message
 							}, status_message.UNEXPECTED_ERROR);

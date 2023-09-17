@@ -14,7 +14,7 @@ module.exports.list = async function (req, res) {
     const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
 
     if (cache_key) {
-        const cached_data = await cache.get(cache_key).catch((e) => console.error(e));
+        const cached_data = await cache.get(cache_key).catch((e) => console.error(req.originalUrl, e));
         if (cached_data) {
             return res.out({ count: cached_data.length, data: cached_data });
         }
@@ -155,14 +155,14 @@ module.exports.list = async function (req, res) {
             inventory.suppliers = await new Promise((resolve, reject) => {
                 collection.aggregate([{ $match: req.custom.clean_filter }, ...pipeline], options).toArray((err, results) => {
                     if (err) {
-                        console.error(err);
+                        console.error(req.originalUrl, err);
                         reject(err);
                     }
 
                     //results.unshift({ _id: req.custom.settings.site_name['en'], name: req.custom.settings.site_name[req.custom.lang || req.custom.config.local], picture: "https://jm3eia.com/assets/img/logo.png" });
                     resolve(results);
                 });
-            }).catch((e) => console.error(e));
+            }).catch((e) => console.error(req.originalUrl, e));
             if (inventory && inventory.suppliers && inventory.suppliers.length > 0) {
                 inventory.suppliers = inventory.suppliers.map(i => {
                     if (i.picture && i.picture != undefined) {
@@ -185,7 +185,7 @@ module.exports.list = async function (req, res) {
         out.count = inventories.length;
 
         if (cache_key && inventories.length > 0) {
-            await cache.set(cache_key, inventories, req.custom.config.cache.life_time).catch((e) => console.error(e));
+            await cache.set(cache_key, inventories, req.custom.config.cache.life_time).catch((e) => console.error(req.originalUrl, e));
         }
 
         return res.out(out);

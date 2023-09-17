@@ -237,7 +237,7 @@ module.exports.list = async function (req, res) {
 
 		}
 	} catch (error) {
-		console.error('Error searching for products:', error);
+		console.error(req.originalUrl, error);
 		res.status(500).json({ error: 'Internal server error' });
 	}
 
@@ -345,7 +345,7 @@ module.exports.featured = async function (req, res) {
 
 
 	if (false) {
-		let cached_data = await cache.get(cache_key).catch((e) => console.error(e));
+		let cached_data = await cache.get(cache_key).catch((e) => console.error(req.originalUrl, e));
 		if (cached_data) {
 			cached_data = cached_data.map((feature_category) => {
 
@@ -466,12 +466,12 @@ module.exports.featured = async function (req, res) {
 				c.products = await new Promise((resolve, reject) => {
 					collection.aggregate(pipeline, options).toArray((err, results) => {
 						if (err) {
-							console.error(err);
+							console.error(req.originalUrl, err);
 							reject(err);
 						}
 						resolve(results);
 					});
-				}).catch((e) => console.error(e));
+				}).catch((e) => console.error(req.originalUrl, e));
 				if (c.products.length > 0) {
 					c.products = c.products.map((i) => {
 						if (i.picture) {
@@ -532,12 +532,12 @@ module.exports.featured = async function (req, res) {
 			}
 
 			if (cache_key && featured.length > 0) {
-				cache.set(cache_key, featured, req.custom.config.cache.life_time).catch((e) => console.error(e));
+				cache.set(cache_key, featured, req.custom.config.cache.life_time).catch((e) => console.error(req.originalUrl, e));
 			}
 
 			res.out(featured.filter(f => !f.expiration_date || f.expiration_date > new Date()));
 		} catch (e) {
-			console.error(e);
+			console.error(req.originalUrl, e);
 			return res.out({
 				'message': e.message
 			}, status_message.UNEXPECTED_ERROR);
@@ -739,7 +739,7 @@ module.exports.read = async function (req, res) {
 					const brand = await brand_collection.findOne({
 						status: true
 					}).then((b) => b).catch((e) => {
-						console.error(e);
+						console.error(req.originalUrl, e);
 						return {};
 					});
 					results.brand = brand ? brand.name[req.custom.local] || brand.name[req.custom.config.local] : null;
@@ -796,7 +796,7 @@ module.exports.read = async function (req, res) {
 				results.old_price = common.getFixedPrice(results.old_price || 0);
 
 				if (cache_key && Object.keys(results).length > 0) {
-					cache.set(cache_key, results, req.custom.config.cache.life_time).catch((e) => console.error(e));
+					cache.set(cache_key, results, req.custom.config.cache.life_time).catch((e) => console.error(req.originalUrl, e));
 				}
 
 				results.cart_status = {
@@ -812,7 +812,7 @@ module.exports.read = async function (req, res) {
 
 		}).
 		catch((e) => {
-			console.error(e);
+			console.error(req.originalUrl, e);
 			res.out({
 				'message': e.message
 			}, status_message.UNEXPECTED_ERROR)

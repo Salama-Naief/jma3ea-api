@@ -35,7 +35,7 @@ module.exports.cleanProductsQuantities = async function (req, res) {
 
         return res.out(results.length);
     } catch (err) {
-        console.error(err);
+        console.error(req.originalUrl, err);
         return res.send('error')
     }
 }
@@ -76,7 +76,7 @@ module.exports.cleanProductsStatuses = async function (req, res) {
 
         return res.out(results.length);
     } catch (err) {
-        console.error(err);
+        console.error(req.originalUrl, err);
         return res.send('error')
     }
 }
@@ -97,7 +97,7 @@ module.exports.convertStrToInt = async function (req, res) {
         res.out("Success");
 
     } catch (err) {
-        console.error(err);
+        console.error(req.originalUrl, err);
         res.Send("Error");
     }
 }
@@ -113,7 +113,7 @@ module.exports.convertWalletStrToFloat = async function (req, res) {
         res.out("Success");
 
     } catch (err) {
-        console.error(err);
+        console.error(req.originalUrl, err);
         res.Send("Error");
     }
 }
@@ -181,7 +181,7 @@ module.exports.pointsToTransaction = async (req, res) => {
 
 
         } catch (err) {
-            console.error(err);
+            console.error(req.originalUrl, err);
         }
     });
 
@@ -196,7 +196,7 @@ module.exports.normalize = async (req, res) => {
         const resposne = await collection.updateMany({}, { $set: { free_shipping: false, is_gift: false, fast_shipping: false } });
         return res.out('DONE: ' + resposne.modifiedCount);
     } catch (err) {
-        console.error(err);
+        console.error(req.originalUrl, err);
         return res.out(err);
     }
 }
@@ -230,7 +230,7 @@ module.exports.indexProducts = async (req, res) => {
         }
         return res.out({ message: 'Indexing completed', count: products.length, skip: skip });
     } catch (error) {
-        console.error(error);
+        console.error(req.originalUrl, error);
         return res.out(error);
     }
 }
@@ -241,7 +241,7 @@ module.exports.deleteIndexes = async (req, res) => {
         await esClient.indices.delete({ index: 'products' });
         return res.out({ message: 'Index deleted successfully.' });
     } catch (error) {
-        console.error(error);
+        console.error(req.originalUrl, error);
         return res.out(error);
     }
 }
@@ -260,7 +260,7 @@ module.exports.getAllIndexedProducts = async function (req, res) {
 
         return res.out(body.hits.hits.map(hit => hit._source));
     } catch (error) {
-        console.error('Error fetching data from Elasticsearch:', error);
+        console.error(req.originalUrl, error);
         return res.out(error);
     }
 }
@@ -288,7 +288,7 @@ module.exports.convertOrderNumbersToString = async (req, res) => {
         return res.out(`${result.modifiedCount} documents updated.`);
 
     } catch (err) {
-        console.error(err);
+        console.error(req.originalUrl, err);
         return res.out(err);
     }
 }

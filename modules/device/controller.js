@@ -26,7 +26,7 @@ module.exports.list = function (req, res) {
 	const collection = req.custom.db.client().collection(collectionName);
 	collection.count(req.custom.clean_filter, (e, total) => {
 		if (e) {
-			console.error(e);
+			console.error(req.originalUrl, e);
 			return res.out({ message: e.message }, status_message.UNEXPECTED_ERROR);
 		}
 		if (total === 0) {
@@ -40,7 +40,7 @@ module.exports.list = function (req, res) {
 			.skip(req.custom.skip)
 			.toArray(function (e, docs) {
 				if (e) {
-					console.error(e);
+					console.error(req.originalUrl, e);
 					return res.out({ message: e.message }, status_message.UNEXPECTED_ERROR);
 				}
 				res.out({
@@ -59,7 +59,7 @@ module.exports.getDevicesWithCity = async (req, res) => {
 	const collection = req.custom.db.client().collection(collectionName);
 	collection.count(req.custom.clean_filter, (e, total) => {
 		if (e) {
-			console.error(e);
+			console.error(req.originalUrl, e);
 			return res.out({ message: e.message }, status_message.UNEXPECTED_ERROR);
 		}
 		if (total === 0) {
@@ -71,7 +71,7 @@ module.exports.getDevicesWithCity = async (req, res) => {
 			.limit(req.custom.limit)
 			.skip(req.custom.skip)
 			.toArray(function (e, docs) {
-				console.error(e);
+				console.error(req.originalUrl, e);
 				if (e) {
 					return res.out({ message: e.message }, status_message.UNEXPECTED_ERROR);
 				}

@@ -94,7 +94,7 @@ async function update_user(req, res, action = 'insert') {
 	}
 
 	const user = await profile.getInfo(req).catch((e) => {
-		console.error(e);
+		console.error(req.originalUrl, e);
 		return null;
 	});
 
@@ -167,7 +167,7 @@ async function update_user(req, res, action = 'insert') {
 			message: req.custom.local.saved_done
 		})).
 		catch((e) => {
-			console.error(e);
+			console.error(req.originalUrl, e);
 			res.out({ 'message': e.message }, status_message.UNEXPECTED_ERROR)
 		});
 }
