@@ -90,6 +90,7 @@ app.use(Sentry.Handlers.requestHandler());
 // TracingHandler creates a trace for every incoming request
 app.use(Sentry.Handlers.tracingHandler());
 
+process.on('warning', e => console.warn(e.stack));
 
 const all_modules = fs.readdirSync(path.join(__dirname, `modules`));
 for (const moduleName of all_modules) {
