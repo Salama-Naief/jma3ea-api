@@ -235,19 +235,22 @@ module.exports.register = function (req, res) {
 								type: "register",
 								created: new Date(),
 							}).catch((err) => { console.error(req.originalUrl, err) });
-							registered_mobile_collection.insertOne({
+
+							registered_mobile_collection.findOne({
 								mobile: req.body.mobile,
-								created: new Date(),
-							})
-								.catch((e) => console.error(req.originalUrl, e)).then(() => {
-									req.body.city_id = req.body.address.city_id;
-									updateUserCity(req, res);
-									return res.out({
-										message: `${req.custom.local.registered_successfully} ${data.fullname} 
-													${data.wallet > 0 ? (', ' + req.custom.local.mail.registerion_gift(data.wallet)) : ''}`,
-										insertedId: response.insertedId
-									})
-								});
+							}).then((registered_mobile) => {
+								if (registered_mobile) {
+									return true;
+								}
+								return registered_mobile_collection.insertOne({
+									mobile: req.body.mobile,
+									created: new Date(),
+								}).catch(() => null);
+							}).then(() => {
+								req.body.city_id = req.body.address.city_id;
+								updateUserCity(req, res);
+								return res.out({message: req.custom.local.saved_done});
+							});
 
 						})
 						.catch((e) => {

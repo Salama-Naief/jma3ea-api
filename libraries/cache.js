@@ -5,7 +5,7 @@ const redis = require('redis');
 const client = redis.createClient({
 	host: config.redis.host,
 	port: config.redis.port,
-	password: config.redis.password,
+	password: config.redis.password || undefined,
 	retry_strategy: function (options) {
 		if (options.error && options.error.code === "ECONNREFUSED") {
 			// End reconnecting on a specific error and flush all commands with
