@@ -2,11 +2,16 @@ const config = require('../config');
 const axios = require('axios');
 
 module.exports.sendSms = async function (to, text) {
-	let apiKey = '782.5C6219BF01D9EE9D72691F7AF1D969F6';
+	let apiKey = config.sms.api_key;
 	let senderId = 701;
 	let sendType = 1;
 	let smsContent = '';
 	let smsType = 'otp';
+
+	if (!apiKey) {
+		return null;
+		
+	}
 
 	var config = {
 		method: 'post',

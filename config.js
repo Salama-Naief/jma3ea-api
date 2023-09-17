@@ -84,4 +84,7 @@ module.exports = {
 	sentry: {
 		dsn: process.env.SENTRY_DSN,
 	},
+	sms:{
+		api_key: process.env.SMS_API_KEY || '',
+	}
 };
