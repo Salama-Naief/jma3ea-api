@@ -400,11 +400,6 @@ module.exports.forgotpassword = async function (req, res) {
 		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
-	data = {
-		'email': req?.body?.email,
-		'mobile': req?.body?.mobile,
-	};
-
 	const userCollection = req.custom.db.client().collection('member');
 	var searchColumn = 'email';
 

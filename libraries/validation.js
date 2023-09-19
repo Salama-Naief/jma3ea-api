@@ -88,7 +88,7 @@ async function validateRow(req, $set, model) {
 			$error[k] = local.errors.is_not_valid(k);
 		} else if (field.unique === true && field.required === true && row_data && !(await checkIsUnique(req, field.collection, k, row_data))) {
 			$error[k] = local.errors.should_be_unique(k);
-		} else if (field.exists === true && !(await checkIsExists(req, field.collection, k, row_data))) {
+		} else if (field.exists === true && field.required && !(await checkIsExists(req, field.collection, k, row_data))) {
 			$error[k] = local.errors.is_not_exists(k);
 		} else if (field.type === Object) {
 			row_data = row_data || {};
