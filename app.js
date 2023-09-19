@@ -106,6 +106,7 @@ app.use(Sentry.Handlers.errorHandler());
 app.use(function onError(err, req, res, next) {
 	// The error id is attached to `res.sentry` to be returned
 	// and optionally displayed to the user for support.
+	console.error('Error at:', req.originalUrl, req.method);
 	res.out({
 		errors: 'Error!',
 	}, status_message.UNEXPECTED_ERROR);
