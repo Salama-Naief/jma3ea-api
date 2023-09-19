@@ -394,7 +394,7 @@ module.exports.forgotpassword = async function (req, res) {
 	}
 
 	req.custom.model = req.custom.model || require('./model/forgotpassword');
-	const { data, error } = req.custom.getValidData(req);
+	const { data, unset, error } = await req.custom.getValidData(req);
 
 	if (error) {
 		return res.out(error, status_message.VALIDATION_ERROR);
@@ -449,9 +449,7 @@ module.exports.forgotpassword = async function (req, res) {
 		});
 	}
 
-	return res.out({
-		'message': e.message
-	}, status_message.UNEXPECTED_ERROR);
+	return res.out({ 'message': e.message }, status_message.UNEXPECTED_ERROR);
 
 };
 /**
