@@ -443,13 +443,13 @@ module.exports.forgotpassword = function (req, res) {
 							req.custom.local.mail.reset_password_subject,
 							newpasswordrequest.newpasswordrequest(forgotpassword_data, req.custom)).catch((e) => console.error(req.originalUrl, e));
 
-						res.out({
+						return res.out({
 							message: req.custom.local.mail.reset_password_otp_sent,
 						});
 					} else {
 						let otpMessage = 'Your OTP: ' + otpCode;
 						sms.sendSms(data.mobile, otpMessage);
-						res.out({
+						return res.out({
 							message: req.custom.local.mail.reset_password_otp_sent,
 						});
 					}
@@ -458,14 +458,14 @@ module.exports.forgotpassword = function (req, res) {
 				})
 				.catch((e) => {
 					console.error(req.originalUrl, e);
-					res.out({
+					return res.out({
 						'message': e.message
 					}, status_message.UNEXPECTED_ERROR);
 				});
 
 		}).catch((e) => {
 			console.error(req.originalUrl, e);
-			res.out({
+			return res.out({
 				'message': e.message
 			}, status_message.UNEXPECTED_ERROR)
 		});
