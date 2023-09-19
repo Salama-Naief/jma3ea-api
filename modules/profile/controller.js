@@ -249,7 +249,7 @@ module.exports.register = function (req, res) {
 							}).then(() => {
 								req.body.city_id = req.body.address.city_id;
 								updateUserCity(req, res);
-								return res.out({message: req.custom.local.saved_done});
+								return res.out({ message: req.custom.local.saved_done });
 							});
 
 						})
@@ -388,88 +388,71 @@ module.exports.updatepassword = async function (req, res) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.forgotpassword = function (req, res) {
+module.exports.forgotpassword = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
 	req.custom.model = req.custom.model || require('./model/forgotpassword');
-	req.custom.getValidData(req).then(({ data, error }) => {
+	const { data, error } = req.custom.getValidData(req);
 
-		if (error) {
-			return res.out(error, status_message.VALIDATION_ERROR);
+	if (error) {
+		return res.out(error, status_message.VALIDATION_ERROR);
+	}
+
+	data = {
+		'email': req?.body?.email,
+		'mobile': req?.body?.mobile,
+	};
+
+	const userCollection = req.custom.db.client().collection('member');
+	var searchColumn = 'email';
+
+	if (req.body?.requestedColumn) {
+		searchColumn = req.body.requestedColumn;
+	}
+
+	const userObj = await userCollection.findOne({ [searchColumn]: data[searchColumn] });
+
+	if (!userObj) {
+		return res.out({ message: req.custom.local.mail.forgotpassword_not_found }, status_message.NOT_FOUND);
+	}
+
+	const otpCode = Math.floor(1000 + Math.random() * 9000);
+
+	const reset_hash = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+	const forgotpassword_data = {
+		otp_code: otpCode,
+		otp_success: false,
+		user: userObj
+	};
+
+	const collection = req.custom.db.client().collection(collectionName);
+
+	const updated = await collection.updateOne({
+		_id: userObj._id
+	}, {
+		$set: {
+			otp_code: otpCode,
+			otp_success: false,
 		}
+	}).catch((e) => console.error(req.originalUrl, e));
 
-		data = {
-			'email': req?.body?.email,
-			'mobile': req?.body?.mobile,
-		};
+	if (updated && searchColumn == 'email') {
+		mail.send_mail(req.custom.settings.sender_emails.reset_password, req.custom.settings.site_name[req.custom.lang], data[searchColumn],
+			req.custom.local.mail.reset_password_subject,
+			newpasswordrequest.newpasswordrequest(forgotpassword_data, req.custom)).catch((e) => console.error(req.originalUrl, e));
 
-		const userCollection = req.custom.db.client().collection('member');
-		var searchColumn = 'email';
-
-		if (req.body?.requestedColumn) {
-			searchColumn = req.body.requestedColumn;
-		}
-
-		userCollection.findOne({ [searchColumn]: data[searchColumn] }).then((userObj) => {
-
-			if (!userObj) {
-				return res.out({ message: req.custom.local.mail.forgotpassword_not_found }, status_message.NOT_FOUND);
-			}
-
-			const otpCode = process.env.NODE_ENV !== "production" ? 1234 : Math.floor(1000 + Math.random() * 9000);
-
-			const reset_hash = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
-			const forgotpassword_data = {
-				otp_code: otpCode,
-				otp_success: false,
-				user: userObj
-			};
-
-			const collection = req.custom.db.client().collection(collectionName);
-			collection.updateOne({
-				_id: userObj._id
-			}, {
-				$set: {
-					otp_code: otpCode,
-					otp_success: false,
-				}
-			})
-				.then((response) => {
-					if (searchColumn == 'email') {
-						mail.send_mail(req.custom.settings.sender_emails.reset_password, req.custom.settings.site_name[req.custom.lang], data[searchColumn],
-							req.custom.local.mail.reset_password_subject,
-							newpasswordrequest.newpasswordrequest(forgotpassword_data, req.custom)).catch((e) => console.error(req.originalUrl, e));
-
-						return res.out({
-							message: req.custom.local.mail.reset_password_otp_sent,
-						});
-					} else {
-						let otpMessage = 'Your OTP: ' + otpCode;
-						sms.sendSms(data.mobile, otpMessage);
-						return res.out({
-							message: req.custom.local.mail.reset_password_otp_sent,
-						});
-					}
-
-
-				})
-				.catch((e) => {
-					console.error(req.originalUrl, e);
-					return res.out({
-						'message': e.message
-					}, status_message.UNEXPECTED_ERROR);
-				});
-
-		}).catch((e) => {
-			console.error(req.originalUrl, e);
-			return res.out({
-				'message': e.message
-			}, status_message.UNEXPECTED_ERROR)
+		return res.out({
+			message: req.custom.local.mail.reset_password_otp_sent,
 		});
-	});
+	}
+
+	return res.out({
+		'message': e.message
+	}, status_message.UNEXPECTED_ERROR);
+
 };
 /**
  * Verify Reset Password Request
