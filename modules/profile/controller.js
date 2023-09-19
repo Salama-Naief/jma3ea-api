@@ -444,7 +444,7 @@ module.exports.forgotpassword = async function (req, res) {
 		});
 	}
 
-	return res.out({ 'message': 'Unexpected error happened. Please try again' }, status_message.UNEXPECTED_ERROR);
+	return res.out({ 'message': req.custom.local.unexpected_error }, status_message.UNEXPECTED_ERROR);
 
 };
 /**
@@ -527,7 +527,7 @@ module.exports.resetpassword = async function (req, res) {
 
 				if (!user) {
 					res.out({
-						'message': error.message
+						'message': req.custom.local.unexpected_error,
 					}, status_message.UNEXPECTED_ERROR);
 				}
 

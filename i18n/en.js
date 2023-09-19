@@ -59,7 +59,7 @@ const locals = {
 	thanks_for_evaluation: `Thank you for evaluating and contributing to the development ${config.info.website_name.en}`,
 	the_payment_method: 'Payment Method',
 	total: 'Total',
-	unexpected_error: 'Unexpected error',
+	unexpected_error: 'Unexpected error happened. Please try again',
 	unauthorized_user: "You don't have permission to access this page",
 	wishlist_product_added: "The product has been added successfully",
 	wishlist_product_not: "The product is not exists in wishlist",
