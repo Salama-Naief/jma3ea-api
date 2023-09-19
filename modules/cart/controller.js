@@ -541,7 +541,7 @@ module.exports.list = async function (req, res) {
 					$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } }],
 					status: true,
 				}).then((coupon) => {
-					let totalToApplyCoupon = coupon.apply_on_discounted_products ? out.subtotal : totalWithNoDiscount;
+					let totalToApplyCoupon = coupon && coupon.apply_on_discounted_products ? out.subtotal : totalWithNoDiscount;
 					// let totalToApplyCoupon = totalWithNoDiscount;
 					out.coupon = {
 						code: coupon ? coupon.code : null,

@@ -119,7 +119,8 @@ module.exports.buy = async function (req, res) {
 	const up_cart = Object.assign({}, user.cart);
 	req.custom.limit = 0;
 
-	//req.custom.isProducts = true;
+	req.custom.isProducts = true;
+	req.custom.cache_key = false;
 	mainController.list(req, res, 'product', {
 		"_id": 1,
 		"soft_code": 1,
@@ -700,6 +701,7 @@ module.exports.list = async function (req, res) {
 	};
 	req.custom.limit = 0;
 	req.custom.isProducts = true;
+	req.custom.cache_key = false;
 	mainController.list(req, res, 'product', {
 		"_id": 1,
 		"sku": 1,
@@ -1087,6 +1089,8 @@ module.exports.list = async function (req, res) {
 };
 
 async function products_to_save(products, user, req, to_display = false) {
+
+	products = products.filter(p => p => p.availability);
 
 	let products_arr = [];
 	for (const p of products) {
