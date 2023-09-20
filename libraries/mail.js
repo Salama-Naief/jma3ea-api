@@ -9,6 +9,9 @@ module.exports.send_mail = async function (from, from_name, to, subject, body) {
 	const username = config.mail.username;
 	const password = config.mail.password;
 	const fromEmail = config.mail.from;
+	if(!host || !port || !secure || !username || !password || !fromEmail || !to){
+		return false;
+	}
 	const transporter = nodemailer.createTransport({
 		host: host,
 		port: port,
@@ -32,7 +35,7 @@ module.exports.send_mail = async function (from, from_name, to, subject, body) {
 		if(error){
 			console.error(error);
 		}else{
-			resolve( info);
+			return info;
 		}
 	});
 };
