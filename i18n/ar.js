@@ -67,6 +67,7 @@ const locals = {
 	total: 'الإجمالي',
 	unexpected_error: 'خطأ غير متوقع',
 	unauthorized_user: "أنت لا تملك صلاحيات الدخول إلى هذه الصفحة",
+	user_not_exists: "المستخدم غير موجود",
 	wishlist_product_added: "تم إضافة المنتج إلى قائمة رغباتي بنجاح",
 	wishlist_product_not: "المنتج غير موجود في قائمة رغباتي",
 	wishlist_product_removed: "تم حذف المنتج من قائمة رغباتي بنجاح",

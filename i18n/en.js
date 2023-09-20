@@ -61,6 +61,7 @@ const locals = {
 	total: 'Total',
 	unexpected_error: 'Unexpected error happened. Please try again',
 	unauthorized_user: "You don't have permission to access this page",
+	user_not_exists: "User doesn't exists",
 	wishlist_product_added: "The product has been added successfully",
 	wishlist_product_not: "The product is not exists in wishlist",
 	wishlist_product_removed: "The product has been removed successfully",

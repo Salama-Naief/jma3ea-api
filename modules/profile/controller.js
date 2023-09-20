@@ -473,6 +473,11 @@ module.exports.verifyOtp = function (req, res) {
 		}],
 		otp_code: parseInt(data.otp_code)
 	}).then((userObj) => {
+		if (!userObj) {
+			return res.out({
+				'message': req.custom.local.user_not_exists
+			}, status_message.UNEXPECTED_ERROR);
+		}
 		userCollection.updateOne({
 			_id: userObj._id
 		}, {
