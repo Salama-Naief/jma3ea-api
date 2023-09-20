@@ -125,7 +125,7 @@ module.exports.update = async function (req, res) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	if (!ObjectID.isValid(req.params.Id)) {
-		return res.out(error, status_message.VALIDATION_ERROR);
+		return res.out({ message: 'Url is not valid' }, status_message.VALIDATION_ERROR);
 	}
 
 	const data = {};
