@@ -442,6 +442,12 @@ module.exports.forgotpassword = async function (req, res) {
 		return res.out({
 			message: req.custom.local.mail.reset_password_otp_sent,
 		});
+	} else {
+		let otpMessage = 'Your OTP: ' + otpCode;
+		sms.sendSms(data.mobile, otpMessage);
+		return res.out({
+			message: req.custom.local.mail.reset_password_otp_sent,
+		});
 	}
 
 	return res.out({ 'message': req.custom.local.unexpected_error }, status_message.UNEXPECTED_ERROR);
