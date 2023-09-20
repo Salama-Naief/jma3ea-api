@@ -312,7 +312,7 @@ module.exports.update = async function (req, res) {
 							mobile: req.body.mobile,
 							created: new Date(),
 						})
-							.catch((e) => console.error(req.originalUrl, e))
+							.catch((e) => null)
 					});
 
 			}).catch((e) => {
