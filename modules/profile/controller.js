@@ -719,7 +719,7 @@ module.exports.updatecity = function (req, res) {
 						set_cache({
 							city_id: data.city_id,
 							country_id: cityObj.country_id,
-							store_id: cityObj.store_id,
+							store_id: cityObj.store_id || ObjectID("5d3827c683545d0366ac4285"),
 							currency: countryObj.currency,
 							language: req.custom.lang,
 							cart: cart,
