@@ -1282,7 +1282,8 @@ function getInfo(req, projection = {}) {
 						_id: ObjectID(row_token.member_id)
 					}, projection)
 						.then((theuser) => {
-							theuser.wallet = theuser && theuser.wallet && parseFloat(theuser.wallet) > 0 ? parseFloat(theuser.wallet) : 0;
+							if (theuser)
+								theuser.wallet = theuser && theuser.wallet && parseFloat(theuser.wallet) > 0 ? parseFloat(theuser.wallet) : 0;
 							resolve(theuser);
 						})
 						.catch((err) => reject(err));
