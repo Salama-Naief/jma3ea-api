@@ -10,6 +10,10 @@ const collectionName = 'product';
 
 let esClient = null;
 
+if (!esClient) {
+	esClient = new Client({ node: 'http://localhost:9200', maxRetries: 5 })
+}
+
 module.exports.collectionName = collectionName;
 
 /**
@@ -157,16 +161,6 @@ module.exports.list = async function (req, res) {
 						}
 					}
 				];
-			}
-
-			try {
-				// Elasticsearch
-				if (!esClient) {
-					esClient = new Client({ node: 'http://localhost:9200', maxRetries: 5 });
-				}
-			} catch (err) {
-				console.error(err);
-				if (esClient) esClient.close();
 			}
 
 			const body = await esClient.search({
