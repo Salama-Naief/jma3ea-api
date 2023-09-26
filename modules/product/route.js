@@ -9,7 +9,7 @@ let esClient = null;
 /**
  * GET /product
  */
-router.get('/', app.use((req, res, next) => {
+router.get('/', (req, res, next) => {
     try {
         // Elasticsearch
     if (!esClient) {
@@ -20,7 +20,7 @@ router.get('/', app.use((req, res, next) => {
         console.error(err);
     }
     next();
-}), controller.list);
+}, controller.list);
 
 /**
  * GET /product/featured
