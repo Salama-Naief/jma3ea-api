@@ -5,13 +5,7 @@ const mainController = require("../../libraries/mainController");
 const common = require('../../libraries/common');
 const status_message = require('../../enums/status_message');
 const ObjectID = require("../../types/object_id");
-require('events').EventEmitter.setMaxListeners(20);
-process.setMaxListeners(20);
-const { Client } = require('@elastic/elasticsearch');
-
 const collectionName = 'product';
-
-const esClient = new Client({ node: 'http://143.198.140.3:9200' });
 
 module.exports.collectionName = collectionName;
 
@@ -163,7 +157,7 @@ module.exports.list = async function (req, res) {
 			}
 
 
-			const body = await esClient.search({
+			const body = await req.custom.esClient.search({
 				index: 'products',
 				body: {
 					query: searchQuery,
