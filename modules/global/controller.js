@@ -209,7 +209,7 @@ module.exports.indexProducts = async (req, res) => {
         const currentPage = parseInt(req.query.page) || 1
         const skip = (currentPage - 1) * PAGE_SIZE;
 
-        const products = await collection.find({ status: true }).sort({ created: -1 }).skip(skip).limit(PAGE_SIZE).toArray();
+        const products = await collection.find({ status: true, sku: '60000265' }).sort({ created: -1 }).skip(skip).limit(PAGE_SIZE).toArray();
 
         for (const product of products) {
             const body = {
