@@ -528,7 +528,7 @@ module.exports.buy = async function (req, res) {
 			await cache.set(cache_key_dt, cached_delivery_times, expired); */
 
 			const order_collection = req.custom.db.client().collection('order');
-			await order_collection.insertOne(order_data)
+			const createdOrder = await order_collection.insertOne(order_data)
 				.catch((error) => {
 					return {
 						success: false,
@@ -537,6 +537,11 @@ module.exports.buy = async function (req, res) {
 				});
 
 			isOrderInsertedCorrectly = true;
+
+			if (req.custom.config.checkout_webhook_url) {
+				// Call the webhook
+				await checkout_webhook(req, {...order_data, _id: createdOrder.insertedId})
+			}
 
 			if (data.user_data && data.user_data._id && (parseFloat(discount_by_wallet_value) > 0 || req.body.payment_method == 'wallet')) {
 				const paid_wallet_value = parseFloat(req.body.payment_method == 'wallet' ? total : discount_by_wallet_value);
@@ -1436,4 +1441,27 @@ async function reset_free_shipping(req, userId) {
 			'pro.startDate': null
 		}
 	}).catch((e) => console.error(req.originalUrl, e))
+}
+
+const checkout_webhook = async (req, order) => {
+	try {
+		if (!req.custom.config.checkout_webhook_url)
+		return false;
+
+	var config = {
+		method: 'post',
+		url: req.custom.config.checkout_webhook_url,
+		headers: {
+			'Content-Type': 'application/json',
+			'app-key': '9cKkvPW6y9hpes0Q01ikfOkdwmpIc2T6r8OBmOjbapmwKw',
+      		'app-secret': 'jNmZGUyZTJlpGRRyF35tti0BHkN64WI4AlxNXIxL45gX2i'
+		},
+		data: order
+	};
+
+	await axios(config);
+	} catch (err) {
+		console.error(req.originalUrl, err);
+	}
+
 }

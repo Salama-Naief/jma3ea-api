@@ -86,5 +86,6 @@ module.exports = {
 	},
 	sms:{
 		api_key: process.env.SMS_API_KEY || '',
-	}
+	},
+	checkout_webhook_url: process.env.CHECKOUT_WEBHOOK_URL
 };
