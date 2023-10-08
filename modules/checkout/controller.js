@@ -997,7 +997,7 @@ module.exports.list = async function (req, res) {
 			}
 
 			let total = parseFloat(total_prods) + parseFloat(shipping_cost);
-			if (general_coupon && parseFloat(total_prods) > out_coupon.value) {
+			if (parseFloat(total_prods) > out_coupon.value) {
 				total -= parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
 			}
 			total = total > 0 ? total : 0;
