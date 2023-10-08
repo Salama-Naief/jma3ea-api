@@ -881,8 +881,8 @@ module.exports.list = async function (req, res) {
 
 						if (supplier_products_total > parseFloat(sup.coupon.value || 0)) {
 							supplier_products_total -= parseFloat(sup.coupon.value || 0);
-							if (sup.isSelected)
-								total_coupon_value += parseFloat(sup.coupon.value || 0);
+							//if (sup.isSelected)
+							total_coupon_value += parseFloat(sup.coupon.value || 0);
 						}
 					}
 				}
