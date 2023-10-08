@@ -875,6 +875,10 @@ module.exports.list = async function (req, res) {
 
 						if (sup.supplier._id.toString() === req.custom.settings['site_id'] && supplier_coupon.products && supplier_coupon.products.length > 0) {
 							const productsToApplyCoupon = sup.products.filter(p => supplier_coupon.products.includes(p.sku));
+							console.log('========================================================================');
+							console.info('PRODUCTS TO APPLY COUPON: ', productsToApplyCoupon.length);
+							console.info('SUPPLIER PRODUCTS: ', supplier_coupon.products);
+							console.log('========================================================================');
 							const couponProductsCoupon = productsToApplyCoupon.reduce((acc, p) => acc + p.price, 0);
 							sup.coupon.value = common.getFixedPrice(couponProductsCoupon);
 						}
