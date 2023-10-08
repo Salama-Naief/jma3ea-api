@@ -277,6 +277,13 @@ module.exports.buy = async function (req, res) {
 							code: supplier_coupon.code,
 							value: common.getFixedPrice(supplier_coupon.percent_value ? (totalToApplyCoupon * supplier_coupon.percent_value) / 100 : supplier_coupon.discount_value)
 						}
+
+						if (sup.supplier._id.toString() === req.custom.settings['site_id'] && supplier_coupon.products && supplier_coupon.products.length > 0) {
+							const productsToApplyCoupon = sup.products.filter(p => supplier_coupon.products.includes(p.sku));
+							const couponProductsCoupon = productsToApplyCoupon.reduce((acc, p) => acc + p.price, 0);
+							sup.coupon.value = common.getFixedPrice(couponProductsCoupon);
+						}
+
 						supplier_products_total -= parseFloat(sup.coupon.value || 0);
 						total_coupon_value += parseFloat(sup.coupon.value || 0);
 					}
@@ -860,10 +867,18 @@ module.exports.list = async function (req, res) {
 
 						const totalToApplyCoupon = supplier_coupon.apply_on_discounted_products ? parseFloat(supplier_products_total) : totalWithNoDiscount;
 
+						
 						sup.coupon = {
 							code: supplier_coupon.code,
 							value: common.getFixedPrice(supplier_coupon.percent_value ? (totalToApplyCoupon * supplier_coupon.percent_value) / 100 : supplier_coupon.discount_value)
 						}
+
+						if (sup.supplier._id.toString() === req.custom.settings['site_id'] && supplier_coupon.products && supplier_coupon.products.length > 0) {
+							const productsToApplyCoupon = sup.products.filter(p => supplier_coupon.products.includes(p.sku));
+							const couponProductsCoupon = productsToApplyCoupon.reduce((acc, p) => acc + p.price, 0);
+							sup.coupon.value = common.getFixedPrice(couponProductsCoupon);
+						}
+
 						if (supplier_products_total > parseFloat(sup.coupon.value || 0)) {
 							supplier_products_total -= parseFloat(sup.coupon.value || 0);
 							if (sup.isSelected)
