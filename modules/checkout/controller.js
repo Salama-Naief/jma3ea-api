@@ -611,11 +611,11 @@ module.exports.buy = async function (req, res) {
 
 			// Copy to client
 			if (data.user_data.email) {
-				await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], data.user_data.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch((e) => console.error(req.originalUrl, e));
+				await mail.send_mail(req.custom.settings.site_name[req.custom.lang], data.user_data.email, data.user_data.fullname, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch((e) => console.error(req.originalUrl, e));
 			}
 
 			// Copy to admin
-			await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], req.custom.settings.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch((e) => console.error(req.originalUrl, e));
+			await mail.send_mail(req.custom.settings.site_name[req.custom.lang], req.custom.settings.email, req.custom.settings.site_name[req.custom.lang], req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch((e) => console.error(req.originalUrl, e));
 
 			const token = await get_remote_token(req);//.catch((e) => console.error(req.originalUrl, e));
 

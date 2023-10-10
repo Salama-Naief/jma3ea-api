@@ -213,7 +213,7 @@ module.exports.register = function (req, res) {
 					data.password = sha1(md5(data.password));
 					collection.insertOne(data)
 						.then((response) => {
-							mail.send_mail(req.custom.settings.sender_emails.register, req.custom.settings.site_name[req.custom.lang], data.email, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch((e) => console.error(req.originalUrl, e));
+							mail.send_mail(req.custom.settings.site_name[req.custom.lang], data.email, data.fullname, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch((e) => console.error(req.originalUrl, e));
 							const point_transactions_collection = req.custom.db.client().collection('point_transactions');
 							point_transactions_collection.insertOne({
 								member_id: ObjectID(response.insertedId.toString()),
@@ -435,7 +435,7 @@ module.exports.forgotpassword = async function (req, res) {
 	}).catch((e) => console.error(req.originalUrl, e));
 
 	if (updated && searchColumn == 'email') {
-		mail.send_mail(req.custom.settings.sender_emails.reset_password, req.custom.settings.site_name[req.custom.lang], data[searchColumn],
+		mail.send_mail(req.custom.settings.site_name[req.custom.lang], data[searchColumn], userObj.fullname,
 			req.custom.local.mail.reset_password_subject,
 			newpasswordrequest.newpasswordrequest(forgotpassword_data, req.custom));
 
