@@ -20,7 +20,8 @@ module.exports = {
 		port: process.env.MAIL_PORT,
 		username: process.env.MAIL_USERNAME,
 		password: process.env.MAIL_PASSWORD,
-		from: process.env.MAIL_FROM
+		from: process.env.MAIL_FROM,
+		token: process.env.MAIL_TOKEN
 	},
 	cache: {
 		life_time: {
@@ -86,5 +87,6 @@ module.exports = {
 	},
 	sms:{
 		api_key: process.env.SMS_API_KEY || '',
-	}
+	},
+	checkout_webhook_url: process.env.CHECKOUT_WEBHOOK_URL
 };

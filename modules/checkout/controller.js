@@ -277,6 +277,13 @@ module.exports.buy = async function (req, res) {
 							code: supplier_coupon.code,
 							value: common.getFixedPrice(supplier_coupon.percent_value ? (totalToApplyCoupon * supplier_coupon.percent_value) / 100 : supplier_coupon.discount_value)
 						}
+
+						if (sup.supplier._id.toString() === req.custom.settings['site_id'] && supplier_coupon.products && supplier_coupon.products.length > 0) {
+							const productsToApplyCoupon = sup.products.filter(p => supplier_coupon.products.includes(p.sku));
+							const couponProductsCoupon = productsToApplyCoupon.reduce((acc, p) => acc + parseFloat(p.price), 0);
+							sup.coupon.value = common.getFixedPrice(couponProductsCoupon);
+						}
+
 						supplier_products_total -= parseFloat(sup.coupon.value || 0);
 						total_coupon_value += parseFloat(sup.coupon.value || 0);
 					}
@@ -528,7 +535,7 @@ module.exports.buy = async function (req, res) {
 			await cache.set(cache_key_dt, cached_delivery_times, expired); */
 
 			const order_collection = req.custom.db.client().collection('order');
-			await order_collection.insertOne(order_data)
+			const createdOrder = await order_collection.insertOne(order_data)
 				.catch((error) => {
 					return {
 						success: false,
@@ -537,6 +544,11 @@ module.exports.buy = async function (req, res) {
 				});
 
 			isOrderInsertedCorrectly = true;
+
+			if (req.custom.config.checkout_webhook_url) {
+				// Call the webhook
+				await checkout_webhook(req, {...order_data, _id: createdOrder.insertedId})
+			}
 
 			if (data.user_data && data.user_data._id && (parseFloat(discount_by_wallet_value) > 0 || req.body.payment_method == 'wallet')) {
 				const paid_wallet_value = parseFloat(req.body.payment_method == 'wallet' ? total : discount_by_wallet_value);
@@ -599,11 +611,11 @@ module.exports.buy = async function (req, res) {
 
 			// Copy to client
 			if (data.user_data.email) {
-				await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], data.user_data.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch((e) => console.error(req.originalUrl, e));
+				await mail.send_mail(req.custom.settings.site_name[req.custom.lang], data.user_data.email, data.user_data.fullname, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch((e) => console.error(req.originalUrl, e));
 			}
 
 			// Copy to admin
-			await mail.send_mail(req.custom.settings.sender_emails.orders, req.custom.settings.site_name[req.custom.lang], req.custom.settings.email, req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch((e) => console.error(req.originalUrl, e));
+			await mail.send_mail(req.custom.settings.site_name[req.custom.lang], req.custom.settings.email, req.custom.settings.site_name[req.custom.lang], req.custom.local.new_order, mail_view.mail_checkout(order_data, req.custom)).catch((e) => console.error(req.originalUrl, e));
 
 			const token = await get_remote_token(req);//.catch((e) => console.error(req.originalUrl, e));
 
@@ -855,14 +867,27 @@ module.exports.list = async function (req, res) {
 
 						const totalToApplyCoupon = supplier_coupon.apply_on_discounted_products ? parseFloat(supplier_products_total) : totalWithNoDiscount;
 
+						
 						sup.coupon = {
 							code: supplier_coupon.code,
 							value: common.getFixedPrice(supplier_coupon.percent_value ? (totalToApplyCoupon * supplier_coupon.percent_value) / 100 : supplier_coupon.discount_value)
 						}
+
+						if (sup.supplier._id.toString() === req.custom.settings['site_id'] && supplier_coupon.products && supplier_coupon.products.length > 0) {
+							const productsToApplyCoupon = sup.products.filter(p => supplier_coupon.products.includes(p.sku));
+							const couponProductsCoupon = productsToApplyCoupon.reduce((acc, p) => acc + parseFloat(p.price), 0);
+							sup.coupon.value = common.getFixedPrice(couponProductsCoupon);
+							console.log('========================================================================');
+							console.info('PRODUCTS TO APPLY COUPON: ', productsToApplyCoupon.length);
+							console.info('SUPPLIER PRODUCTS: ', supplier_coupon.products);
+							console.info('COUPONS TOTAL PRICE: ', couponProductsCoupon);
+							console.log('========================================================================');
+						}
+
 						if (supplier_products_total > parseFloat(sup.coupon.value || 0)) {
 							supplier_products_total -= parseFloat(sup.coupon.value || 0);
-							if (sup.isSelected)
-								total_coupon_value += parseFloat(sup.coupon.value || 0);
+							//if (sup.isSelected)
+							total_coupon_value += parseFloat(sup.coupon.value || 0);
 						}
 					}
 				}
@@ -977,7 +1002,7 @@ module.exports.list = async function (req, res) {
 			}
 
 			let total = parseFloat(total_prods) + parseFloat(shipping_cost);
-			if (general_coupon && parseFloat(total_prods) > out_coupon.value) {
+			if (parseFloat(total_prods) > out_coupon.value) {
 				total -= parseFloat(general_coupon ? out_coupon.value : total_coupon_value);
 			}
 			total = total > 0 ? total : 0;
@@ -1436,4 +1461,27 @@ async function reset_free_shipping(req, userId) {
 			'pro.startDate': null
 		}
 	}).catch((e) => console.error(req.originalUrl, e))
+}
+
+const checkout_webhook = async (req, order) => {
+	try {
+		if (!req.custom.config.checkout_webhook_url)
+		return false;
+
+	var config = {
+		method: 'post',
+		url: req.custom.config.checkout_webhook_url,
+		headers: {
+			'Content-Type': 'application/json',
+			'app-key': '9cKkvPW6y9hpes0Q01ikfOkdwmpIc2T6r8OBmOjbapmwKw',
+      		'app-secret': 'jNmZGUyZTJlpGRRyF35tti0BHkN64WI4AlxNXIxL45gX2i'
+		},
+		data: order
+	};
+
+	await axios(config);
+	} catch (err) {
+		console.error(req.originalUrl, err);
+	}
+
 }

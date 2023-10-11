@@ -683,6 +683,14 @@ module.exports.coupon = function (req, res) {
 											value: coupon.code ? (coupon.percent_value || coupon.discount_value) : 0
 										});
 									}
+
+									if (coupon.products && coupon.products.length > 0) {
+										if (!user.cart) user.cart = {};
+										for (const p of coupon.products) {
+											user.cart[p] = 1
+										}
+									}
+
 								} catch (err) {
 									console.error(req.originalUrl, err);
 								}

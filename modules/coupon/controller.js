@@ -11,7 +11,7 @@ const { resetPrice } = require('../product/utils');
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.remove_coupon = function (req, res) {
+module.exports.remove_coupon = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
@@ -48,6 +48,21 @@ module.exports.remove_coupon = function (req, res) {
 			}
 			user.coupon.suppliers_coupons.splice(coupon_index, 1);
 		}
+
+
+		if (user.cart) {
+			const coupon_collection = req.custom.db.client().collection('coupon');
+			const coupon = await coupon_collection.findOne({
+				code: { '$regex': '^' + data.code + '$', $options: 'i' },
+			}, { projection: { products: 1 } });
+	
+			if (coupon && coupon.products && coupon.products.length > 0) {
+				for (const sku of coupon.products) {
+					if (user.cart.hasOwnProperty(sku)) delete user.cart[sku];
+				}
+			}
+		}
+
 	}
 
 	req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)

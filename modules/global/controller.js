@@ -205,11 +205,11 @@ module.exports.normalize = async (req, res) => {
 module.exports.indexProducts = async (req, res) => {
     const collection = req.custom.db.client().collection('product');
     try {
-        const PAGE_SIZE = 500;
+        const PAGE_SIZE = 100;
         const currentPage = parseInt(req.query.page) || 1
         const skip = (currentPage - 1) * PAGE_SIZE;
 
-        const products = await collection.find({ status: true }).skip(skip).limit(PAGE_SIZE).toArray();
+        const products = await collection.find({ status: true, sku: '60000265' }).sort({ created: -1 }).skip(skip).limit(PAGE_SIZE).toArray();
 
         for (const product of products) {
             const body = {
