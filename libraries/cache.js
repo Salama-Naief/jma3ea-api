@@ -1,7 +1,7 @@
 'use strict';
 // Load required modules
 const config = require('../config');
-const redis = require('ioredis');
+const redis = require('redis');
 const client = redis.createClient({
 	host: config.redis.host,
 	port: config.redis.port,
