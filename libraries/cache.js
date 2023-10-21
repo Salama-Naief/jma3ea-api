@@ -24,6 +24,10 @@ const client = redis.createClient({
 		// reconnect after
 		return Math.min(options.attempt * 100, 3000);
 	}, */
+	retryStrategy: function (times) {
+		const delay = Math.min(times * 50, 2000);
+		return delay;
+	  },
 });
 
 client.on('error', function (err) {
@@ -36,7 +40,13 @@ client.on('error', function (err) {
  */
 exports.get = (key, cb) => {
 	key = `${config.cache.prefix}_${key}`;
-	return new Promise((resolve, reject) => {
+	return client.get(key).then((res) => {
+		if (res) {
+		  return JSON.parse(res);
+		}
+		return null;
+	  });
+	/* return new Promise((resolve, reject) => {
 		client.get(key, (err, res) => {
 			if (err) {
 				console.log('this is the error');
@@ -49,7 +59,7 @@ exports.get = (key, cb) => {
 				reject(error);
 			}
 		})
-	});
+	}); */
 };
 
 /**
