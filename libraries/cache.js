@@ -40,13 +40,7 @@ client.on('error', function (err) {
  */
 exports.get = (key, cb) => {
 	key = `${config.cache.prefix}_${key}`;
-	return client.get(key).then((res) => {
-		if (res) {
-		  return JSON.parse(res);
-		}
-		return null;
-	  });
-	/* return new Promise((resolve, reject) => {
+	return new Promise((resolve, reject) => {
 		client.get(key, (err, res) => {
 			if (err) {
 				console.log('this is the error');
@@ -59,7 +53,7 @@ exports.get = (key, cb) => {
 				reject(error);
 			}
 		})
-	}); */
+	});
 };
 
 /**
