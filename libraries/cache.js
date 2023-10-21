@@ -39,6 +39,7 @@ exports.get = (key, cb) => {
 	return new Promise((resolve, reject) => {
 		client.get(key, (err, res) => {
 			if (err) {
+				console.log('this is the error');
 				reject(err);
 			}
 			try {
