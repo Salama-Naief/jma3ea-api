@@ -6,7 +6,7 @@ const client = redis.createClient({
 	host: config.redis.host,
 	port: config.redis.port,
 	password: config.redis.password || undefined,
-	retry_strategy: function (options) {
+	/* retry_strategy: function (options) {
 		if (options.error && options.error.code === "ECONNREFUSED") {
 			// End reconnecting on a specific error and flush all commands with
 			// a individual error
@@ -23,7 +23,13 @@ const client = redis.createClient({
 		}
 		// reconnect after
 		return Math.min(options.attempt * 100, 3000);
-	},
+	}, */
+	retry_strategy: function (options) {
+		if (options.error && options.error.code === "ECONNREFUSED") {
+			return new Error("The server refused the connection");
+		}
+		return Math.min(options.attempt * 100, 3000);
+	}
 });
 
 client.on('error', function (err) {
