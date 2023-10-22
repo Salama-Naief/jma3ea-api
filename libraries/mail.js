@@ -31,4 +31,6 @@ module.exports.send_mail = function (from_name, to_email, to_name, subject, body
 
 	return client
 		.sendMail(mailOptions);
+		/* .then((resp) => true)
+		.catch((e) => console.error(e)) */
 };
