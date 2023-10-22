@@ -437,7 +437,7 @@ module.exports.forgotpassword = async function (req, res) {
 	if (updated && searchColumn == 'email') {
 		mail.send_mail(req.custom.settings.site_name[req.custom.lang], data[searchColumn], userObj.fullname,
 			req.custom.local.mail.reset_password_subject,
-			newpasswordrequest.newpasswordrequest(forgotpassword_data, req.custom));
+			newpasswordrequest.newpasswordrequest(forgotpassword_data, req.custom)).catch((e) => console.error(req.originalUrl, e));
 
 		return res.out({
 			message: req.custom.local.mail.reset_password_otp_sent,
