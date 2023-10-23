@@ -26,7 +26,8 @@ module.exports = {
 	cache: {
 		life_time: {
 			data: parseInt(process.env.CACHE_LIFE_TIME_DATA) || 1,
-			token: parseInt(process.env.CACHE_LIFE_TIME_TOKEN) || (24 * 15)
+			token: parseInt(process.env.CACHE_LIFE_TIME_TOKEN) || (24 * 30),
+			visitor_token: parseInt(process.env.CACHE_LIFE_TIME_VISITOR_TOKEN) || 3
 		},
 		prefix: process.env.CACHE_PREFIX
 	},
