@@ -1247,8 +1247,11 @@ function fix_user_data(req, userObj, city_id) {
 	let points = parseFloat(userObj.points || 0);
 	let wallet = userObj.wallet || 0;
 	let address = userObj.address || {};
-	city_id = address.city_id || city_id;
-	address.city_id = !req.custom.config.auto_load_city && ObjectID.isValid(city_id.toString()) ? ObjectID(city_id.toString()) : null;
+
+	address.city_id = address.city_id && ObjectID.isValid(address.city_id.toString()) ? ObjectID(address.city_id.toString()) : (!req.custom.config.auto_load_city && city_id && ObjectID.isValid(city_id.toString()) ? ObjectID(city_id.toString()) : null);
+
+	//address.city_id = !req.custom.config.auto_load_city && ObjectID.isValid(city_id.toString()) ? ObjectID(city_id.toString()) : null;
+
 	address.widget = address.widget || 'N/A';
 	address.street = address.street || 'N/A';
 	address.gada = address.gada || 'N/A';

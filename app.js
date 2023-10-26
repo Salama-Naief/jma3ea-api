@@ -37,7 +37,7 @@ const settings = require('./libraries/middlewares/settings');
 const sorting = require('./libraries/middlewares/sorting');
 const update_language = require('./libraries/middlewares/update_language');
 const validation = require('./libraries/middlewares/validation');
-const token_expiration = require('./libraries/middlewares/token_expiration');
+//const token_expiration = require('./libraries/middlewares/token_expiration');
 
 app.use(initialize(__dirname));
 app.use(response);
@@ -46,7 +46,7 @@ app.use(app_version);
 app.use(database);
 app.use(cache);
 app.use(authorization);
-app.use(token_expiration);
+//app.use(token_expiration);
 app.use(settings);
 app.use(analytics);
 app.use(update_language);
