@@ -547,7 +547,10 @@ module.exports.buy = async function (req, res) {
 
 			if (req.custom.config.checkout_webhook_url) {
 				// Call the webhook
-				await checkout_webhook(req, {...order_data, _id: createdOrder.insertedId})
+				const remotly_inserted = await checkout_webhook(req, {...order_data, _id: createdOrder.insertedId});
+				if (!remotly_inserted) {
+					order_collection.updateOne({ _id: ObjectID(createdOrder.insertedId.toString()) }, { $set: { inserted_remotly: remotly_inserted } });
+				}
 			}
 
 			if (data.user_data && data.user_data._id && (parseFloat(discount_by_wallet_value) > 0 || req.body.payment_method == 'wallet')) {
@@ -1479,9 +1482,11 @@ const checkout_webhook = async (req, order) => {
 		data: order
 	};
 
-	await axios(config);
+	const response = await axios(config);
+	return response && response.data ? response.data.success : false;
 	} catch (err) {
-		console.error(req.originalUrl, err);
+		console.error(req.originalUrl, " CHECKOUT WEBHOOK ", err);
+		return false;
 	}
 
 }
