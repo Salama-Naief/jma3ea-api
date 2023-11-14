@@ -119,8 +119,24 @@ module.exports.list = async function (req, res) {
                     /* "picture": {
                         $ifNull: [`$picture.${req.custom.lang}`, `$picture`]
                     }, */
-                    "picture": 1,
-                    "logo": 1,
+                    "logo": {
+                        $cond: {
+                          if: { $eq: [{ $type: "$logo" }, "string"] },
+                          then: "$logo",
+                          else: {
+                            $ifNull: [`$logo.${req.custom.lang}`, `$logo.${req.custom.config.local}`]
+                          }
+                        }
+                    },
+                    "picture": {
+                        $cond: {
+                          if: { $eq: [{ $type: "$picture" }, "string"] },
+                          then: "$picture",
+                          else: {
+                            $ifNull: [`$picture.${req.custom.lang}`, `$picture.${req.custom.config.local}`]
+                          }
+                        }
+                    },
                     "working_times": 1,
                     "delivery_time": 1,
                     "delivery_time_text": 1,
