@@ -39,7 +39,7 @@ module.exports.read = async function (req, res) {
                 $ifNull: [`$picture.${req.custom.lang}`, `$picture.${req.custom.config.local}`]
               }
             }
-        },
+        }, 
         "working_times": 1,
         "delivery_time": 1,
         "delivery_time_text": 1,
