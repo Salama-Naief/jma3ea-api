@@ -26,6 +26,7 @@ module.exports.list = async function (req, res) {
         }, status_message.CITY_REQUIRED);
     } */
 
+    req.custom.cache_key = false;
     mainController.list_all(req, res, collectionName, {
         "_id": 1,
         "name": {
