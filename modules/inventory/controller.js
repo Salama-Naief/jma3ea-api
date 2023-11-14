@@ -159,7 +159,8 @@ module.exports.list = async function (req, res) {
         for (let inventory of out.data) {
             req.custom.clean_filter = { inventory_id: ObjectID(inventory._id.toString()), is_external: true, status: true };
             if (cityid) {
-                req.custom.clean_filter.cities = ObjectID(cityid);
+                //req.custom.clean_filter.cities = ObjectID(cityid);
+                req.custom.clean_filter['$or'] = [ { cities: ObjectID(cityid) }, { 'cities.city_id': ObjectID(cityid) } ];
             }
             inventory.min_value = inventory.min_order;
             inventory.min_delivery_time = inventory.delivery_time;
