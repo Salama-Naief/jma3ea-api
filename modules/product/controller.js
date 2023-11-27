@@ -97,6 +97,16 @@ module.exports.list = async function (req, res) {
 					req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}__supplier_${req.query.supplier_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
 				} */
       }
+
+
+	  if (req.query.sku) {
+		const skus = req.query.sku;
+		if (skus.length > 0) {
+			req.custom.clean_filter['sku'] = { $in: skus };
+		}
+	  }
+	
+	
     }
 
     req.custom.cache_key = false;
