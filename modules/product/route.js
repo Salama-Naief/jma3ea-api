@@ -2,11 +2,27 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('./controller');
+const { Client } = require('@elastic/elasticsearch');
+
+let esClient = null;
 
 /**
  * GET /product
  */
-router.get('/', controller.list);
+router.get('/', (req, res, next) => {
+    try {
+        // Elasticsearch
+    if (!esClient) {
+        esClient = new Client({ node: 'http://143.198.140.3:9200', maxRetries: 5 });
+    }
+    req.custom.esClient = esClient;
+    } catch (err) {
+        console.error(err);
+        if (esClient) esClient.close();
+    }
+    next();
+}, controller.list);
+
 
 /**
  * GET /product/featured
