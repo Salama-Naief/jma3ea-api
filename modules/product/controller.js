@@ -16,229 +16,192 @@ module.exports.collectionName = collectionName;
  */
 module.exports.list = async function (req, res) {
 	try {
-		req.custom.isProducts = true;
-		const name = common.parseArabicNumbers(req.query.q);
-
-		if (req.query) {
-			if (req.query.brand_id && req.query.brand_id !== "all") {
-				req.custom.clean_filter['brand_id'] = new ObjectID(req.query.brand_id);
+	  req.custom.isProducts = true;
+	  const name = common.parseArabicNumbers(req.query.q);
+  
+	  const newNames = [];
+	  const names_array = name ? name.split(" ") : [];
+  
+	  if (/^\d+$/.test(name)) {
+		req.custom.clean_filter["barcode"] = name;
+	  } else {
+		if (names_array.length > 0) {
+		  let names_array = name.split(" ");
+		  for (let item of names_array) {
+			// Get the last character of the word
+			const lastCharacter = item.slice(-1);
+  
+			// If the last character of teh word contains ه
+			if (/\u0647/.test(lastCharacter)) {
+			  // Add new search item for ة
+			  newNames.push(item.slice(0, -1) + "\u0629");
 			}
-			if (req.query.category_id && req.query.category_id !== "all") {
-				req.custom.clean_filter['prod_n_categoryArr.category_id'] = new ObjectID(req.query.category_id);
+  
+			// If the last character of teh word contains ة
+			if (/\u0629/.test(lastCharacter)) {
+			  // Add new search item for ه
+			  newNames.push(item.slice(0, -1) + "\u0647");
 			}
-
-			if (req.query.sortBy && req.query.sorting) {
-				if (req.query.sortBy == "name") {
-					req.custom.clean_sort = { ["name." + req.custom.lang]: parseInt(req.query.sorting) };
-				} else {
-					req.custom.clean_sort = { [req.query.sortBy]: parseInt(req.query.sorting) };
-				}
+  
+			// If the word begins with Alif
+			if (common.begins_with_similar_alif_letters(item)) {
+			  // Set all different types of Alifs to the search
+			  let alif_words =
+				common.transform_word_begins_with_alif_letter(item);
+			  alif_words.forEach((alif_word) => {
+				newNames.push(alif_word);
+			  });
 			}
-
-			if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
-				req.custom.clean_filter['supplier_id'] = new ObjectID(req.query.supplier_id);
-				/* if (req.custom.cache_key) {
-					req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}__supplier_${req.query.supplier_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
-				} */
-			}
-
+		  }
+  
+		  // Add the text filter operator
+		  req.custom.clean_filter["$text"] = {
+			$search: name, //`${name} ${newNames.join(' ')}`,
+			/* $language: getTermLang(name),
+					  $caseSensitive: false,
+					  $diacriticSensitive: false, */
+			$meta: "textScore",
+		  };
+  
+		  // Set the sort option
+		  req.custom.clean_sort = { score: { $meta: "textScore" } };
 		}
-
-		const page_size = parseInt(req.query.limit || req.custom.config.db.limit);
-		const isInstantSearch = req.query.instant;
-
-		if (!name || name === "" || /^\d+$/.test(name)) {
-
-			if (name && name !== "")
-				req.custom.clean_filter["barcode"] = name;
-
-			mainController.list(req, res, collectionName, {
-				"_id": 0,
-				"sku": 1,
-				"name": {
-					$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
-				},
-				"picture": 1,
-				"old_price": 1,
-				"price": 1,
-				"availability": `$prod_n_storeArr`,
-				"has_variants": { $isArray: "$variants" },
-				"prod_n_storeArr": 1,
-				"prod_n_categoryArr": 1,
-				"max_quantity_cart": {
-					$ifNull: ["$max_quantity_cart", 0]
-				},
-				"name_length": {
-					$strLenCP: { $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`] }
-				},
-				"show_discount_percentage": 1,
-				"discount_price_valid_until": 1,
-				"options": 1
-			});
-		} else {
-			/* const textSearch = {
-				multi_match: {
-					query: name,
-					fields: ['name.en', 'name.ar'],
-					type: 'most_fields',
-					operator: 'or',
-					fuzziness: 'AUTO'
-				},
-			}; */
-
-
-			const page = parseInt(req.query.page) || 1;
-			const from = (page - 1) * page_size;
-
-			/* const searchQuery = {
-				bool: {
-					should: [textSearch],
-				},
-			}; */
-
-			const searchQuery = {
-				bool: {
-					should: [
-						{
-							match: {
-								'name.ar': {
-									query: name,
-									operator: 'or'
-								},
-							},
-						},
-						{
-							match: {
-								'name.ar': {
-									query: name,
-									fuzziness: 'AUTO',
-									operator: 'or'
-								},
-							},
-						},
-						{
-							match: {
-								'name.en': {
-									query: name,
-									operator: 'or'
-								},
-							},
-						},
-						{
-							match: {
-								'name.en': {
-									query: name,
-									fuzziness: 'AUTO',
-									operator: 'or'
-								},
-							},
-						},
-						{
-							wildcard: {
-								'name.en': `*${name}*`
-							}
-						},
-						{
-							wildcard: {
-								'name.ar': `*${name}*`
-							}
-						}
-					],
-				},
+	  }
+  
+	  if (req.query) {
+		if (req.query.brand_id && req.query.brand_id !== "all") {
+		  req.custom.clean_filter["brand_id"] = new ObjectID(req.query.brand_id);
+		}
+		if (req.query.category_id && req.query.category_id !== "all") {
+		  req.custom.clean_filter["prod_n_categoryArr.category_id"] =
+			new ObjectID(req.query.category_id);
+		}
+  
+		if (req.query.sortBy && req.query.sorting) {
+		  if (req.query.sortBy == "name") {
+			req.custom.clean_sort = {
+			  ["name." + req.custom.lang]: parseInt(req.query.sorting),
 			};
-
-			if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
-				searchQuery.bool.filter = [
-					{
-						term: {
-							'supplier_id': req.query.supplier_id
-						}
-					}
-				];
-			}
-
-
-			const body = await req.custom.esClient.search({
-				index: 'products',
-				body: {
-					query: searchQuery,
-					from: from,
-					size: page_size,
-				},
-			});
-
-			const totalResults = body.hits.total.value;
-			const totalPages = Math.ceil(totalResults / page_size);
-
-			let searchResults = body.hits.hits.map((hit) => hit._source);
-
-			if (!isInstantSearch) {
-				const skus = searchResults.map((p) => p.sku);
-				req.custom.clean_filter['sku'] = { $in: skus };
-				mainController.list(req, res, collectionName, {
-					"_id": 0,
-					"sku": 1,
-					"name": {
-						$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
-					},
-					"picture": 1,
-					"old_price": 1,
-					"price": 1,
-					"availability": `$prod_n_storeArr`,
-					"has_variants": { $isArray: "$variants" },
-					"prod_n_storeArr": 1,
-					"prod_n_categoryArr": 1,
-					"max_quantity_cart": {
-						$ifNull: ["$max_quantity_cart", 0]
-					},
-					"name_length": {
-						$strLenCP: { $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`] }
-					},
-					"show_discount_percentage": 1,
-					"discount_price_valid_until": 1,
-					"supplier_id": 1,
-					"options": 1
-				}, (out) => {
-					out.total = totalResults;
-					const products = out.data;
-					const skuIndexMap = new Map();
-					skus.forEach((sku, index) => skuIndexMap.set(sku, index));
-
-					// Sort the 'products' array based on the order of SKUs in 'skus' array
-					const sortedProducts = products.sort((a, b) => {
-						const indexA = skuIndexMap.get(a.sku);
-						const indexB = skuIndexMap.get(b.sku);
-						return indexA - indexB;
-					});
-
-					out.data = sortedProducts;
-
-					return res.out(out);
-				});
-
-			} else {
-				return res.json({
-					total: totalResults,
-					count: searchResults.length,
-					per_page: req.custom.limit,
-					current_page: req.query.skip || 1,
-					totalPages,
-					data: searchResults.map(p => {
-						if (p.picture) {
-							p.picture = p.picture.includes(req.custom.config.media_url) ? p.picture : (req.custom.config.media_url + p.picture);
-						}
-						return p;
-					}),
-				});
-			}
-
+		  } else {
+			req.custom.clean_sort = {
+			  [req.query.sortBy]: parseInt(req.query.sorting),
+			};
+		  }
 		}
+  
+		if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
+		  req.custom.clean_filter["supplier_id"] = new ObjectID(
+			req.query.supplier_id
+		  );
+		  /* if (req.custom.cache_key) {
+					  req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}__supplier_${req.query.supplier_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
+				  } */
+		}
+	  
+	  }
+  
+	  req.custom.cache_key = false;
+	  mainController.list(
+		req,
+		res,
+		collectionName,
+		{
+		  _id: 0,
+		  sku: 1,
+		  name: {
+			$ifNull: [
+			  `$name.${req.custom.lang}`,
+			  `$name.${req.custom.config.local}`,
+			],
+		  },
+		  picture: 1,
+		  old_price: 1,
+		  price: 1,
+		  availability: `$prod_n_storeArr`,
+		  has_variants: { $isArray: "$variants" },
+		  prod_n_storeArr: 1,
+		  prod_n_categoryArr: 1,
+		  max_quantity_cart: {
+			$ifNull: ["$max_quantity_cart", 0],
+		  },
+		  supplier_id: 1,
+		  show_discount_percentage: 1,
+		  discount_price_valid_until: 1,
+		},
+		(data) => {
+		  if (data.total == 0 && !/^\d+$/.test(name)) {
+			let filter_regex = `${name}${
+			  names_array.length > 0 ? "|" + names_array.join("|") : ""
+			}${newNames.length > 0 ? "|" + newNames.join("|") : ""}`;
+  
+			try {
+			  filter_regex = new RegExp(filter_regex, "i");
+			} catch (e) {
+			  filter_regex = new RegExp(name, "i");
+			}
+  
+			req.custom.clean_filter["$or"] = [
+			  { "name.ar": { $regex: filter_regex } },
+			  { "name.en": { $regex: filter_regex } },
+			];
+			/* try {
+					  filter_regex = `${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`;
+					  filter_regex = new RegExp(filter_regex, "i");
+				  } catch (er) {
+					  filter_regex = new RegExp('', "i");
+				  }
+				  req.custom.clean_filter['$or'] = [
+					  { "name.ar": { $regex: filter_regex } },
+					  { "name.en": { $regex: filter_regex } },
+				  ]; */
+  
+			if (delete req.custom.clean_filter.hasOwnProperty("$text"))
+			  delete req.custom.clean_filter["$text"];
+  
+			req.custom.clean_sort = { name_length: 1 };
+			req.custom.sort_after = true;
+  
+			mainController.list(req, res, collectionName, {
+			  _id: 0,
+			  sku: 1,
+			  name: {
+				$ifNull: [
+				  `$name.${req.custom.lang}`,
+				  `$name.${req.custom.config.local}`,
+				],
+			  },
+			  picture: 1,
+			  old_price: 1,
+			  price: 1,
+			  availability: `$prod_n_storeArr`,
+			  has_variants: { $isArray: "$variants" },
+			  prod_n_storeArr: 1,
+			  prod_n_categoryArr: 1,
+			  max_quantity_cart: {
+				$ifNull: ["$max_quantity_cart", 0],
+			  },
+			  name_length: {
+				$strLenCP: {
+				  $ifNull: [
+					`$name.${req.custom.lang}`,
+					`$name.${req.custom.config.local}`,
+				  ],
+				},
+			  },
+			  show_discount_percentage: 1,
+			  discount_price_valid_until: 1,
+			});
+		  } else {
+			return res.out(data);
+		  }
+		}
+	  );
 	} catch (error) {
-		console.error(req.originalUrl, error);
-		res.status(500).json({ error: 'Internal server error' });
+	  console.error(req.originalUrl, error);
+	  res.status(500).json({ error: "Internal server error" });
 	}
-
 };
+  
 
 /**
  * List products by category
