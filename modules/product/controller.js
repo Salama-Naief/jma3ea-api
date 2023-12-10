@@ -67,7 +67,7 @@ module.exports.list = async function (req, res) {
 		  req.custom.clean_sort = { score: { $meta: "textScore" } };
 		}
 	  }
-  
+	  let skus = [];
 	  if (req.query) {
 		if (req.query.brand_id && req.query.brand_id !== "all") {
 		  req.custom.clean_filter["brand_id"] = new ObjectID(req.query.brand_id);
@@ -93,6 +93,13 @@ module.exports.list = async function (req, res) {
 		  req.custom.clean_filter["supplier_id"] = new ObjectID(
 			req.query.supplier_id
 		  );
+		}
+
+		if (req.query.sku) {
+			skus = req.query.sku;
+			if (skus.length > 0) {
+				req.custom.clean_filter['sku'] = { $in: skus };
+			}
 		}
 	  
 	  }
@@ -131,6 +138,19 @@ module.exports.list = async function (req, res) {
 	  res.status(500).json({ error: "Internal server error" });
 	}
 };
+
+function sortBySku(arr, srt) {
+	return arr.sort((a, b) => {
+	  const indexA = srt.indexOf(a.sku);
+	  const indexB = srt.indexOf(b.sku);
+	  if (indexA === -1 || indexB === -1) {
+		// handle missing elements
+		// (e.g., prioritize existing elements or throw an error)
+		return 0;
+	  }
+	  return indexA - indexB;
+	});
+  }
   
 
 /**
