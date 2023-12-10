@@ -1350,7 +1350,7 @@ function update_quantities(req, the_products, cart, token) {
 			const update = collection.updateOne({
 				_id: ObjectID(p._id.toString())
 			}, {
-				$set: { variants: variants, prod_n_storeArr: parent_prod_n_storeArr }
+				$set: { variants: variants, prod_n_storeArr: parent_prod_n_storeArr, last_quantity_update: new Date() }
 			}).catch((e) => console.error(req.originalUrl, e));
 			promises.push(update);
 
@@ -1379,7 +1379,7 @@ function update_quantities(req, the_products, cart, token) {
 			const update = collection.updateOne({
 				_id: ObjectID(p._id.toString())
 			}, {
-				$set: { prod_n_storeArr: prod_n_storeArr }
+				$set: { prod_n_storeArr: prod_n_storeArr, last_quantity_update: new Date() }
 			}).catch((e) => console.error(req.originalUrl, e));
 			promises.push(update);
 			remote_product.quantity = quantity;
