@@ -57,9 +57,9 @@ module.exports.list = async function (req, res) {
 		  // Add the text filter operator
 		  req.custom.clean_filter["$text"] = {
 			$search: name, //`${name} ${newNames.join(' ')}`,
-			/* $language: getTermLang(name),
-					  $caseSensitive: false,
-					  $diacriticSensitive: false, */
+			$language: getTermLang(name),
+			$caseSensitive: false,
+			$diacriticSensitive: false,
 			$meta: "textScore",
 		  };
   
@@ -93,9 +93,6 @@ module.exports.list = async function (req, res) {
 		  req.custom.clean_filter["supplier_id"] = new ObjectID(
 			req.query.supplier_id
 		  );
-		  /* if (req.custom.cache_key) {
-					  req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}__supplier_${req.query.supplier_id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
-				  } */
 		}
 	  
 	  }
@@ -127,73 +124,6 @@ module.exports.list = async function (req, res) {
 		  supplier_id: 1,
 		  show_discount_percentage: 1,
 		  discount_price_valid_until: 1,
-		},
-		(data) => {
-		  if (data.total == 0 && !/^\d+$/.test(name)) {
-			let filter_regex = `${name}${
-			  names_array.length > 0 ? "|" + names_array.join("|") : ""
-			}${newNames.length > 0 ? "|" + newNames.join("|") : ""}`;
-  
-			try {
-			  filter_regex = new RegExp(filter_regex, "i");
-			} catch (e) {
-			  filter_regex = new RegExp(name, "i");
-			}
-  
-			req.custom.clean_filter["$or"] = [
-			  { "name.ar": { $regex: filter_regex } },
-			  { "name.en": { $regex: filter_regex } },
-			];
-			/* try {
-					  filter_regex = `${name}${names_array.length > 0 ? '|' + names_array.join('|') : ""}${newNames.length > 0 ? "|" + newNames.join('|') : ""}`;
-					  filter_regex = new RegExp(filter_regex, "i");
-				  } catch (er) {
-					  filter_regex = new RegExp('', "i");
-				  }
-				  req.custom.clean_filter['$or'] = [
-					  { "name.ar": { $regex: filter_regex } },
-					  { "name.en": { $regex: filter_regex } },
-				  ]; */
-  
-			if (delete req.custom.clean_filter.hasOwnProperty("$text"))
-			  delete req.custom.clean_filter["$text"];
-  
-			req.custom.clean_sort = { name_length: 1 };
-			req.custom.sort_after = true;
-  
-			mainController.list(req, res, collectionName, {
-			  _id: 0,
-			  sku: 1,
-			  name: {
-				$ifNull: [
-				  `$name.${req.custom.lang}`,
-				  `$name.${req.custom.config.local}`,
-				],
-			  },
-			  picture: 1,
-			  old_price: 1,
-			  price: 1,
-			  availability: `$prod_n_storeArr`,
-			  has_variants: { $isArray: "$variants" },
-			  prod_n_storeArr: 1,
-			  prod_n_categoryArr: 1,
-			  max_quantity_cart: {
-				$ifNull: ["$max_quantity_cart", 0],
-			  },
-			  name_length: {
-				$strLenCP: {
-				  $ifNull: [
-					`$name.${req.custom.lang}`,
-					`$name.${req.custom.config.local}`,
-				  ],
-				},
-			  },
-			  show_discount_percentage: 1,
-			  discount_price_valid_until: 1,
-			});
-		  } else {
-			return res.out(data);
-		  }
 		}
 	  );
 	} catch (error) {
