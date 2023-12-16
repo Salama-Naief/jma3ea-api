@@ -5,7 +5,7 @@ const ObjectID = require('../../types/object_id');
  */
 module.exports = (req, res, next) => {
 	if (req.custom.authorizationObject && req.custom.lang != req.custom.authorizationObject.language && req.custom.authorizationObject.member_id) {
-		const collection = req.custom.db.client().collection('member');
+		const collection = req.custom.db.collection('member');
 		const data = {
 			language: req.custom.lang
 		};

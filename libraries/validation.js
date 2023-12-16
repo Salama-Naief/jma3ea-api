@@ -208,7 +208,7 @@ function checkIsUnique(req, collectionName, key, value) {
 					};
 				}
 			}
-			const collection = req.custom.db.client().collection(collectionName);
+			const collection = req.custom.db.collection(collectionName);
 			collection.findOne(where, function (err, doc) {
 				if (err) {
 					reject(err);
@@ -228,7 +228,7 @@ function checkIsExists(req, collectionName, key, value) {
 			const where = {
 				[key]: value
 			};
-			const collection = req.custom.db.client().collection(collectionName);
+			const collection = req.custom.db.collection(collectionName);
 			collection.findOne(where, function (err, doc) {
 				if (err) {
 					reject(err);

@@ -66,7 +66,7 @@ module.exports.login = function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
-	const usercollection = req.custom.db.client().collection(collectionName);
+	const usercollection = req.custom.db.collection(collectionName);
 	const local = req.custom.local;
 
 	if (!req.body.username || !req.body.password) {
@@ -111,7 +111,7 @@ module.exports.login = function (req, res) {
 		data.member_id = theuser._id;
 		data.language = theuser.language || req.custom.lang;
 		if (theuser.address && theuser.address.city_id) {
-			const cityCollection = req.custom.db.client().collection('city');
+			const cityCollection = req.custom.db.collection('city');
 			const cityObj = await cityCollection.findOne({
 				_id: ObjectID(theuser.address.city_id.toString())
 			});
@@ -121,7 +121,7 @@ module.exports.login = function (req, res) {
 				}, status_message.CITY_REQUIRED)
 			}
 
-			const countryCollection = req.custom.db.client().collection('country');
+			const countryCollection = req.custom.db.collection('country');
 			const countryObj = await countryCollection.findOne({
 				_id: cityObj.country_id
 			});
@@ -183,8 +183,8 @@ module.exports.register = function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
-	const collection = req.custom.db.client().collection(collectionName);
-	const registered_mobile_collection = req.custom.db.client().collection('registered_mobile');
+	const collection = req.custom.db.collection(collectionName);
+	const registered_mobile_collection = req.custom.db.collection('registered_mobile');
 	req.custom.model = req.custom.model || require('./model/register');
 
 	req.custom.getValidData(req).
@@ -214,7 +214,7 @@ module.exports.register = function (req, res) {
 					collection.insertOne(data)
 						.then((response) => {
 							mail.send_mail(req.custom.settings.site_name[req.custom.lang], data.email, data.fullname, req.custom.local.mail.registerion_subject, mail_register_view.mail_register(data, req.custom)).catch((e) => console.error(req.originalUrl, e));
-							const point_transactions_collection = req.custom.db.client().collection('point_transactions');
+							const point_transactions_collection = req.custom.db.collection('point_transactions');
 							point_transactions_collection.insertOne({
 								member_id: ObjectID(response.insertedId.toString()),
 								points: 50,
@@ -224,7 +224,7 @@ module.exports.register = function (req, res) {
 								trashed: false
 							}).catch((err) => { console.error(req.originalUrl, err) });
 
-							const point_history_collection = req.custom.db.client().collection('point_history');
+							const point_history_collection = req.custom.db.collection('point_history');
 							point_history_collection.insertOne({
 								member_id: ObjectID(response.insertedId.toString()),
 								old_points: 0,
@@ -279,7 +279,7 @@ module.exports.update = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 	req.custom.model = req.custom.model || require('./model/update');
 	req.custom.getValidData(req).
 		then(({ data, error }) => {
@@ -307,7 +307,7 @@ module.exports.update = async function (req, res) {
 						'message': error.message
 					}, status_message.UNEXPECTED_ERROR))
 					.then(() => {
-						const registered_mobile_collection = req.custom.db.client().collection('registered_mobile');
+						const registered_mobile_collection = req.custom.db.collection('registered_mobile');
 						registered_mobile_collection.insertOne({
 							mobile: req.body.mobile,
 							created: new Date(),
@@ -334,7 +334,7 @@ module.exports.updatepassword = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 	req.custom.model = req.custom.model || require('./model/updatepassword');
 
 	req.custom.getValidData(req)
@@ -400,7 +400,7 @@ module.exports.forgotpassword = async function (req, res) {
 		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
-	const userCollection = req.custom.db.client().collection('member');
+	const userCollection = req.custom.db.collection('member');
 	var searchColumn = 'email';
 
 	if (req.body?.requestedColumn) {
@@ -423,7 +423,7 @@ module.exports.forgotpassword = async function (req, res) {
 		user: userObj
 	};
 
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 
 	const updated = await collection.updateOne({
 		_id: userObj._id
@@ -470,7 +470,7 @@ module.exports.verifyOtp = function (req, res) {
 		columnName = 'mobile';
 	}
 
-	const userCollection = req.custom.db.client().collection('member');
+	const userCollection = req.custom.db.collection('member');
 	userCollection.findOne({
 		"$or": [{
 			"email": data.email
@@ -515,7 +515,7 @@ module.exports.resetpassword = async function (req, res) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 	otpCode = parseInt(otpCode);
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 	req.custom.model = req.custom.model || require('./model/resetpassword');
 	req.body.reset_hash = req.params.hash;
 
@@ -526,7 +526,7 @@ module.exports.resetpassword = async function (req, res) {
 				return res.out(error, status_message.VALIDATION_ERROR);
 			}
 
-			const userCollection = req.custom.db.client().collection('member');
+			const userCollection = req.custom.db.collection('member');
 			userCollection.findOne({
 				"$or": [{
 					"email": req.body.email
@@ -594,7 +594,7 @@ module.exports.updatecity = function (req, res) {
 				return res.out(error, status_message.VALIDATION_ERROR);
 			}
 
-			const cityCollection = req.custom.db.client().collection('city');
+			const cityCollection = req.custom.db.collection('city');
 			cityCollection.findOne({
 				_id: ObjectID(data.city_id.toString())
 			}).then((cityObj) => {
@@ -607,7 +607,7 @@ module.exports.updatecity = function (req, res) {
 				}
 
 
-				const countryCollection = req.custom.db.client().collection('country');
+				const countryCollection = req.custom.db.collection('country');
 				countryCollection.findOne({
 					_id: cityObj.country_id
 				}).then((countryObj) => {
@@ -641,7 +641,7 @@ module.exports.updatecity = function (req, res) {
 							}
 						}
 
-						const prod_collection = req.custom.db.client().collection('product');
+						const prod_collection = req.custom.db.collection('product');
 						prod_collection.aggregate([
 							{ $match: { "_id": { $in: prod_ids } } },
 							{
@@ -700,7 +700,7 @@ module.exports.updatecity = function (req, res) {
 								row.member_id = req.custom.authorizationObject.member_id;
 
 								if (row.member_id) {
-									const userCollection = req.custom.db.client().collection('member');
+									const userCollection = req.custom.db.collection('member');
 									userCollection.findOne({
 										_id: ObjectID(row.member_id.toString())
 									}).then((userObj) => {
@@ -750,7 +750,7 @@ module.exports.points2wallet = async function (req, res) {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 
 	req.custom.model = req.custom.model || require('./model/points2wallet');
 
@@ -820,7 +820,7 @@ module.exports.points2wallet = async function (req, res) {
 					}
 				})
 					.then((response) => {
-						const point_history_collection = req.custom.db.client().collection('point_history');
+						const point_history_collection = req.custom.db.collection('point_history');
 						const point_data = {
 							"member_id": ObjectID(user._id.toString()),
 							"old_points": user.points,
@@ -833,7 +833,7 @@ module.exports.points2wallet = async function (req, res) {
 						return point_history_collection.insertOne(point_data);
 					})
 					.then((response) => {
-						const wallet_history_collection = req.custom.db.client().collection('wallet_history');
+						const wallet_history_collection = req.custom.db.collection('wallet_history');
 						const wallet_data = {
 							"member_id": ObjectID(user._id.toString()),
 							"old_wallet": user.wallet,
@@ -955,10 +955,10 @@ module.exports.chargeWallet = async function (req, res) {
 			"notes": `Wallet charged from ${user_info.wallet} to ${new_wallet}`,
 			"created": new Date(),
 		};
-		const wallet_history_collection = req.custom.db.client().collection('wallet_history');
+		const wallet_history_collection = req.custom.db.collection('wallet_history');
 		await wallet_history_collection.insertOne(wallet_data);
 
-		const member_collection = req.custom.db.client().collection('member');
+		const member_collection = req.custom.db.collection('member');
 		await member_collection.updateOne({
 			_id: ObjectID(data.user_data._id.toString())
 		}, {
@@ -1067,7 +1067,7 @@ module.exports.getTheMonthShipping = async function (req, res) {
 		const endDate = new Date();
 		endDate.setMonth(endDate.getMonth() + 1);
 
-		const member_collection = req.custom.db.client().collection('member');
+		const member_collection = req.custom.db.collection('member');
 		await member_collection.updateOne({
 			_id: ObjectID(data.user_data._id.toString())
 		}, {
@@ -1147,7 +1147,7 @@ module.exports.sendToWallet = async function (req, res) {
 		}, status_message.VALIDATION_ERROR);
 	}
 
-	const member_collection = req.custom.db.client().collection('member');
+	const member_collection = req.custom.db.collection('member');
 
 	const receiver = await member_collection.findOne({ mobile: data.mobile }).catch((e) => console.error(req.originalUrl, e));
 	if (!receiver) {
@@ -1180,7 +1180,7 @@ module.exports.sendToWallet = async function (req, res) {
 		"created": new Date(),
 	};
 
-	const wallet_history_collection = req.custom.db.client().collection('wallet_history');
+	const wallet_history_collection = req.custom.db.collection('wallet_history');
 	await wallet_history_collection.insertOne(sender_wallet_data);
 	await wallet_history_collection.insertOne(receiver_wallet_data);
 
@@ -1227,7 +1227,7 @@ module.exports.delete = async function (req, res) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 	const userId = ObjectID(req.custom.authorizationObject.member_id);
 	collection.deleteOne({ _id: userId }).then(response => {
 		if (response.deletedCount > 0) {
@@ -1242,7 +1242,7 @@ module.exports.delete = async function (req, res) {
 }
 
 function fix_user_data(req, userObj, city_id) {
-	const userCollection = req.custom.db.client().collection('member');
+	const userCollection = req.custom.db.collection('member');
 	let language = userObj.language || req.custom.lang;
 	let points = parseFloat(userObj.points || 0);
 	let wallet = userObj.wallet || 0;
@@ -1280,7 +1280,7 @@ function getInfo(req, projection = {}) {
 		req.custom.cache.get(token)
 			.then((row_token) => {
 				if (row_token.member_id) {
-					const collection = req.custom.db.client().collection('member');
+					const collection = req.custom.db.collection('member');
 					collection.findOne({
 						_id: ObjectID(row_token.member_id)
 					}, projection)
@@ -1299,7 +1299,7 @@ function getInfo(req, projection = {}) {
 }
 
 function updateDeviceToken(user, device_token, req) {
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 	return collection.updateMany({
 		'device_token': device_token,
 	}, {
@@ -1318,7 +1318,7 @@ function updateDeviceToken(user, device_token, req) {
 }
 
 function save_failed_payment(req, reason = null) {
-	const failed_payment_collection = req.custom.db.client().collection('failed_payment');
+	const failed_payment_collection = req.custom.db.collection('failed_payment');
 	req.body.reason = reason;
 	const data = req.body;
 	data.created = common.getDate();
@@ -1341,7 +1341,7 @@ function updateUserCity(req, res) {
 				return res.out(error, status_message.VALIDATION_ERROR);
 			}
 
-			const cityCollection = req.custom.db.client().collection('city');
+			const cityCollection = req.custom.db.collection('city');
 			cityCollection.findOne({
 				_id: ObjectID(data.city_id.toString())
 			}).then((cityObj) => {
@@ -1354,7 +1354,7 @@ function updateUserCity(req, res) {
 				}
 
 
-				const countryCollection = req.custom.db.client().collection('country');
+				const countryCollection = req.custom.db.collection('country');
 				countryCollection.findOne({
 					_id: cityObj.country_id
 				}).then((countryObj) => {
@@ -1385,7 +1385,7 @@ function updateUserCity(req, res) {
 							}
 						}
 
-						const prod_collection = req.custom.db.client().collection('product');
+						const prod_collection = req.custom.db.collection('product');
 						prod_collection.aggregate([
 							{ $match: { "_id": { $in: prod_ids } } },
 							{
@@ -1444,7 +1444,7 @@ function updateUserCity(req, res) {
 								row.member_id = req.custom.authorizationObject.member_id;
 
 								if (row.member_id) {
-									const userCollection = req.custom.db.client().collection('member');
+									const userCollection = req.custom.db.collection('member');
 									userCollection.findOne({
 										_id: ObjectID(row.member_id.toString())
 									}).then((userObj) => {

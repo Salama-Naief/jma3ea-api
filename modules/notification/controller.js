@@ -11,7 +11,7 @@ const collectionName = 'notification';
  * @param {Object} res
  */
 module.exports.read = function (req, res) {
-    const collection = req.custom.db.client().collection(collectionName);
+    const collection = req.custom.db.collection(collectionName);
     collection.findOne({ "sent": { $eq: null } }, function (e, result) {
         if (e) {
             console.error(req.originalUrl, e);
@@ -31,7 +31,7 @@ module.exports.update2sent = function (req, res) {
             'message': req.custom.local.id_not_valid
         }, status_message.INVALID_URL_PARAMETER);
     }
-    const collection = req.custom.db.client().collection(collectionName);
+    const collection = req.custom.db.collection(collectionName);
     collection.updateOne({ _id: ObjectID(req.params.Id) }, { $set: { sent: common.getDate() } })
         .then((response) => res.out({ message: req.custom.local.saved_done }))
         .catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
@@ -48,7 +48,7 @@ module.exports.notificationOpened = (req, res) => {
             'message': req.custom.local.id_not_valid
         }, status_message.INVALID_URL_PARAMETER);
     }
-    const collection = req.custom.db.client().collection(collectionName);
+    const collection = req.custom.db.collection(collectionName);
     collection.updateOne({ _id: ObjectID(req.params.Id) }, [
         { $set: { incrementBy: 1 } },
         { $addFields: { opened_count: { $sum: ["$opened_count", "$incrementBy"] } } },

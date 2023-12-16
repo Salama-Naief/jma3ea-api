@@ -15,7 +15,7 @@ const { v4: uuid } = require('uuid');
  * @param {Object} res
  */
 module.exports.check = function (req, res) {
-	const collection = req.custom.db.client().collection('application');
+	const collection = req.custom.db.collection('application');
 	const cache = req.custom.cache;
 	const local = req.custom.local;
 
@@ -78,7 +78,7 @@ module.exports.check = function (req, res) {
 				if (config.auto_load_city) {
 
 
-					const cityCollection = req.custom.db.client().collection('city');
+					const cityCollection = req.custom.db.collection('city');
 					cityCollection.findOne({
 						status: true
 					}).then((cityObj) => {
@@ -91,7 +91,7 @@ module.exports.check = function (req, res) {
 						}
 
 
-						const countryCollection = req.custom.db.client().collection('country');
+						const countryCollection = req.custom.db.collection('country');
 						countryCollection.findOne({
 							_id: cityObj.country_id
 						}).then((countryObj) => {

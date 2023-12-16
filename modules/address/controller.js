@@ -27,7 +27,7 @@ module.exports.get = function (req, res) {
 				}, status_message.VALIDATION_ERROR);
 			}
 
-			const cityCollection = req.custom.db.client().collection('city');
+			const cityCollection = req.custom.db.collection('city');
 			cityCollection.find({}).toArray().
 				then((cities) => {
 
@@ -83,7 +83,7 @@ async function update_user(req, res, action = 'insert') {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 	req.custom.model = req.custom.model || require('./model/address');
 	const {
 		data,

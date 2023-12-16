@@ -10,7 +10,7 @@ const esClient = new Client({ node: 'http://143.198.140.3:9200' });
 
 module.exports.cleanProductsQuantities = async function (req, res) {
     try {
-        const collection = req.custom.db.client().collection("product");
+        const collection = req.custom.db.collection("product");
 
         const results = await collection.update({
             variants: { $exists: true },
@@ -42,7 +42,7 @@ module.exports.cleanProductsQuantities = async function (req, res) {
 
 module.exports.cleanProductsStatuses = async function (req, res) {
     try {
-        const collection = req.custom.db.client().collection("product");
+        const collection = req.custom.db.collection("product");
 
         const results = await collection.update({
             prod_n_storeArr: { $exists: true },
@@ -83,7 +83,7 @@ module.exports.cleanProductsStatuses = async function (req, res) {
 
 module.exports.convertStrToInt = async function (req, res) {
     try {
-        const collection = req.custom.db.client().collection("product");
+        const collection = req.custom.db.collection("product");
         await collection.find({ "prod_n_storeArr.quantity": { $type: "string" } }).forEach(function (doc) {
             doc.prod_n_storeArr = doc.prod_n_storeArr.map(s => ({ ...s, quantity: s.quantity = isNaN(parseInt(s.quantity)) ? 0 : parseInt(s.quantity) }));
             collection.updateOne({ _id: new ObjectId(doc._id) }, { $set: { "prod_n_storeArr": doc.prod_n_storeArr } });
@@ -104,7 +104,7 @@ module.exports.convertStrToInt = async function (req, res) {
 
 module.exports.convertWalletStrToFloat = async function (req, res) {
     try {
-        const collection = req.custom.db.client().collection("member");
+        const collection = req.custom.db.collection("member");
         await collection.find({ "wallet": { $type: "string" } }).forEach(function (doc) {
             doc.wallet = isNaN(parseFloat(doc.wallet)) ? 0 : parseFloat(doc.wallet);
             collection.updateOne({ _id: new ObjectId(doc._id) }, { $set: { "wallet": doc.wallet } });
@@ -126,7 +126,7 @@ module.exports.pointsToTransaction = async (req, res) => {
 
     cron.schedule('59 23 * * *', async () => {
         try {
-            const point_transactions_collection = req.custom.db.client().collection('point_transactions');
+            const point_transactions_collection = req.custom.db.collection('point_transactions');
             const expiredTransactions = await point_transactions_collection.find({ trashed: false, expiresAt: { $lt: common.getDate() } }).toArray() || [];
 
             const transactionsGroupedByMember = [];
@@ -141,7 +141,7 @@ module.exports.pointsToTransaction = async (req, res) => {
 
             const allTransactionsIds = transactionsGroupedByMember.map(t => ObjectID(t.member_id.toString()));
 
-            const member_collection = req.custom.db.client().collection('member');
+            const member_collection = req.custom.db.collection('member');
             const members = await member_collection.find({ _id: { $in: allTransactionsIds } }).toArray();
 
             const promises = [];
@@ -190,7 +190,7 @@ module.exports.pointsToTransaction = async (req, res) => {
 
 
 module.exports.normalize = async (req, res) => {
-    const collection = req.custom.db.client().collection('product');
+    const collection = req.custom.db.collection('product');
 
     try {
         const resposne = await collection.updateMany({}, { $set: { free_shipping: false, is_gift: false, fast_shipping: false } });
@@ -203,7 +203,7 @@ module.exports.normalize = async (req, res) => {
 
 
 module.exports.indexProducts = async (req, res) => {
-    const collection = req.custom.db.client().collection('product');
+    const collection = req.custom.db.collection('product');
     try {
         const PAGE_SIZE = 500;
         const currentPage = parseInt(req.query.page) || 1
@@ -268,7 +268,7 @@ module.exports.getAllIndexedProducts = async function (req, res) {
 
 module.exports.convertOrderNumbersToString = async (req, res) => {
     try {
-        const collection = req.custom.db.client().collection('order');
+        const collection = req.custom.db.collection('order');
 
         const filter = {
             order_number: { $exists: true }

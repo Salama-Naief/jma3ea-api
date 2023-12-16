@@ -37,7 +37,7 @@ module.exports.valid_gmap_address = async function (req, res, body) {
 
 	const geo_city_info = geo_city.address_components.find((i) => i.types.indexOf('sublocality') > -1);
 
-	const cityCollection = req.custom.db.client().collection('city');
+	const cityCollection = req.custom.db.collection('city');
 	const cityObj = await cityCollection.findOne({
 		$where: function () {
 			for (var key in this.name) {

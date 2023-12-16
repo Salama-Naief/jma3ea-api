@@ -55,7 +55,7 @@ module.exports.list = function (req, res) {
 		},
 		"picture": 1
 	}, async (data) => {
-		const collection = req.custom.db.client().collection("category");
+		const collection = req.custom.db.collection("category");
 		const categories = await collection.aggregate([
 			{ $match: { status: true } },
 			{

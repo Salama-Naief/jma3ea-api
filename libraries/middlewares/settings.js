@@ -19,7 +19,7 @@ module.exports = (req, res, next) => {
 				req.custom.settings['site_id'] = req.custom.settings['site_name'] ? req.custom.settings['site_name']['en'] : SITE_ID;
 
 			} else {
-				const collection = req.custom.db.client().collection('setting');
+				const collection = req.custom.db.collection('setting');
 				collection.find()
 					.toArray(function (e, docs) {
 						if (e) {

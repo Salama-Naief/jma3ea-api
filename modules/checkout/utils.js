@@ -24,7 +24,7 @@ module.exports.mergeDeliveryTimes = function (settingTimes, cityTimes) {
 }
 
 module.exports.cleanProduct = async function (req, cart) {
-    const collection = req.custom.db.client().collection("product");
+    const collection = req.custom.db.collection("product");
     const skus = Object.keys(cart).map((sku => sku.includes('-') ? sku.split('-')[0] : sku));
     try {
 
@@ -276,7 +276,7 @@ module.exports.getDeliveryTimes = async (req, cityObj, supplier = {}) => {
 }
 
 module.exports.getAvailableOffer = async (req, total, userOffer) => {
-    const collection = req.custom.db.client().collection('offer');
+    const collection = req.custom.db.collection('offer');
     const query = {
         status: true,
         min_amount: { $lte: total },
@@ -325,7 +325,7 @@ const viewOffer = async (req, offer_id) => {
         viewed_offer_id: null
 	}
 
-    const collection = req.custom.db.client().collection('offer');
+    const collection = req.custom.db.collection('offer');
 
     try {
 		const offer = await collection.findOne({ _id: ObjectID(offer_id), status: true });

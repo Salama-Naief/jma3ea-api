@@ -23,7 +23,7 @@ module.exports.add = function (req, res) {
 			}
 			let user = req.custom.authorizationObject;
 
-			const prod_collection = req.custom.db.client().collection('product');
+			const prod_collection = req.custom.db.collection('product');
 			prod_collection.findOne({
 				sku: data.sku,
 				status: true,
@@ -173,7 +173,7 @@ module.exports.list = function (req, res) {
 };
 
 function updateWishlist(req, user) {
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 	return user.member_id ? collection.updateOne({
 		_id: ObjectID(user.member_id.toString())
 	}, {

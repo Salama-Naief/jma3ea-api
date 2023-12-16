@@ -113,7 +113,7 @@ module.exports.list = function (req, res, collectionName, projection, callback) 
 			return;
 		}
 
-		const collection = req.custom.db.client().collection(collectionName);
+		const collection = req.custom.db.collection(collectionName);
 		const filter = req.custom.isProducts != true ? req.custom.clean_filter : await common.filter_internal_suppliers_by_city(req);
 
 		if (req.custom.all_status != true) {
@@ -401,7 +401,7 @@ module.exports.list_all = function (req, res, collectionName, projection, callba
 		if (_is_cached) {
 			return;
 		}
-		const collection = req.custom.db.client().collection(collectionName);
+		const collection = req.custom.db.collection(collectionName);
 		const filter = req.custom.clean_filter;
 		filter.status = true;
 
@@ -520,7 +520,7 @@ module.exports.read = function (req, res, collectionName, projection, callback) 
 
 		const id_key = req.custom.isProducts ? 'sku' : '_id';
 		const id_value = req.custom.isProducts ? req.params.sku : ObjectID(req.params.Id);
-		const collection = req.custom.db.client().collection(collectionName);
+		const collection = req.custom.db.collection(collectionName);
 		// Pipeline
 		const pipeline = [
 			// Stage 1

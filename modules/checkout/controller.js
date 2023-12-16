@@ -186,7 +186,7 @@ module.exports.buy = async function (req, res) {
 			const user_city_id = data.user_data && data.user_data.address && data.user_data.address.city_id ?
 				data.user_data.address.city_id.toString() :
 				req.custom.authorizationObject.city_id.toString();
-			const city_collection = req.custom.db.client().collection('city');
+			const city_collection = req.custom.db.collection('city');
 			const cityObj = await city_collection
 				.findOne({
 					_id: ObjectID(user_city_id)
@@ -209,7 +209,7 @@ module.exports.buy = async function (req, res) {
 				}, status_message.VALIDATION_ERROR);
 			}
 
-			const coupon_collection = req.custom.db.client().collection('coupon');
+			const coupon_collection = req.custom.db.collection('coupon');
 			const coupons = user.coupon && (user.coupon.code || user.coupon.suppliers_coupons) ? (await coupon_collection.find({
 				code: user.coupon.code ? user.coupon.code : { $in: user.coupon.suppliers_coupons.map(c => c.code) },
 				$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } },],
@@ -345,7 +345,7 @@ module.exports.buy = async function (req, res) {
 
 			const offer = await getAvailableOffer(req, total_prods, user.offer);
 			if (offer && offer.product_sku) {
-				const product_collection = req.custom.db.client().collection('product');
+				const product_collection = req.custom.db.collection('product');
 				const product = await product_collection.findOne({ sku: offer.product_sku }, {
 					projection: {
 						"_id": 1,
@@ -457,7 +457,7 @@ module.exports.buy = async function (req, res) {
 						}
 					}).catch((e) => console.error(req.originalUrl, e));
 
-					const coupon_token_collection = req.custom.db.client().collection('coupon_token');
+					const coupon_token_collection = req.custom.db.collection('coupon_token');
 					const coupon_token = await coupon_token_collection.findOne({ coupon: coupon.code, token: req.custom.token }).catch((e) => console.error(req.originalUrl, e));
 					coupon_token ? await coupon_token_collection.updateOne({
 						_id: ObjectID(coupon_token._id.toString())
@@ -534,7 +534,7 @@ module.exports.buy = async function (req, res) {
 			const expired = 24;
 			await cache.set(cache_key_dt, cached_delivery_times, expired); */
 
-			const order_collection = req.custom.db.client().collection('order');
+			const order_collection = req.custom.db.collection('order');
 			const createdOrder = await order_collection.insertOne(order_data)
 				.catch((error) => {
 					return {
@@ -565,10 +565,10 @@ module.exports.buy = async function (req, res) {
 					"notes": `Buying by wallet from ${user_info.wallet} to ${new_wallet}`,
 					"created": new Date(),
 				};
-				const wallet_history_collection = req.custom.db.client().collection('wallet_history');
+				const wallet_history_collection = req.custom.db.collection('wallet_history');
 				await wallet_history_collection.insertOne(wallet_data);
 
-				const member_collection = req.custom.db.client().collection('member');
+				const member_collection = req.custom.db.collection('member');
 				await member_collection.updateOne({
 					_id: ObjectID(data.user_data._id.toString())
 				}, {
@@ -767,7 +767,7 @@ module.exports.list = async function (req, res) {
 			const user_city_id = req.query.city_id || (user_info && data.user_data && data.user_data.address && data.user_data.address.city_id ?
 				data.user_data.address.city_id.toString() :
 				req.custom.authorizationObject.city_id.toString());
-			const city_collection = req.custom.db.client().collection('city');
+			const city_collection = req.custom.db.collection('city');
 			const cityObj = await city_collection
 				.findOne({
 					_id: ObjectID(user_city_id)
@@ -794,7 +794,7 @@ module.exports.list = async function (req, res) {
 				});
 			}
 
-			const coupon_collection = req.custom.db.client().collection('coupon');
+			const coupon_collection = req.custom.db.collection('coupon');
 			const coupons = user.coupon && (user.coupon.code || user.coupon.suppliers_coupons) ? (await coupon_collection.find({
 				code: user.coupon.code ? user.coupon.code : { $in: user.coupon.suppliers_coupons.map(c => c.code) },
 				$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } },],
@@ -941,7 +941,7 @@ module.exports.list = async function (req, res) {
 			// 1) get the available offer
 			const offer = await getAvailableOffer(req, total_prods, user.offer);
 			if (offer && offer.product_sku) {
-				const product_collection = req.custom.db.client().collection('product');
+				const product_collection = req.custom.db.collection('product');
 				const product = await product_collection.findOne({ sku: offer.product_sku }, {
 					projection: {
 						"_id": 1,
@@ -1010,7 +1010,7 @@ module.exports.list = async function (req, res) {
 			}
 			total = total > 0 ? total : 0;
 
-			const user_collection = req.custom.db.client().collection('member');
+			const user_collection = req.custom.db.collection('member');
 			const userObj = req.custom.authorizationObject.member_id ? await user_collection
 				.findOne({
 					_id: ObjectID(req.custom.authorizationObject.member_id.toString())
@@ -1169,7 +1169,7 @@ async function products_to_save(products, user, req, to_display = false) {
 		const cache_key = `category_all_solid`;
 		all_categories = await cache.get(cache_key).catch((e) => console.error(req.originalUrl, e));
 		if (!all_categories) {
-			const category_collection = req.custom.db.client().collection('category');
+			const category_collection = req.custom.db.collection('category');
 			all_categories = await category_collection.find({
 				status: true
 			})
@@ -1187,7 +1187,7 @@ async function products_to_save(products, user, req, to_display = false) {
 		const cache_key = `supplier_all_solid`;
 		all_suppliers = await cache.get(cache_key).catch((e) => console.error(req.originalUrl, e));
 		if (!all_suppliers) {
-			const supplier_collection = req.custom.db.client().collection('supplier');
+			const supplier_collection = req.custom.db.collection('supplier');
 			all_suppliers = await supplier_collection.find({}).toArray() || [];
 			if (all_suppliers) {
 				cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch((e) => console.error(req.originalUrl, e));
@@ -1274,7 +1274,7 @@ async function products_to_save(products, user, req, to_display = false) {
 }
 
 function save_failed_payment(req, reason = null) {
-	const failed_payment_collection = req.custom.db.client().collection('failed_payment');
+	const failed_payment_collection = req.custom.db.collection('failed_payment');
 	req.body.reason = reason;
 	const data = req.body;
 	data.created = common.getDate();
@@ -1288,7 +1288,7 @@ function save_failed_payment(req, reason = null) {
 }
 
 function update_quantities(req, the_products, cart, token) {
-	const collection = req.custom.db.client().collection('product');
+	const collection = req.custom.db.collection('product');
 	let promises = [];
 
 	for (const p_n_c of Object.keys(cart)) {
@@ -1455,7 +1455,7 @@ function update_remote_quantity(req, p, token) {
 
 
 async function reset_free_shipping(req, userId) {
-	const member_collection = req.custom.db.client().collection('member');
+	const member_collection = req.custom.db.collection('member');
 	await member_collection.updateOne({
 		_id: ObjectID(userId.toString())
 	}, {

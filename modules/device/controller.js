@@ -23,7 +23,7 @@ module.exports.list = function (req, res) {
 	if (!lang) {
 		return res.out({ message: req.custom.local.errors.is_not_valid('Language') }, status_message.INVALID_URL_PARAMETER);
 	}
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 	collection.count(req.custom.clean_filter, (e, total) => {
 		if (e) {
 			console.error(req.originalUrl, e);
@@ -56,7 +56,7 @@ module.exports.list = function (req, res) {
 
 module.exports.getDevicesWithCity = async (req, res) => {
 	req.custom.clean_filter['city_id'] = { $exists: true };
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 	collection.count(req.custom.clean_filter, (e, total) => {
 		if (e) {
 			console.error(req.originalUrl, e);
@@ -106,7 +106,7 @@ module.exports.add = async function (req, res) {
 
 	if (city_id && ObjectID.isValid(city_id)) data.city_id = ObjectID(city_id);
 
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 	collection.createIndex({ token: 1 }, { unique: true });
 	collection.insertOne(data)
 		.then((response) => {
@@ -136,7 +136,7 @@ module.exports.update = async function (req, res) {
 
 	if (city_id && ObjectID.isValid(city_id)) data.city_id = ObjectID(city_id);
 
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 	collection.updateOne({ _id: ObjectID(req.params.Id) }, { $set: data })
 		.then((response) =>
 			res.out({
@@ -155,7 +155,7 @@ module.exports.remove = async function (req, res) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
 
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 	const tokens = req.body.tokens;
 	if (!tokens) {
 		res.out({ message: req.custom.local.no_devices_removed });

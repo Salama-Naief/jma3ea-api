@@ -38,7 +38,7 @@ module.exports.add = async (req, res) => {
             data.member_id = req.custom.authorizationObject.member_id;
         }
 
-        const collection = req.custom.db.client().collection(COLLECTION_NAME);
+        const collection = req.custom.db.collection(COLLECTION_NAME);
 
         data.created = common.getDate();
         data.status = true;
@@ -51,7 +51,7 @@ module.exports.add = async (req, res) => {
             }, status_message.UNEXPECTED_ERROR);
         }
 
-        const supplier_collection = req.custom.db.client().collection('supplier');
+        const supplier_collection = req.custom.db.collection('supplier');
 
         const supplierReviews = await supplier_collection.aggregate([
             {
@@ -126,7 +126,7 @@ module.exports.list = (req, res) => {
             return res.out(out, status_message.NO_DATA);
         }
 
-        const supplier_collection = req.custom.db.client().collection('supplier');
+        const supplier_collection = req.custom.db.collection('supplier');
         supplier_collection.findOne({ _id: req.custom.clean_filter['supplier_id'] }, { avg_rating: 1, reviews_count: 1 }).then(supplier => {
 
             out.avg_rating = supplier.avg_rating;

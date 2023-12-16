@@ -51,7 +51,7 @@ module.exports.remove_coupon = async function (req, res) {
 
 
 		if (user.cart) {
-			const coupon_collection = req.custom.db.client().collection('coupon');
+			const coupon_collection = req.custom.db.collection('coupon');
 			const coupon = await coupon_collection.findOne({
 				code: { '$regex': '^' + data.code + '$', $options: 'i' },
 			}, { projection: { products: 1 } });

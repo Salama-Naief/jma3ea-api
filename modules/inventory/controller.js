@@ -45,7 +45,7 @@ module.exports.list = async function (req, res) {
 
         const inventories = [];
         const supplier_collection = "supplier";
-        const collection = req.custom.db.client().collection(supplier_collection);
+        const collection = req.custom.db.collection(supplier_collection);
         const pipeline = [
             /* {
                 $lookup: {

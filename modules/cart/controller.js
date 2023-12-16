@@ -36,7 +36,7 @@ module.exports.add = function (req, res) {
 				'$in': prods
 			};
 
-			const prod_collection = req.custom.db.client().collection('product');
+			const prod_collection = req.custom.db.collection('product');
 			const sku_arr = data.sku.split('-');
 			const sku = sku_arr[0];
 
@@ -318,7 +318,7 @@ module.exports.clear = async function (req, res) {
 	const cache_key = `supplier_all_solid`;
 	all_suppliers = await cache.get(cache_key).catch((e) => console.error(req.originalUrl, e));
 	if (!all_suppliers) {
-		const supplier_collection = req.custom.db.client().collection('supplier');
+		const supplier_collection = req.custom.db.collection('supplier');
 		all_suppliers = await supplier_collection.find({}).toArray() || [];
 		if (all_suppliers) {
 			cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch((e) => console.error(req.originalUrl, e));
@@ -438,7 +438,7 @@ module.exports.list = async function (req, res) {
 				'message': req.custom.local.choose_city_first
 			}, status_message.CITY_REQUIRED);
 		}
-		const city_collection = req.custom.db.client().collection('city');
+		const city_collection = req.custom.db.collection('city');
 		city_collection
 			.findOne({
 				_id: ObjectID(cityid)
@@ -535,7 +535,7 @@ module.exports.list = async function (req, res) {
 				}
 
 				// Calculate coupon discount
-				const coupon_collection = req.custom.db.client().collection('coupon');
+				const coupon_collection = req.custom.db.collection('coupon');
 				coupon_collection.findOne({
 					code: user.coupon && user.coupon.code ? user.coupon.code : null,
 					$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } }],
@@ -592,7 +592,7 @@ module.exports.coupon = function (req, res) {
 	req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token)
 		.then(() => {
 
-			const collection = req.custom.db.client().collection('coupon');
+			const collection = req.custom.db.collection('coupon');
 			collection.findOne({
 				code: { '$regex': '^' + data.code + '$', $options: 'i' },
 				$or: [{ valid_until: null }, { valid_until: { $gt: new Date() } }],
@@ -616,7 +616,7 @@ module.exports.coupon = function (req, res) {
 							}
 						}
 
-						const product_collection = req.custom.db.client().collection('product');
+						const product_collection = req.custom.db.collection('product');
 						const data = await product_collection.find({
 							sku: { $in: prods },
 							status: true
@@ -630,7 +630,7 @@ module.exports.coupon = function (req, res) {
 					}
 
 
-					const coupon_token_collection = req.custom.db.client().collection('coupon_token');
+					const coupon_token_collection = req.custom.db.collection('coupon_token');
 					coupon_token_collection.findOne({ coupon: coupon.code, token: req.custom.token }).
 						then((coupon_token) => {
 
@@ -748,7 +748,7 @@ module.exports.offer = async function (req, res) {
 		viewed_offer_id: null
 	};
 
-	const collection = req.custom.db.client().collection('offer');
+	const collection = req.custom.db.collection('offer');
 
 	try {
 		const offer = await collection.findOne({ _id: ObjectID(data.offer_id), status: true });
@@ -764,7 +764,7 @@ module.exports.offer = async function (req, res) {
 					message: "Please login or create an account to claim the offer",
 				});
 			}
-			const giveaway_entries_collection = req.custom.db.client().collection('giveaway_entries');
+			const giveaway_entries_collection = req.custom.db.collection('giveaway_entries');
 
 			await giveaway_entries_collection.insertOne({
 				offer_id: ObjectID(data.offer_id),

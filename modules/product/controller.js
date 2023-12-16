@@ -371,7 +371,7 @@ module.exports.featured = async function (req, res) {
 		"expiration_date_message": 1
 	}, async (features) => {
 		try {
-			const slideCollection = req.custom.db.client().collection("slide");
+			const slideCollection = req.custom.db.collection("slide");
 			const slides = await slideCollection.find({ features: { $in: [...features.data.map(f => ObjectID(f._id.toString())), ...features.data.map(f => f._id.toString())] } }).toArray() || [];
 			const featured = [];
 			for (const c of features.data) {
@@ -445,7 +445,7 @@ module.exports.featured = async function (req, res) {
 					"allowDiskUse": true
 				};
 
-				const collection = req.custom.db.client().collection(collectionName);
+				const collection = req.custom.db.collection(collectionName);
 				c.products = await new Promise((resolve, reject) => {
 					collection.aggregate(pipeline, options).toArray((err, results) => {
 						if (err) {
@@ -718,7 +718,7 @@ module.exports.read = async function (req, res) {
 
 
 				if (results.brand) {
-					const brand_collection = req.custom.db.client().collection('brand');
+					const brand_collection = req.custom.db.collection('brand');
 					const brand = await brand_collection.findOne({
 						status: true
 					}).then((b) => b).catch((e) => {
@@ -731,7 +731,7 @@ module.exports.read = async function (req, res) {
 				}
 
 				if (results.categories) {
-					const category_collection = req.custom.db.client().collection('category');
+					const category_collection = req.custom.db.collection('category');
 					const all_categories = await category_collection.find({
 						status: true
 					})

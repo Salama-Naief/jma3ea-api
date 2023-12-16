@@ -57,7 +57,7 @@ module.exports.read = function (req, res) {
 		}, status_message.INVALID_URL_PARAMETER);
 	}
 
-	const collection = req.custom.db.client().collection('order');
+	const collection = req.custom.db.collection('order');
 	collection.findOne({
 		_id: ObjectID(req.params.Id),
 	})
@@ -120,7 +120,7 @@ module.exports.evaluate = async function (req, res) {
 		return res.out(error, status_message.VALIDATION_ERROR);
 	}
 
-	const collection = req.custom.db.client().collection(collectionName);
+	const collection = req.custom.db.collection(collectionName);
 	const row = await collection.findOne({
 		_id: ObjectID(req.params.Id)
 	})
@@ -171,7 +171,7 @@ module.exports.repeat = function (req, res) {
 		}, status_message.INVALID_URL_PARAMETER);
 	}
 
-	const collection = req.custom.db.client().collection('order');
+	const collection = req.custom.db.collection('order');
 	collection.findOne({
 		_id: ObjectID(req.params.Id),
 	})
@@ -210,7 +210,7 @@ async function reformatOrderSuppliers(products, req) {
 		const cache_key = `supplier_all_solid`;
 		all_suppliers = false;//await cache.get(cache_key).catch((e) => console.error(req.originalUrl, e));
 		if (!all_suppliers) {
-			const supplier_collection = req.custom.db.client().collection('supplier');
+			const supplier_collection = req.custom.db.collection('supplier');
 			all_suppliers = await supplier_collection.find({}).toArray() || [];
 			if (all_suppliers) {
 				cache.set(cache_key, all_suppliers, req.custom.config.cache.life_time).catch((e) => console.error(req.originalUrl, e));

@@ -62,7 +62,7 @@ module.exports.list = function (req, res) {
 			}
 		}
 
-		const productCollection = req.custom.db.client().collection('product');
+		const productCollection = req.custom.db.collection('product');
 		const categoriesWithProducts = await Promise.all(childs.map(async category => {
 			const hasProducts = await productCollection.findOne({ 'prod_n_categoryArr.category_id': ObjectID(category._id.toString()), status: true });
 			return hasProducts ? category : null;
