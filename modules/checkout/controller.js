@@ -377,7 +377,9 @@ module.exports.buy = async function (req, res) {
 						if (jm3eiaProductIndex > -1) {
 							productsGroupedBySupplier[jm3eiaProductIndex].products.push(product);
 							products2save.push({
-								...product, supplier: {
+								...product,
+								supplier_id: req.custom.settings['site_id'],
+								supplier: {
 									_id: req.custom.settings['site_id'],
 									name: {
 										ar: req.custom.settings['site_name']['ar'],

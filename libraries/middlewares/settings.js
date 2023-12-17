@@ -16,7 +16,7 @@ module.exports = (req, res, next) => {
 						req.custom.settings[i.key] = { ...i.value, content: i.value.content.map(c => ({ ...c, image: c.image ? `${req.custom.config.media_url}${c.image}` : '' })) }
 					}
 				}
-				req.custom.settings['site_id'] = req.custom.settings['site_name'] ? req.custom.settings['site_name']['en'] : SITE_ID;
+				req.custom.settings['site_id'] = SITE_ID;
 
 			} else {
 				const collection = req.custom.db.collection('setting');
@@ -35,7 +35,7 @@ module.exports = (req, res, next) => {
 								req.custom.settings[i.key] = { ...i.value, content: i.value.content.map(c => ({ ...c, image: c.image ? `${req.custom.config.media_url}${c.image}` : '' })) }
 							}
 						}
-						req.custom.settings['site_id'] = req.custom.settings['site_name']['en'] || SITE_ID;
+						req.custom.settings['site_id'] = SITE_ID;
 					});
 			}
 			if (req.query.isVIP == 'true') {
