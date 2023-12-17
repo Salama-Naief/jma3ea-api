@@ -300,21 +300,40 @@ module.exports.getAvailableOffer = async (req, total, userOffer) => {
     const offer = await collection.findOne(query, options);
 
     if (!offer) {
-        return null
+        await resetOffer(req);
+        return null;
     };
     if (offer.min_amount > total && (!userOffer || userOffer.viewed_offer_id != offer._id.toString())) {
-        return null
+        await resetOffer(req);
+        return null;
     };
 
-    if (userOffer && userOffer.offer_id && offer.target_amount >= total) {
+    console.log('WE ARE HERE: ', offer.target_amount, total);
+
+    if (userOffer && userOffer.offer_id && offer.target_amount <= total) {
         offer.isClaimed = true;
     } else {
+        await resetOffer(req);
         await viewOffer(req, offer._id.toString());
         offer.isClaimed = false;
     }
 
 
     return offer;
+}
+
+const resetOffer = async (req) => {
+    try {
+        let user = req.custom.authorizationObject;
+
+        if (!user.offer || !user.offer.offer_id) return;
+
+        user.offer.offer_id = null;
+        await req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token);
+
+	} catch (err) {
+        console.error('OFFER ERROR: ', err);
+    }
 }
 
 const viewOffer = async (req, offer_id) => {
@@ -335,7 +354,9 @@ const viewOffer = async (req, offer_id) => {
 
         await req.custom.cache.set(req.custom.token, user, req.custom.config.cache.life_time.token);
 
-	} catch (err) { }
+	} catch (err) {
+        console.error('OFFER ERROR: ', err);
+    }
 }
 
 function getRoundedDate(minutes, d = null) {
