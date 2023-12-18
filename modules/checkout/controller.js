@@ -370,6 +370,7 @@ module.exports.buy = async function (req, res) {
 					}
 				});
 				if (product) {
+					if (product.picture) product.picture = `${req.custom.config.media_url}${product.picture}`;
 					offer.product = product;
 					product.price = 0;
 					if (offer.type == 'free_product' && offer.isClaimed) {
@@ -378,6 +379,9 @@ module.exports.buy = async function (req, res) {
 							productsGroupedBySupplier[jm3eiaProductIndex].products.push(product);
 							products2save.push({
 								...product,
+								price: common.getFixedPrice(price),
+								quantity: 1,
+								cart_quantity: 1,
 								supplier_id: req.custom.settings['site_id'],
 								supplier: {
 									_id: req.custom.settings['site_id'],
