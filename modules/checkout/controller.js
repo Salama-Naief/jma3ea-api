@@ -377,7 +377,7 @@ module.exports.buy = async function (req, res) {
 						const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
 						if (jm3eiaProductIndex > -1) {
 							productsGroupedBySupplier[jm3eiaProductIndex].products.push(product);
-							products2save.push({
+							/* products2save.push({
 								...product,
 								price: common.getFixedPrice(price),
 								quantity: 1,
@@ -393,7 +393,7 @@ module.exports.buy = async function (req, res) {
 									min_value: req.custom.settings.orders.min_value,
 									delivery_time_text: ""
 								}
-							});
+							}); */
 						} else {
 							productsGroupedBySupplier.push({
 								supplier: {
@@ -410,7 +410,12 @@ module.exports.buy = async function (req, res) {
 							});
 						}
 						products2save.push({
-							...product, supplier: {
+							...product,
+							price: common.getFixedPrice(product.price),
+							quantity: 1,
+							cart_quantity: 1,
+							supplier_id: req.custom.settings['site_id'],
+							supplier: {
 								_id: req.custom.settings['site_id'],
 								name: {
 									ar: req.custom.settings['site_name']['ar'],
@@ -995,7 +1000,7 @@ module.exports.list = async function (req, res) {
 							});
 						}
 						products.push({
-							...product, supplier: {
+							...product,supplier: {
 								_id: req.custom.settings['site_id'],
 								name: {
 									ar: req.custom.settings['site_name']['ar'],
