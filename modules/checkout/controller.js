@@ -372,28 +372,25 @@ module.exports.buy = async function (req, res) {
 				if (product) {
 					if (product.picture) product.picture = `${req.custom.config.media_url}${product.picture}`;
 					offer.product = product;
-					product.price = 0;
+					product.price = common.getFixedPrice(0);
+					product.quantity = 1;
+					product.cart_quantity = 1;
+					product.supplier_id = req.custom.settings['site_id'];
+					product.supplier = {
+						_id: req.custom.settings['site_id'],
+						name: {
+							ar: req.custom.settings['site_name']['ar'],
+							en: req.custom.settings['site_name']['en'],
+						},
+						min_delivery_time: req.custom.settings.orders.min_delivery_time,
+						min_value: req.custom.settings.orders.min_value,
+						delivery_time_text: ""
+					};
+
 					if (offer.type == 'free_product' && offer.isClaimed) {
 						const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
 						if (jm3eiaProductIndex > -1) {
 							productsGroupedBySupplier[jm3eiaProductIndex].products.push(product);
-							/* products2save.push({
-								...product,
-								price: common.getFixedPrice(price),
-								quantity: 1,
-								cart_quantity: 1,
-								supplier_id: req.custom.settings['site_id'],
-								supplier: {
-									_id: req.custom.settings['site_id'],
-									name: {
-										ar: req.custom.settings['site_name']['ar'],
-										en: req.custom.settings['site_name']['en'],
-									},
-									min_delivery_time: req.custom.settings.orders.min_delivery_time,
-									min_value: req.custom.settings.orders.min_value,
-									delivery_time_text: ""
-								}
-							}); */
 						} else {
 							productsGroupedBySupplier.push({
 								supplier: {
@@ -409,23 +406,7 @@ module.exports.buy = async function (req, res) {
 								products: [product]
 							});
 						}
-						products2save.push({
-							...product,
-							price: common.getFixedPrice(product.price),
-							quantity: 1,
-							cart_quantity: 1,
-							supplier_id: req.custom.settings['site_id'],
-							supplier: {
-								_id: req.custom.settings['site_id'],
-								name: {
-									ar: req.custom.settings['site_name']['ar'],
-									en: req.custom.settings['site_name']['en'],
-								},
-								min_delivery_time: req.custom.settings.orders.min_delivery_time,
-								min_value: req.custom.settings.orders.min_value,
-								delivery_time_text: ""
-							}
-						});
+						products2save.push(product);
 					}
 				}
 
