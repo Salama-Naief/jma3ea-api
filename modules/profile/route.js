@@ -87,6 +87,9 @@ router.post('/shipping', controller.getTheMonthShipping);
  */
 router.get('/wallet_history', controller.wallet_history);
 
+/**
+ * GET /profile/points
+ */
 router.get('/points', controller.list_points);
 
 /**
