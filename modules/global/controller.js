@@ -124,7 +124,7 @@ module.exports.pointsToTransaction = async (req, res) => {
      */
     //.aggregate([ { $project: { member_id:'$_id', points: '$points', createdAt: { $literal:new Date() }, expiresAt: { $literal: new Date(new Date().setMonth(new Date().getMonth() + 9)) }, used: { $literal:false }, trashed: { $literal:false } } }, {$out:'point_transactions'} ])
 
-    cron.schedule('59 23 * * *', async () => {
+    //cron.schedule('59 23 * * *', async () => {
         try {
             const point_transactions_collection = req.custom.db.collection('point_transactions');
             const expiredTransactions = await point_transactions_collection.find({ trashed: false, expiresAt: { $lt: common.getDate() } }).toArray() || [];
@@ -177,15 +177,13 @@ module.exports.pointsToTransaction = async (req, res) => {
 
             await Promise.all(promises);
 
-            //return res.out("Success");
-
+            return res.out('Done! ', expiredTransactions.length);
 
         } catch (err) {
             console.error(req.originalUrl, err);
         }
-    });
+    //});
 
-    return res.out('Done!');
 }
 
 

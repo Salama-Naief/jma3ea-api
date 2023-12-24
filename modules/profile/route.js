@@ -87,6 +87,8 @@ router.post('/shipping', controller.getTheMonthShipping);
  */
 router.get('/wallet_history', controller.wallet_history);
 
+router.get('/points', controller.list_points);
+
 /**
  * DELETE /profile
  */

@@ -1222,6 +1222,25 @@ module.exports.wallet_history = function (req, res) {
 	});
 };
 
+module.exports.list_points = async (req, res) => {
+	if (req.custom.isAuthorized === false) {
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+	}
+	req.custom.clean_filter = req.custom.clean_filter || {};
+	req.custom.clean_filter['member_id'] = ObjectID(req.custom.authorizationObject.member_id);
+	req.custom.all_status = true;
+	req.custom.clean_sort = { "created": -1 };
+	if (req.query.type) req.custom.clean_filter['type'] = req.query.type;
+	mainController.list(req, res, 'point_history', {
+		'_id': 1,
+		"old_points": 1,
+		"new_points": 1,
+		"type": 1,
+		"notes": 1,
+		"created": 1,
+	});
+}
+
 module.exports.delete = async function (req, res) {
 	if (req.custom.isAuthorized === false || !req.custom.authorizationObject.member_id) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
