@@ -35,6 +35,7 @@ module.exports.list = function (req, res) {
 			if (d.image && d.image != undefined) {
 				d.image = d.image.includes(req.custom.config.media_url) ? d.image : (req.custom.config.media_url + d.image);
 			}
+			return d;
 		});
 
 		return res.out(out);
