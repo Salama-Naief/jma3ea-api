@@ -37,6 +37,8 @@ module.exports.list = function (req, res) {
 			}
 		});
 
+		return res.out(out);
+
 
 	});
 };
