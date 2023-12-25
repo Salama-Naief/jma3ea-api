@@ -32,10 +32,10 @@ module.exports.list = function (req, res) {
 		}
 
 		out.data = out.data.map(d => {
-			if (i.image && i.image != undefined) {
-				i.image = i.image.includes(req.custom.config.media_url) ? i.image : (req.custom.config.media_url + i.image);
+			if (d.image && d.image != undefined) {
+				d.image = d.image.includes(req.custom.config.media_url) ? d.image : (req.custom.config.media_url + d.image);
 			}
-		})
+		});
 
 
 	});
@@ -62,5 +62,11 @@ module.exports.read = function (req, res) {
 		"accept_button_route": 1,
 		"cancel_button_route": 1,
 		"show_in_route": 1,
+	}, (row) => {
+		if (row.image && row.image != undefined) {
+			row.image = row.image.includes(req.custom.config.media_url) ? row.image : (req.custom.config.media_url + row.image);
+		}
+
+		return res.out(row);
 	});
 };
