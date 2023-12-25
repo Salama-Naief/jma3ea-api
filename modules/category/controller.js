@@ -157,5 +157,6 @@ module.exports.ranks = function (req, res) {
 		"description": {
 			$ifNull: [`$description.${req.custom.lang}`, `$description.${req.custom.config.local}`]
 		},
+		"picture": 1
 	});
 };
