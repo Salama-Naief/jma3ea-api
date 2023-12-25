@@ -26,6 +26,18 @@ module.exports.list = function (req, res) {
 		"accept_button_route":1,
 		"cancel_button_route":1,
 		"show_in_route":1,
+	}, (out) => {
+		if (out.data === 0) {
+			return res.out(out);
+		}
+
+		out.data = out.data.map(d => {
+			if (i.image && i.image != undefined) {
+				i.image = i.image.includes(req.custom.config.media_url) ? i.image : (req.custom.config.media_url + i.image);
+			}
+		})
+
+
 	});
 };
 
