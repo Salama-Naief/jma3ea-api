@@ -29,6 +29,19 @@ module.exports.list = function (req, res) {
 		"target_points": 1,
 		"sorting": 1,
 		"expires_at": 1
+	}, (out) => {
+		if (out.data === 0) {
+			return res.out(out);
+		}
+
+		out.data = out.data.map(d => {
+			if (d.product.picture && d.product.picture != undefined) {
+				d.product.picture = d.product.picture.includes(req.custom.config.media_url) ? d.product.picture : (req.custom.config.media_url + d.product.picture);
+			}
+			return d;
+		});
+
+		return res.out(out);
 	});
 };
 /**
