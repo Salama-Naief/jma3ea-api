@@ -97,4 +97,10 @@ router.get('/points', controller.list_points);
  */
  router.delete('/', controller.delete);
 
+ /**
+ * GET /profile/points/transfer
+ */
+router.get('/points/transfer', controller.transfer_order_points);
+ 
+
 module.exports = router;

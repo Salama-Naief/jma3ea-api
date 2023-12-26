@@ -1260,6 +1260,42 @@ module.exports.delete = async function (req, res) {
 	}, status_message.UNEXPECTED_ERROR));
 }
 
+
+module.exports.transfer_order_points = async (req, res) => {
+	try {
+		if (req.custom.isAuthorized === false) {
+			return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+		}
+		const order_collection = req.custom.db.collection("order");
+	
+		req.custom.model = req.custom.model || require('./model/transfer_points');
+	
+		const { data, error } = await req.custom.getValidData(req);
+
+		if (error && Object.keys(error).length > 0) {
+			return res.out(error, status_message.VALIDATION_ERROR);
+		}
+
+		const order = await order_collection.findOne({ _id: data.order_id, 'user_data._id': ObjectID(req.custom.authorizationObject.member_id)});
+
+		if (!order) {
+			return res.out({ message: 'Order not found or not delivered yet.' }, status_message.VALIDATION_ERROR);
+		}
+
+		await order.updateOne({ _id: order._id }, { $set: { points_transfer_mobile: data.mobile } });
+
+		return res.out({ message: "The reward points will be sent to " + data.mobile + " once the order is delivered" });
+
+
+	} catch (e) {
+		console.error(req.originalUrl, e);
+		return res.out({
+			'message': e.message
+		}, status_message.UNEXPECTED_ERROR);	
+	}
+}
+
+
 function fix_user_data(req, userObj, city_id) {
 	const userCollection = req.custom.db.collection('member');
 	let language = userObj.language || req.custom.lang;
