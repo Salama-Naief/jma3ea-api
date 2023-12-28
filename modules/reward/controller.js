@@ -26,7 +26,8 @@ module.exports.list = function (req, res) {
 		"product.picture": {
 			$ifNull: [`$product.picture.${req.custom.lang}`, `$product.picture.${req.custom.config.local}`]
 		},
-		"target_points": 1,
+		"old_points": 1,
+		"points": 1,
 		"sorting": 1,
 		"expires_at": 1
 	}, (out) => {
@@ -84,13 +85,13 @@ module.exports.claim = async (req, res) => {
 			}, status_message.VALIDATION_ERROR);
 		}
 	
-		if (parseInt(reward.target_points) > parseInt(user.points)) {
+		if (parseInt(reward.points) > parseInt(user.points)) {
 			return res.out({
 				"message": "No enough points"
 			}, status_message.VALIDATION_ERROR);
 		}
 	
-		const points = parseInt(user.points) - parseInt(reward.target_points);
+		const points = parseInt(user.points) - parseInt(reward.points);
 	
 		await member_collection.updateOne({
 			_id: ObjectID(user._id.toString())

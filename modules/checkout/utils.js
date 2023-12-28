@@ -282,8 +282,8 @@ module.exports.getAvailableOffer = async (req, total, userOffer) => {
         min_amount: { $lte: total },
     };
 
-    if (!userOffer || !userOffer.viewed_offer_id /* || !userOffer.offer_id || (userOffer.offer_id.toString() !== userOffer.viewed_offer_id.toString()) */) {
-        query["target_amount"] = { $gte: total }
+    if (!userOffer || !userOffer.viewed_offer_id  /* || !userOffer.offer_id || (userOffer.offer_id.toString() !== userOffer.viewed_offer_id.toString()) */) {
+        query["$or"] = [ { ignore_target_amount: true }, { target_amount: { $gte: total } } ]
     }
 
     if (userOffer && userOffer.offer_id) {
