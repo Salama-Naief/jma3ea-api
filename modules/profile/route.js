@@ -100,7 +100,7 @@ router.get('/points', controller.list_points);
  /**
  * GET /profile/points/transfer
  */
-router.get('/points/transfer', controller.transfer_order_points);
+router.post('/points/transfer', controller.transfer_order_points);
  
 
 module.exports = router;

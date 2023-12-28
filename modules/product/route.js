@@ -29,4 +29,14 @@ router.get('/:Id/category', controller.listByCategory);
  */
 router.get('/:Id/category/:rankId/rank', controller.listByCategory);
 
+/**
+ * GET /product/:Id/feature
+ */
+router.get('/:Id/feature', controller.listByFeature);
+
+/**
+ * GET /product/:Id/feature/:rankId/rank
+ */
+router.get('/:Id/feature/:rankId/rank', controller.listByFeature);
+
 module.exports = router;

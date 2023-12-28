@@ -281,6 +281,51 @@ module.exports.listByCategory = function (req, res) {
 	});
 };
 
+module.exports.listByFeature = function (req, res) {
+	req.custom.isProducts = true;
+
+	req.custom.clean_filter['features.feature_id'] = ObjectID(req.params.Id);
+
+	if (req.params.rankId) {
+		req.custom.clean_filter['features.rank_id'] = ObjectID(req.params.rankId);
+		req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_feature_${req.params.Id}_rank_${req.params.rankId}_page_${req.custom.skip}_limit_${req.custom.limit}`;
+	} else {
+		req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_feature_${req.params.Id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
+	}
+
+	if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
+		req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
+		if (req.custom.cache_key) {
+			req.custom.cache_key += `_supplier_${req.query.supplier_id}`;
+		}
+	}
+
+	if (req.custom.isVIP == true) {
+		req.custom.cache_key += '__vip';
+	}
+
+	mainController.list(req, res, collectionName, {
+		"_id": 0,
+		"sku": 1,
+		"name": {
+			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+		},
+		"picture": 1,
+		"old_price": 1,
+		"price": 1,
+		"availability": `$prod_n_storeArr`,
+		"has_variants": { $isArray: "$variants" },
+		"prod_n_storeArr": 1,
+		"prod_n_categoryArr": 1,
+		"max_quantity_cart": {
+			$ifNull: ["$max_quantity_cart", 0]
+		},
+		"supplier_id": 1,
+		"show_discount_percentage": 1,
+		"discount_price_valid_until": 1
+	});
+};
+
 /**
  * List featured products by category
  * @param {Object} req
