@@ -1282,7 +1282,7 @@ module.exports.transfer_order_points = async (req, res) => {
 			return res.out({ message: 'Order not found or not delivered yet.' }, status_message.VALIDATION_ERROR);
 		}
 
-		await order.updateOne({ _id: order._id }, { $set: { points_transfer_mobile: data.mobile } });
+		await order_collection.updateOne({ _id: order._id }, { $set: { points_transfer_mobile: data.mobile } });
 
 		return res.out({ message: "The reward points will be sent to " + data.mobile + " once the order is delivered" });
 
