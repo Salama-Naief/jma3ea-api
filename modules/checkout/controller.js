@@ -856,11 +856,6 @@ module.exports.list = async function (req, res) {
 							const productsToApplyCoupon = sup.products.filter(p => supplier_coupon.products.includes(p.sku));
 							const couponProductsCoupon = productsToApplyCoupon.reduce((acc, p) => acc + parseFloat(p.price), 0);
 							sup.coupon.value = common.getFixedPrice(couponProductsCoupon);
-							console.log('========================================================================');
-							console.info('PRODUCTS TO APPLY COUPON: ', productsToApplyCoupon.length);
-							console.info('SUPPLIER PRODUCTS: ', supplier_coupon.products);
-							console.info('COUPONS TOTAL PRICE: ', couponProductsCoupon);
-							console.log('========================================================================');
 						}
 
 						if (supplier_products_total > parseFloat(sup.coupon.value || 0)) {
@@ -917,6 +912,7 @@ module.exports.list = async function (req, res) {
 			// 1) get the available offer
 			const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
 			const offer = jm3eiaProductIndex > -1 ? (await getAvailableOffer(req, parseFloat(productsGroupedBySupplier[jm3eiaProductIndex].total || 0), user.offer)) : null;
+			console.log('that is teh total: ', productsGroupedBySupplier[jm3eiaProductIndex].total);
 			if (offer && offer.product_sku) {
 				const product_collection = req.custom.db.collection('product');
 				const product = await product_collection.findOne({ sku: offer.product_sku }, {
