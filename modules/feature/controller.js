@@ -87,25 +87,45 @@ module.exports.read = function (req, res) {
 		},
 		"expiration_date": 1,
 		"expiration_date_message": 1
-	}, (doc) => {
+	}, async (doc) => {
 		if (req.query && req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
 			req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
 		} else {
 			req.custom.clean_filter['supplier_id'] = { $exists: false };
 		}
+		
+		const product_collection = req.custom.db.collection('product');
 
-		req.custom.clean_filter['parent_id'] = ObjectID(req.params.Id);
-
-		mainController.list_all(req, res, collectionName, {
-			"_id": 1,
-			"name": {
-				$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+		const categories = await product_collection.aggregate([
+			{ $match: { status: true, $or: [ {'features.feature_id': new ObjectID(doc._id) }, { 'feature_id': new ObjectID(doc._id) } ] } },
+			{ $unwind: '$prod_n_categoryArr' },
+			{
+			  $group: {
+				_id: '$prod_n_categoryArr.category_id',
+			  },
 			},
-			"expiration_date": 1,
-			"expiration_date_message": 1
-		}, (out) => {
-			return res.out({ ...doc, children: out.data });
-		});
+			{
+				$lookup: {
+				  from: 'category',
+				  localField: '_id',
+				  foreignField: '_id',
+				  as: 'categoryInfo',
+				},
+			  },
+			  { $unwind: '$categoryInfo' },
+			  {
+				$project: {
+				  _id: '$categoryInfo._id',
+				  name: {
+					$ifNull: [`$categoryInfo.name.${req.custom.lang}`, `$categoryInfo.name.${req.custom.config.local}`]
+				  },
+				  //picture: '$categoryInfo.picture',
+				},
+			  },
+		  ]).toArray();
+
+		  return res.out({ ...doc, categories });
+
 	});
 };
 

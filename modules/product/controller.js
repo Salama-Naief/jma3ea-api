@@ -241,6 +241,10 @@ module.exports.listByCategory = function (req, res) {
 		req.custom.clean_filter['prod_n_categoryArr.category_id'] = ObjectID(req.params.Id);
 	}
 
+	if (req.query.feature_id && ObjectID.isValid(req.query.feature_id)) {
+		req.custom.clean_filter['$or'] = [{ 'feature_id': ObjectID(req.params.Id) }, { 'features.feature_id': ObjectID(req.params.Id) }];
+	}
+
 	if (req.params.rankId) {
 		req.custom.clean_filter['prod_n_categoryArr.rank_id'] = ObjectID(req.params.rankId);
 		req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_category_${req.params.Id}_rank_${req.params.rankId}_page_${req.custom.skip}_limit_${req.custom.limit}`;
@@ -284,13 +288,14 @@ module.exports.listByCategory = function (req, res) {
 module.exports.listByFeature = function (req, res) {
 	req.custom.isProducts = true;
 
-	req.custom.clean_filter['features.feature_id'] = ObjectID(req.params.Id);
+	if (!ObjectID.isValid(req.params.Id)) {
+		return res.out({}, status_message.INVALID_URL_PARAMETER);
+	}
 
-	if (req.params.rankId) {
-		req.custom.clean_filter['features.rank_id'] = ObjectID(req.params.rankId);
-		req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_feature_${req.params.Id}_rank_${req.params.rankId}_page_${req.custom.skip}_limit_${req.custom.limit}`;
-	} else {
-		req.custom.cache_key = `${collectionName}_${req.custom.lang}_store_${req.custom.authorizationObject.store_id}_feature_${req.params.Id}_page_${req.custom.skip}_limit_${req.custom.limit}`;
+	req.custom.clean_filter['$or'] = [{ 'feature_id': ObjectID(req.params.Id) }, { 'features.feature_id': ObjectID(req.params.Id) }];
+
+	if (req.query.category_id && ObjectID.isValid(req.query.category_id)) {
+		req.custom.clean_filter['prod_n_categoryArr.category_id'] = ObjectID(req.query.category_id);
 	}
 
 	if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
