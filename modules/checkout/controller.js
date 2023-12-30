@@ -343,7 +343,8 @@ module.exports.buy = async function (req, res) {
 				suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
 			};
 
-			const offer = await getAvailableOffer(req, total_prods, user.offer);
+			const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
+			const offer = jm3eiaProductIndex > -1 ? (await getAvailableOffer(req, parseFloat(productsGroupedBySupplier[jm3eiaProductIndex].total || 0), user.offer)) : null;
 			if (offer && offer.product_sku) {
 				const product_collection = req.custom.db.collection('product');
 				const product = await product_collection.findOne({ sku: offer.product_sku }, {
@@ -388,24 +389,7 @@ module.exports.buy = async function (req, res) {
 					};
 
 					if (offer.type == 'free_product' && offer.isClaimed) {
-						const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
-						if (jm3eiaProductIndex > -1) {
-							productsGroupedBySupplier[jm3eiaProductIndex].products.push(product);
-						} else {
-							productsGroupedBySupplier.push({
-								supplier: {
-									_id: req.custom.settings['site_id'],
-									name: {
-										ar: req.custom.settings['site_name']['ar'],
-										en: req.custom.settings['site_name']['en'],
-									},
-									min_delivery_time: req.custom.settings.orders.min_delivery_time,
-									min_value: req.custom.settings.orders.min_value,
-									delivery_time_text: ""
-								},
-								products: [product]
-							});
-						}
+						productsGroupedBySupplier[jm3eiaProductIndex].products.push(product);
 						products2save.push(product);
 					}
 				}
@@ -931,7 +915,8 @@ module.exports.list = async function (req, res) {
 				suppliers_coupons: productsGroupedBySupplier.filter(sup => sup.coupon).map(sup => sup.coupon)
 			};
 			// 1) get the available offer
-			const offer = await getAvailableOffer(req, total_prods, user.offer);
+			const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
+			const offer = jm3eiaProductIndex > -1 ? (await getAvailableOffer(req, parseFloat(productsGroupedBySupplier[jm3eiaProductIndex].total || 0), user.offer)) : null;
 			if (offer && offer.product_sku) {
 				const product_collection = req.custom.db.collection('product');
 				const product = await product_collection.findOne({ sku: offer.product_sku }, {
@@ -962,26 +947,10 @@ module.exports.list = async function (req, res) {
 					offer.product = product;
 					product.price = 0;
 					if (offer.type == 'free_product' && offer.isClaimed) {
-						const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
-						if (jm3eiaProductIndex > -1) {
-							productsGroupedBySupplier[jm3eiaProductIndex].products.push(product);
-						} else {
-							productsGroupedBySupplier.push({
-								supplier: {
-									_id: req.custom.settings['site_id'],
-									name: {
-										ar: req.custom.settings['site_name']['ar'],
-										en: req.custom.settings['site_name']['en'],
-									},
-									min_delivery_time: req.custom.settings.orders.min_delivery_time,
-									min_value: req.custom.settings.orders.min_value,
-									delivery_time_text: ""
-								},
-								products: [product]
-							});
-						}
+						productsGroupedBySupplier[jm3eiaProductIndex].products.push(product);
 						products.push({
-							...product,supplier: {
+							...product,
+							supplier: {
 								_id: req.custom.settings['site_id'],
 								name: {
 									ar: req.custom.settings['site_name']['ar'],
