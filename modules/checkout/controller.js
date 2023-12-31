@@ -912,7 +912,6 @@ module.exports.list = async function (req, res) {
 			// 1) get the available offer
 			const jm3eiaProductIndex = productsGroupedBySupplier.findIndex(p => p.supplier._id == req.custom.settings['site_id']);
 			const offer = jm3eiaProductIndex > -1 ? (await getAvailableOffer(req, parseFloat(productsGroupedBySupplier[jm3eiaProductIndex].total || 0), user.offer)) : null;
-			console.log('that is teh total: ', productsGroupedBySupplier[jm3eiaProductIndex].total);
 			if (offer && offer.product_sku) {
 				const product_collection = req.custom.db.collection('product');
 				const product = await product_collection.findOne({ sku: offer.product_sku }, {
