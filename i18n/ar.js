@@ -178,6 +178,15 @@ const locals = {
 		username: 'اسم المستخدم',
 		widget: 'القطعة',
 	},
+	points_types: {
+		bonus: "مكافأة من الطلب المسلَّم",
+		updated: "تم التحديث",
+		converted: "تم التحويل إلى المحفظة",
+		register: "تم التسجيل في جمعية",
+		claimed_reward: "تم شراء مكافأة",
+		transfered: "تم التحويل من",
+		canceled: "تم إلغاء الطلب"
+	},
 	errors: {
 		required: (key) => {
 			return `${locals.fields[key]} مطلوب`

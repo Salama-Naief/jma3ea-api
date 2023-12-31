@@ -1237,7 +1237,32 @@ module.exports.list_points = async (req, res) => {
 		"new_points": 1,
 		"type": 1,
 		"notes": 1,
+		"sender_id": 1,
 		"created": 1,
+	}, async (out) => {
+		if (out.data.length === 0) {
+			return res.out(out);
+		}
+		const member_collection = req.custom.db.collection('member');
+		const members_ids = out.data.filter(d => d.type === "transfered" && d.sender_id).map(d => ObjectID(d.sender_id.toString()));
+		const members = members_ids.length > 0 ? (await member_collection.find({ _id: { $in: members_ids } }, { projection: { mobile: 1 } }).toArray()) : [];
+
+		out.data = out.data.map(doc => {
+			doc.note = req.custom.local[doc.type];
+			if (doc.type === "transfered") {
+				const sender = members.find(m => m._id.toString() === doc.sender_id.toString());
+				if (sender) {
+					doc.note += ` ${sender.mobile}`;
+					doc.sender = sender;
+				}
+			}
+
+			return doc;
+		});
+
+		return res.out(out);
+
+
 	});
 }
 

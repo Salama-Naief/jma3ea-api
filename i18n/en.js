@@ -176,6 +176,15 @@ const locals = {
 		username: 'Username',
 		widget: 'Block',
 	},
+	points_types: {
+		bonus: "Bonus from delivered order",
+		updated: "Updated",
+		converted: "Converted to wallet",
+		register: "Registered on Jm3eia",
+		claimed_reward: "Purchased a reward",
+		transfered: "Transferred from",
+		canceled: "Canceled the order"
+	},
 	errors: {
 		required: (key) => {
 			return `${locals.fields[key]} is required`
