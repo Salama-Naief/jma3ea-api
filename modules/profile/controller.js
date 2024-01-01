@@ -1226,6 +1226,7 @@ module.exports.list_points = async (req, res) => {
 	if (req.custom.isAuthorized === false) {
 		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
 	}
+	req.custom.cache = false;
 	req.custom.clean_filter = req.custom.clean_filter || {};
 	req.custom.clean_filter['member_id'] = ObjectID(req.custom.authorizationObject.member_id);
 	req.custom.all_status = true;
