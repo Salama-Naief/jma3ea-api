@@ -13,11 +13,13 @@ module.exports.list = function (req, res) {
 	req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
 	mainController.list_all(req, res, collectionName, {
 		"_id": 1,
-		"text": {
-			$ifNull: [`$text.${req.custom.lang}`, `$text.${req.custom.config.local}`]
+		"name": {
+			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 		},
-		"url": {
-			$ifNull: [`$url.${req.custom.lang}`, `$url.${req.custom.config.local}`]
+		"content": {
+			$ifNull: [`$content.${req.custom.lang}`, `$content.${req.custom.config.local}`]
 		},
+		"link": 1,
+		"sorting": 1
 	});
 };
