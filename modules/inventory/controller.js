@@ -146,8 +146,7 @@ module.exports.list = async function (req, res) {
                     "avg_rating": 1,
                     "reviews_count": 1,
                     "is_busy": 1,
-                    "feature_sorting": 1,
-                    "sorting": 1
+                    "home_sorting": 1
                 }
             }
         ];
