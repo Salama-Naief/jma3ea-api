@@ -144,7 +144,10 @@ module.exports.list = async function (req, res) {
                     "shipping_cost": 1,
                     "app_delivery_time": 1,
                     "avg_rating": 1,
-                    "reviews_count": 1
+                    "reviews_count": 1,
+                    "is_busy": 1,
+                    "feature_sorting": 1,
+                    "sorting": 1
                 }
             }
         ];
