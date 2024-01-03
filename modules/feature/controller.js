@@ -97,7 +97,15 @@ module.exports.read = function (req, res) {
 		const product_collection = req.custom.db.collection('product');
 
 		const categories = await product_collection.aggregate([
-			{ $match: { status: true, $or: [ {'features.feature_id': new ObjectID(doc._id) }, { 'feature_id': new ObjectID(doc._id) } ] } },
+			{
+			  $match: {
+				status: true,
+				$or: [
+				  { 'features.feature_id': new ObjectID(doc._id) },
+				  { 'feature_id': new ObjectID(doc._id) }
+				]
+			  }
+			},
 			{ $unwind: '$prod_n_categoryArr' },
 			{
 			  $group: {
@@ -105,36 +113,45 @@ module.exports.read = function (req, res) {
 			  },
 			},
 			{
-				$lookup: {
-				  from: 'category',
-				  localField: '_id',
-				  foreignField: '_id',
-				  as: 'categoryInfo',
-				},
+			  $lookup: {
+				from: 'category',
+				localField: '_id',
+				foreignField: '_id',
+				as: 'categoryInfo',
 			  },
-			  { $unwind: '$categoryInfo' },
-			  {
-				$project: {
-				  _id: '$categoryInfo._id',
-				  name: {
-					$ifNull: [`$categoryInfo.name.${req.custom.lang}`, `$categoryInfo.name.${req.custom.config.local}`]
-				  },
-				  parent_id: '$categoryInfo.parent_id',
+			},
+			{ $unwind: '$categoryInfo' },
+			{
+			  $project: {
+				_id: '$categoryInfo._id',
+				name: {
+				  $ifNull: [`$categoryInfo.name.${req.custom.lang}`, `$categoryInfo.name.${req.custom.config.local}`]
 				},
+				parent_id: '$categoryInfo.parent_id',
 			  },
-			  {
-				$match: {
-				  parent_id: { $exists: true, $ne: null } // Categories with a valid parent_id
-				},
+			},
+			{
+			  $unwind: '$categoryInfo.category_n_storeArr'
+			},
+			{
+			  $sort: {
+				'categoryInfo.category_n_storeArr.sorting': 1,
 			  },
-			  {
-				$sort: {
-				  'categoryInfo.category_n_storeArr.sorting': 1,
-				},
+			},
+			{
+			  $group: {
+				_id: '$_id',
+				name: { $first: '$name' },
+				parent_id: { $first: '$parent_id' },
+			  }
+			},
+			{
+			  $sort: {
+				'categoryInfo.category_n_storeArr.sorting': 1,
 			  },
+			},
 		  ]).toArray();
-
-		  //"category_n_storeArr.sorting": 1
+		  
 
 		  return res.out({ ...doc, categories });
 
