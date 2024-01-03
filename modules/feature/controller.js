@@ -97,13 +97,13 @@ module.exports.read = function (req, res) {
 		const product_collection = req.custom.db.collection('product');
 
 		const categories = await product_collection.aggregate([
-			{
-			  $match: {
-				status: true,
-				$or: [
-				  { 'features.feature_id': new ObjectID(doc._id) },
-				  { 'feature_id': new ObjectID(doc._id) }
-				]
+			{ 
+			  $match: { 
+				status: true, 
+				$or: [ 
+				  { 'features.feature_id': new ObjectID(doc._id) }, 
+				  { 'feature_id': new ObjectID(doc._id) } 
+				] 
 			  }
 			},
 			{ $unwind: '$prod_n_categoryArr' },
@@ -127,30 +127,21 @@ module.exports.read = function (req, res) {
 				name: {
 				  $ifNull: [`$categoryInfo.name.${req.custom.lang}`, `$categoryInfo.name.${req.custom.config.local}`]
 				},
-				parent_id: '$categoryInfo.parent_id',
+				sorting: { $arrayElemAt: ['$categoryInfo.category_n_storeArr.sorting', 0] }, // Access the sorting field of the first object in the array
 			  },
 			},
 			{
-			  $unwind: '$categoryInfo.category_n_storeArr'
-			},
-			{
-			  $sort: {
-				'categoryInfo.category_n_storeArr.sorting': 1,
+			  $match: {
+				parent_id: { $exists: true, $ne: null } // Categories with a valid parent_id
 			  },
 			},
 			{
-			  $group: {
-				_id: '$_id',
-				name: { $first: '$name' },
-				parent_id: { $first: '$parent_id' },
-			  }
-			},
-			{
 			  $sort: {
-				'categoryInfo.category_n_storeArr.sorting': 1,
+				sorting: 1, // Sort based on the sorting field
 			  },
 			},
 		  ]).toArray();
+		  
 		  
 
 		  return res.out({ ...doc, categories });
