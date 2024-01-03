@@ -119,10 +119,16 @@ module.exports.read = function (req, res) {
 				  name: {
 					$ifNull: [`$categoryInfo.name.${req.custom.lang}`, `$categoryInfo.name.${req.custom.config.local}`]
 				  },
-				  //picture: '$categoryInfo.picture',
+				},
+			  },
+			  {
+				$sort: {
+				  'categoryInfo.category_n_storeArr.sorting': 1,
 				},
 			  },
 		  ]).toArray();
+
+		  //"category_n_storeArr.sorting": 1
 
 		  return res.out({ ...doc, categories });
 
