@@ -97,15 +97,7 @@ module.exports.read = function (req, res) {
 		const product_collection = req.custom.db.collection('product');
 
 		const categories = await product_collection.aggregate([
-			{ 
-			  $match: { 
-				status: true, 
-				$or: [ 
-				  { 'features.feature_id': new ObjectID(doc._id) }, 
-				  { 'feature_id': new ObjectID(doc._id) } 
-				] 
-			  }
-			},
+			{ $match: { status: true, $or: [ {'features.feature_id': new ObjectID(doc._id) }, { 'feature_id': new ObjectID(doc._id) } ] } },
 			{ $unwind: '$prod_n_categoryArr' },
 			{
 			  $group: {
@@ -113,36 +105,31 @@ module.exports.read = function (req, res) {
 			  },
 			},
 			{
-			  $lookup: {
-				from: 'category',
-				localField: '_id',
-				foreignField: '_id',
-				as: 'categoryInfo',
-			  },
-			},
-			{ $unwind: '$categoryInfo' },
-			{
-			  $project: {
-				_id: '$categoryInfo._id',
-				name: {
-				  $ifNull: [`$categoryInfo.name.${req.custom.lang}`, `$categoryInfo.name.${req.custom.config.local}`]
+				$lookup: {
+				  from: 'category',
+				  localField: '_id',
+				  foreignField: '_id',
+				  as: 'categoryInfo',
 				},
-				sorting: { $arrayElemAt: ['$categoryInfo.category_n_storeArr.sorting', 0] }, // Access the sorting field of the first object in the array
 			  },
-			},
-			{
-			  $match: {
-				parent_id: { $exists: true, $ne: null } // Categories with a valid parent_id
+			  { $unwind: '$categoryInfo' },
+			  {
+				$project: {
+				  _id: '$categoryInfo._id',
+				  name: {
+					$ifNull: [`$categoryInfo.name.${req.custom.lang}`, `$categoryInfo.name.${req.custom.config.local}`]
+				  },
+				  parent_id: '$categoryInfo.parent_id',
+				},
 			  },
-			},
-			{
-			  $sort: {
-				sorting: 1, // Sort based on the sorting field
+			  {
+				$sort: {
+				  'categoryInfo.category_n_storeArr.0.sorting': 1,
+				},
 			  },
-			},
 		  ]).toArray();
-		  
-		  
+
+		  //"category_n_storeArr.sorting": 1
 
 		  return res.out({ ...doc, categories });
 
