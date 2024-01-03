@@ -1239,7 +1239,7 @@ module.exports.list_points = async (req, res) => {
 		"notes": 1,
 		"sender_id": 1,
 		"created": 1,
-	}, async (out) => {
+	}/* , async (out) => {
 		if (out.data.length === 0) {
 			return res.out(out);
 		}
@@ -1263,7 +1263,7 @@ module.exports.list_points = async (req, res) => {
 		return res.out(out);
 
 
-	});
+	} */);
 }
 
 module.exports.delete = async function (req, res) {
