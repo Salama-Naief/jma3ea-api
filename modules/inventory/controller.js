@@ -13,7 +13,7 @@ module.exports.list = async function (req, res) {
 
     const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
 
-    if (cache_key) {
+    if (false) {
         const cached_data = await cache.get(cache_key).catch((e) => console.error(req.originalUrl, e));
         if (cached_data) {
             return res.out({ count: cached_data.length, data: cached_data });
@@ -25,6 +25,8 @@ module.exports.list = async function (req, res) {
             'message': req.custom.local.choose_city_first
         }, status_message.CITY_REQUIRED);
     } */
+
+    req.custom.cache_key = false;
 
     mainController.list_all(req, res, collectionName, {
         "_id": 1,
