@@ -139,27 +139,9 @@ module.exports.read = function (req, res) {
 		},
 	  ]).toArray();
   
-	  // Sort categories and their children
-	  categories.sort((a, b) => a.category_n_storeArr[0].sorting - b.category_n_storeArr[0].sorting);
-	  categories.forEach(category => category.children = []);
+	  
   
-	  // Group categories by parent_id
-	  const groupedCategories = categories.reduce((acc, category) => {
-		const parentId = category.parent_id || 'root';
-		acc[parentId] = acc[parentId] || { parentCategory: category, children: [] };
-		acc[parentId].children.push(category);
-		return acc;
-	  }, {});
-  
-	  // Flatten the groupedCategories into a flat array
-	  const resultCategories = Object.values(groupedCategories).reduce((result, { parentCategory, children }) => {
-		result.push(parentCategory, ...children);
-		return result;
-	  }, []);
-  
-	  console.log(resultCategories);
-  
-	  return res.out({ ...doc, categories: resultCategories });
+	  return res.out({ ...doc, categories: categories });
 	});
   };
   
