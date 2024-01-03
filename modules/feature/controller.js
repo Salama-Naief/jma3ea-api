@@ -139,7 +139,7 @@ module.exports.read = function (req, res) {
 		{
 		  $group: {
 			_id: '$prod_n_categoryArr.category_id',
-			parent_id: { $first: '$prod_n_categoryArr.parent_id' }, // Capture the parent_id for each category
+			parent_id: { $first: { $ifNull: ['$prod_n_categoryArr.parent_id', null] } },
 		  },
 		},
 		{
@@ -157,7 +157,7 @@ module.exports.read = function (req, res) {
 			name: {
 			  $ifNull: [`$categoryInfo.name.${req.custom.lang}`, `$categoryInfo.name.${req.custom.config.local}`]
 			},
-			parent_id: '$parent_id', // Use the captured parent_id
+			parent_id: '$parent_id',
 			category_n_storeArr: '$categoryInfo.category_n_storeArr',
 		  },
 		},
@@ -173,12 +173,12 @@ module.exports.read = function (req, res) {
 	  // Create the final result array with sorted parent categories and their children
 	  const resultCategories = parents.map(parent => ({
 		...parent,
-		children: children.filter(child => child.parent_id.equals(parent._id))
+		children: children.filter(child => child.parent_id && child.parent_id.equals(parent._id))
 	  }));
   
 	  console.log(resultCategories);
   
-	  return res.out({ ...doc, categories });
+	  return res.out({ ...doc, categories: resultCategories });
 	});
   };
   
