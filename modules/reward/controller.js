@@ -12,6 +12,9 @@ const collectionName = 'reward';
  * @param {Object} res
  */
 module.exports.list = function (req, res) {
+	req.custom.clean_sort = {
+		"sorting": 1
+	};
 	mainController.list_all(req, res, collectionName, {
 		"_id": 1,
 		"title": {
