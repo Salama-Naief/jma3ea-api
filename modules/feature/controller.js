@@ -2,9 +2,9 @@
 
 // Load required modules
 const ObjectID = require("../../types/object_id");
-const status_message = require("../../enums/status_message");
+const status_message = require('../../enums/status_message');
 const mainController = require("../../libraries/mainController");
-const collectionName = "feature";
+const collectionName = 'feature';
 
 /**
  * List all categories
@@ -12,95 +12,66 @@ const collectionName = "feature";
  * @param {Object} res
  */
 module.exports.list = function (req, res) {
-  req.custom.clean_sort = {
-    "features.sorting": 1,
-  };
+	req.custom.clean_sort = {
+		"features.sorting": 1
+	};
 
-  req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
+	req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
 
-  if (
-    req.query &&
-    req.query.supplier_id &&
-    ObjectID.isValid(req.query.supplier_id)
-  ) {
-    req.custom.clean_filter["supplier_id"] = ObjectID(req.query.supplier_id);
-    req.custom.cache_key = `${collectionName}_${req.custom.lang}_supplier_${req.query.supplier_id}`;
-    //req.custom.cache_key += `__supplier_id_${req.query.supplier_id}`;
-  } else {
-    req.custom.clean_filter["supplier_id"] = { $exists: false };
-  }
+	if (req.query && req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
+		req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
+		req.custom.cache_key = `${collectionName}_${req.custom.lang}_supplier_${req.query.supplier_id}`;
+		//req.custom.cache_key += `__supplier_id_${req.query.supplier_id}`;
+	} else {
+		req.custom.clean_filter['supplier_id'] = { $exists: false };
+	}
 
-  mainController.list_all(
-    req,
-    res,
-    collectionName,
-    {
-      _id: 1,
-      name: {
-        $ifNull: [
-          `$name.${req.custom.lang}`,
-          `$name.${req.custom.config.local}`,
-        ],
-      },
-      expiration_date: 1,
-      expiration_date_message: 1,
-    },
-    async (out) => {
-      let rows = [];
-      let childs = [];
-      if (out.data && out.data.length > 0) {
-        for (const i of out.data) {
-          if (!i.parent_id) {
-            rows.push(i);
-          } else {
-            childs.push(i);
-          }
-        }
-      }
+	mainController.list_all(req, res, collectionName, {
+		"_id": 1,
+		"name": {
+			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+		},
+		"expiration_date": 1,
+		"expiration_date_message": 1
+	}, async (out) => {
 
-      const productCollection = req.custom.db.collection("product");
-      const categoriesWithProducts = await Promise.all(
-        childs.map(async (feature) => {
-          const products_count = await productCollection.countDocuments({
-            "features.feature_id": ObjectID(feature._id.toString()),
-            status: true,
-          });
-          return products_count > 0 ? feature : null;
-        })
-      );
-      childs = categoriesWithProducts.filter((feature) => feature !== null);
+		let rows = [];
+		let childs = [];
+		if (out.data && out.data.length > 0) {
+			for (const i of out.data) {
+				if (!i.parent_id) {
+					rows.push(i);
+				} else {
+					childs.push(i);
+				}
+			}
+		}
 
-      rows.map((i) => {
-        i.children = childs.filter(
-          (c) => c.parent_id.toString() === i._id.toString()
-        );
-      });
+		const productCollection = req.custom.db.collection('product');
+		const categoriesWithProducts = await Promise.all(childs.map(async feature => {
+			const products_count = await productCollection.countDocuments({ 'features.feature_id': ObjectID(feature._id.toString()), status: true });
+			return products_count > 0 ? feature : null;
+		}));
+		childs = categoriesWithProducts.filter(feature => feature !== null);
 
-      const message =
-        rows.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
+		rows.map((i) => {
+			i.children = childs.filter((c) => c.parent_id.toString() === i._id.toString());
+		});
 
-      if (req.custom.cache_key && rows.length > 0) {
-        req.custom.cache
-          .set(
-            req.custom.cache_key,
-            {
-              count: rows.length,
-              data: rows,
-            },
-            req.custom.config.cache.life_time.data
-          )
-          .catch((e) => console.error(req.originalUrl, e));
-      }
+		const message = rows.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
 
-      res.out(
-        {
-          count: rows.length,
-          data: rows,
-        },
-        message
-      );
-    }
-  );
+		if (req.custom.cache_key && rows.length > 0) {
+			req.custom.cache.set(req.custom.cache_key, {
+				"count": rows.length,
+				"data": rows
+			}, req.custom.config.cache.life_time.data).catch((e) => console.error(req.originalUrl, e));
+		}
+
+		res.out({
+			"count": rows.length,
+			"data": rows
+		}, message);
+	});
 };
 
 /**
@@ -139,7 +110,6 @@ module.exports.read = function (req, res) {
 		{
 		  $group: {
 			_id: '$prod_n_categoryArr.category_id',
-			parent_id: { $first: { $ifNull: ['$prod_n_categoryArr.parent_id', null] } },
 		  },
 		},
 		{
@@ -157,28 +127,40 @@ module.exports.read = function (req, res) {
 			name: {
 			  $ifNull: [`$categoryInfo.name.${req.custom.lang}`, `$categoryInfo.name.${req.custom.config.local}`]
 			},
-			parent_id: '$parent_id',
+			parent_id: '$categoryInfo.parent_id',
 			category_n_storeArr: '$categoryInfo.category_n_storeArr',
 		  },
 		},
 	  ]).toArray();
   
-	  // Separate parent and child categories
-	  const parents = categories.filter(category => !category.parent_id);
-	  const children = categories.filter(category => category.parent_id);
+	  const category_collection = req.custom.db.collection('category');
   
-	  // Sort parent categories
-	  parents.sort((a, b) => a.category_n_storeArr[0].sorting - b.category_n_storeArr[0].sorting);
+	  // Get parent categories
+	  const parentCategories = await category_collection.find({ status: true, _id: { $in: categories.filter(c => c.parent_id).map(c => ObjectID(c.parent_id)) } }).toArray();
   
-	  // Create the final result array with sorted parent categories and their children
-	  const resultCategories = parents.map(parent => ({
-		...parent,
-		children: children.filter(child => child.parent_id && child.parent_id.equals(parent._id))
+	  // Sort subcategories separately
+	  categories.forEach(category => {
+		if (category.category_n_storeArr && category.category_n_storeArr.length > 0) {
+		  category.category_n_storeArr.sort((a, b) => a.sorting - b.sorting);
+		}
+	  });
+  
+	  // Sort parent categories and group items based on parent sorting
+	  parentCategories.sort((a, b) => {
+		const aCategory = categories.find(c => c._id.equals(a._id));
+		const bCategory = categories.find(c => c._id.equals(b._id));
+		return aCategory.category_n_storeArr[0].sorting - bCategory.category_n_storeArr[0].sorting;
+	  });
+  
+	  // Group items based on parent categories
+	  const groupedItems = parentCategories.map(parent => ({
+		parent,
+		items: categories.filter(c => c.parent_id && c.parent_id.equals(parent._id)),
 	  }));
   
-	  console.log(resultCategories);
+	  console.log(groupedItems);
   
-	  return res.out({ ...doc, categories: resultCategories });
+	  return res.out({ ...doc, categories: groupedItems });
 	});
   };
   
@@ -189,31 +171,25 @@ module.exports.read = function (req, res) {
  * @param {Object} res
  */
 module.exports.ranks = function (req, res) {
-  if (req.custom.isAuthorized === false) {
-    return res.out(
-      req.custom.UnauthorizedObject,
-      status_message.UNAUTHENTICATED
-    );
-  }
-  req.custom.cache_key = `${collectionName}_${req.custom.lang}_ranks_${req.params.Id}`;
-  if (!ObjectID.isValid(req.params.Id)) {
-    return res.out(
-      {
-        message: req.custom.local.id_not_valid,
-      },
-      status_message.INVALID_URL_PARAMETER
-    );
-  }
-  req.custom.clean_filter = {
-    feature_id: ObjectID(req.params.Id),
-  };
-  req.custom.clean_sort = {
-    sorting: 1,
-  };
-  mainController.list_all(req, res, "feature_rank", {
-    _id: 1,
-    name: {
-      $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`],
-    },
-  });
+	if (req.custom.isAuthorized === false) {
+		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
+	}
+	req.custom.cache_key = `${collectionName}_${req.custom.lang}_ranks_${req.params.Id}`;
+	if (!ObjectID.isValid(req.params.Id)) {
+		return res.out({
+			'message': req.custom.local.id_not_valid
+		}, status_message.INVALID_URL_PARAMETER);
+	}
+	req.custom.clean_filter = {
+		feature_id: ObjectID(req.params.Id)
+	};
+	req.custom.clean_sort = {
+		"sorting": 1
+	};
+	mainController.list_all(req, res, 'feature_rank', {
+		"_id": 1,
+		"name": {
+			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+		},
+	});
 };
