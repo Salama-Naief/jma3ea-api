@@ -1248,6 +1248,7 @@ module.exports.list_points = async (req, res) => {
 		const members = members_ids.length > 0 ? (await member_collection.find({ _id: { $in: members_ids } }, { projection: { mobile: 1 } }).toArray()) : [];
 
 		out.data = out.data.map(doc => {
+			if (!doc.type) doc.type = 'updated';
 			doc.notes = req.custom.local.points_types[doc.type];
 			if (doc.type === "transfered") {
 				const sender = members.find(m => m._id.toString() === doc.sender_id.toString());
