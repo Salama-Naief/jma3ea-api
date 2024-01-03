@@ -178,7 +178,7 @@ module.exports.read = function (req, res) {
   
 	  console.log(resultCategories);
   
-	  return res.out({ ...doc, categories: resultCategories });
+	  return res.out({ ...doc, categories });
 	});
   };
   
