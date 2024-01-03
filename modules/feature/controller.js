@@ -113,13 +113,19 @@ module.exports.read = function (req, res) {
 		  },
 		},
 		{
-		  $lookup: {
-			from: 'category',
-			localField: '_id',
-			foreignField: '_id',
-			as: 'categoryInfo',
+			$lookup: {
+			  from: 'category',
+			  let: { categoryId: '$_id' },
+			  pipeline: [
+				{
+				  $match: {
+					$expr: { $and: [ { $eq: ['$_id', '$$categoryId'] }, { $eq: ['$status', true] } ] }
+				  }
+				}
+			  ],
+			  as: 'categoryInfo',
+			},
 		  },
-		},
 		{ $unwind: '$categoryInfo' },
 		{
 		  $project: {
