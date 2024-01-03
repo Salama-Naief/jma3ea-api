@@ -124,10 +124,7 @@ module.exports.read = function (req, res) {
 			  },
 			  {
 				$match: {
-				  $or: [
-					{ parent_id: { $exists: false } }, // Categories without parent_id
-					{ parent_id: null } // Categories with parent_id set to null
-				  ]
+				  parent_id: { $exists: true, $ne: null } // Categories with a valid parent_id
 				},
 			  },
 			  {
