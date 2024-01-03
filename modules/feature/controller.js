@@ -81,59 +81,51 @@ module.exports.list = function (req, res) {
  */
 module.exports.read = function (req, res) {
 	mainController.read(req, res, collectionName, {
-	  "_id": 1,
-	  "name": {
-		$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
-	  },
-	  "expiration_date": 1,
-	  "expiration_date_message": 1
+		"_id": 1,
+		"name": {
+			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
+		},
+		"expiration_date": 1,
+		"expiration_date_message": 1
 	}, async (doc) => {
-	  if (req.query && req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
-		req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
-	  } else {
-		req.custom.clean_filter['supplier_id'] = { $exists: false };
-	  }
-  
-	  const product_collection = req.custom.db.collection('product');
-  
-	  const categories = await product_collection.aggregate([
-		{ 
-		  $match: { 
-			status: true, 
-			$or: [ 
-			  {'features.feature_id': new ObjectID(doc._id) }, 
-			  { 'feature_id': new ObjectID(doc._id) } 
-			] 
-		  }
-		},
-		{ $unwind: '$prod_n_categoryArr' },
-		{
-		  $group: {
-			_id: '$prod_n_categoryArr.category_id',
-		  },
-		},
-		{
-		  $lookup: {
-			from: 'category',
-			localField: '_id',
-			foreignField: '_id',
-			as: 'categoryInfo',
-		  },
-		},
-		{ $unwind: '$categoryInfo' },
-		{
-		  $project: {
-			_id: '$categoryInfo._id',
-			name: {
-			  $ifNull: [`$categoryInfo.name.${req.custom.lang}`, `$categoryInfo.name.${req.custom.config.local}`]
+		if (req.query && req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
+			req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
+		} else {
+			req.custom.clean_filter['supplier_id'] = { $exists: false };
+		}
+		
+		const product_collection = req.custom.db.collection('product');
+
+		const categories = await product_collection.aggregate([
+			{ $match: { status: true, $or: [ {'features.feature_id': new ObjectID(doc._id) }, { 'feature_id': new ObjectID(doc._id) } ] } },
+			{ $unwind: '$prod_n_categoryArr' },
+			{
+			  $group: {
+				_id: '$prod_n_categoryArr.category_id',
+			  },
 			},
-			parent_id: '$categoryInfo.parent_id',
-			category_n_storeArr: '$categoryInfo.category_n_storeArr',
-		  },
-		},
-	  ]).toArray();
-  
-	  const category_collection = req.custom.db.collection('category');
+			{
+				$lookup: {
+				  from: 'category',
+				  localField: '_id',
+				  foreignField: '_id',
+				  as: 'categoryInfo',
+				},
+			  },
+			  { $unwind: '$categoryInfo' },
+			  {
+				$project: {
+				  _id: '$categoryInfo._id',
+				  name: {
+					$ifNull: [`$categoryInfo.name.${req.custom.lang}`, `$categoryInfo.name.${req.custom.config.local}`]
+				  },
+				  parent_id: '$categoryInfo.parent_id',
+				  category_n_storeArr: '$categoryInfo.category_n_storeArr',
+				},
+			  },
+		  ]).toArray();
+
+		  const category_collection = req.custom.db.collection('category');
   
 	  // Get parent categories
 	  const parentCategories = await category_collection.find({ status: true, _id: { $in: categories.filter(c => c.parent_id).map(c => ObjectID(c.parent_id.toString())) } }, { projection: { _id: 1, category_n_storeArr: 1 } }).toArray();
@@ -151,10 +143,10 @@ module.exports.read = function (req, res) {
 		}
 	  }
   
-	  return res.out({ ...doc, categories: groupedItems });
+	  return res.out({ ...doc, categories: groupedItems, children: categories, parents: parentCategories });
+
 	});
-  };
-  
+};
 
 /**
  * List ranks by category
