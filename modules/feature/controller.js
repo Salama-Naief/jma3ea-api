@@ -2,9 +2,9 @@
 
 // Load required modules
 const ObjectID = require("../../types/object_id");
-const status_message = require('../../enums/status_message');
+const status_message = require("../../enums/status_message");
 const mainController = require("../../libraries/mainController");
-const collectionName = 'feature';
+const collectionName = "feature";
 
 /**
  * List all categories
@@ -12,66 +12,95 @@ const collectionName = 'feature';
  * @param {Object} res
  */
 module.exports.list = function (req, res) {
-	req.custom.clean_sort = {
-		"features.sorting": 1
-	};
+  req.custom.clean_sort = {
+    "features.sorting": 1,
+  };
 
-	req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
+  req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
 
-	if (req.query && req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
-		req.custom.clean_filter['supplier_id'] = ObjectID(req.query.supplier_id);
-		req.custom.cache_key = `${collectionName}_${req.custom.lang}_supplier_${req.query.supplier_id}`;
-		//req.custom.cache_key += `__supplier_id_${req.query.supplier_id}`;
-	} else {
-		req.custom.clean_filter['supplier_id'] = { $exists: false };
-	}
+  if (
+    req.query &&
+    req.query.supplier_id &&
+    ObjectID.isValid(req.query.supplier_id)
+  ) {
+    req.custom.clean_filter["supplier_id"] = ObjectID(req.query.supplier_id);
+    req.custom.cache_key = `${collectionName}_${req.custom.lang}_supplier_${req.query.supplier_id}`;
+    //req.custom.cache_key += `__supplier_id_${req.query.supplier_id}`;
+  } else {
+    req.custom.clean_filter["supplier_id"] = { $exists: false };
+  }
 
-	mainController.list_all(req, res, collectionName, {
-		"_id": 1,
-		"name": {
-			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
-		},
-		"expiration_date": 1,
-		"expiration_date_message": 1
-	}, async (out) => {
+  mainController.list_all(
+    req,
+    res,
+    collectionName,
+    {
+      _id: 1,
+      name: {
+        $ifNull: [
+          `$name.${req.custom.lang}`,
+          `$name.${req.custom.config.local}`,
+        ],
+      },
+      expiration_date: 1,
+      expiration_date_message: 1,
+    },
+    async (out) => {
+      let rows = [];
+      let childs = [];
+      if (out.data && out.data.length > 0) {
+        for (const i of out.data) {
+          if (!i.parent_id) {
+            rows.push(i);
+          } else {
+            childs.push(i);
+          }
+        }
+      }
 
-		let rows = [];
-		let childs = [];
-		if (out.data && out.data.length > 0) {
-			for (const i of out.data) {
-				if (!i.parent_id) {
-					rows.push(i);
-				} else {
-					childs.push(i);
-				}
-			}
-		}
+      const productCollection = req.custom.db.collection("product");
+      const categoriesWithProducts = await Promise.all(
+        childs.map(async (feature) => {
+          const products_count = await productCollection.countDocuments({
+            "features.feature_id": ObjectID(feature._id.toString()),
+            status: true,
+          });
+          return products_count > 0 ? feature : null;
+        })
+      );
+      childs = categoriesWithProducts.filter((feature) => feature !== null);
 
-		const productCollection = req.custom.db.collection('product');
-		const categoriesWithProducts = await Promise.all(childs.map(async feature => {
-			const products_count = await productCollection.countDocuments({ 'features.feature_id': ObjectID(feature._id.toString()), status: true });
-			return products_count > 0 ? feature : null;
-		}));
-		childs = categoriesWithProducts.filter(feature => feature !== null);
+      rows.map((i) => {
+        i.children = childs.filter(
+          (c) => c.parent_id.toString() === i._id.toString()
+        );
+      });
 
-		rows.map((i) => {
-			i.children = childs.filter((c) => c.parent_id.toString() === i._id.toString());
-		});
+      const message =
+        rows.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
 
-		const message = rows.length > 0 ? status_message.DATA_LOADED : status_message.NO_DATA;
+      if (req.custom.cache_key && rows.length > 0) {
+        req.custom.cache
+          .set(
+            req.custom.cache_key,
+            {
+              count: rows.length,
+              data: rows,
+            },
+            req.custom.config.cache.life_time.data
+          )
+          .catch((e) => console.error(req.originalUrl, e));
+      }
 
-		if (req.custom.cache_key && rows.length > 0) {
-			req.custom.cache.set(req.custom.cache_key, {
-				"count": rows.length,
-				"data": rows
-			}, req.custom.config.cache.life_time.data).catch((e) => console.error(req.originalUrl, e));
-		}
-
-		res.out({
-			"count": rows.length,
-			"data": rows
-		}, message);
-	});
+      res.out(
+        {
+          count: rows.length,
+          data: rows,
+        },
+        message
+      );
+    }
+  );
 };
 
 /**
@@ -110,22 +139,17 @@ module.exports.read = function (req, res) {
 		{
 		  $group: {
 			_id: '$prod_n_categoryArr.category_id',
+			parent_id: { $first: '$prod_n_categoryArr.parent_id' }, // Capture the parent_id for each category
 		  },
 		},
 		{
-			$lookup: {
-			  from: 'category',
-			  let: { categoryId: '$_id' },
-			  pipeline: [
-				{
-				  $match: {
-					$expr: { $and: [ { $eq: ['$_id', '$$categoryId'] }, { $eq: ['$status', true] } ] }
-				  }
-				}
-			  ],
-			  as: 'categoryInfo',
-			},
+		  $lookup: {
+			from: 'category',
+			localField: '_id',
+			foreignField: '_id',
+			as: 'categoryInfo',
 		  },
+		},
 		{ $unwind: '$categoryInfo' },
 		{
 		  $project: {
@@ -133,15 +157,28 @@ module.exports.read = function (req, res) {
 			name: {
 			  $ifNull: [`$categoryInfo.name.${req.custom.lang}`, `$categoryInfo.name.${req.custom.config.local}`]
 			},
-			parent_id: '$categoryInfo.parent_id',
+			parent_id: '$parent_id', // Use the captured parent_id
 			category_n_storeArr: '$categoryInfo.category_n_storeArr',
 		  },
 		},
 	  ]).toArray();
   
-	  
+	  // Separate parent and child categories
+	  const parents = categories.filter(category => !category.parent_id);
+	  const children = categories.filter(category => category.parent_id);
   
-	  return res.out({ ...doc, categories: categories });
+	  // Sort parent categories
+	  parents.sort((a, b) => a.category_n_storeArr[0].sorting - b.category_n_storeArr[0].sorting);
+  
+	  // Create the final result array with sorted parent categories and their children
+	  const resultCategories = parents.map(parent => ({
+		...parent,
+		children: children.filter(child => child.parent_id.equals(parent._id))
+	  }));
+  
+	  console.log(resultCategories);
+  
+	  return res.out({ ...doc, categories: resultCategories });
 	});
   };
   
@@ -152,25 +189,31 @@ module.exports.read = function (req, res) {
  * @param {Object} res
  */
 module.exports.ranks = function (req, res) {
-	if (req.custom.isAuthorized === false) {
-		return res.out(req.custom.UnauthorizedObject, status_message.UNAUTHENTICATED);
-	}
-	req.custom.cache_key = `${collectionName}_${req.custom.lang}_ranks_${req.params.Id}`;
-	if (!ObjectID.isValid(req.params.Id)) {
-		return res.out({
-			'message': req.custom.local.id_not_valid
-		}, status_message.INVALID_URL_PARAMETER);
-	}
-	req.custom.clean_filter = {
-		feature_id: ObjectID(req.params.Id)
-	};
-	req.custom.clean_sort = {
-		"sorting": 1
-	};
-	mainController.list_all(req, res, 'feature_rank', {
-		"_id": 1,
-		"name": {
-			$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
-		},
-	});
+  if (req.custom.isAuthorized === false) {
+    return res.out(
+      req.custom.UnauthorizedObject,
+      status_message.UNAUTHENTICATED
+    );
+  }
+  req.custom.cache_key = `${collectionName}_${req.custom.lang}_ranks_${req.params.Id}`;
+  if (!ObjectID.isValid(req.params.Id)) {
+    return res.out(
+      {
+        message: req.custom.local.id_not_valid,
+      },
+      status_message.INVALID_URL_PARAMETER
+    );
+  }
+  req.custom.clean_filter = {
+    feature_id: ObjectID(req.params.Id),
+  };
+  req.custom.clean_sort = {
+    sorting: 1,
+  };
+  mainController.list_all(req, res, "feature_rank", {
+    _id: 1,
+    name: {
+      $ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`],
+    },
+  });
 };
