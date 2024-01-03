@@ -1249,6 +1249,8 @@ module.exports.list_points = async (req, res) => {
 
 		out.data = out.data.map(doc => {
 			if (!doc.type) doc.type = 'updated';
+			if (typeof doc.old_points === 'string') doc.old_points = parseInt(doc.old_points);
+			if (typeof doc.new_points === 'string') doc.new_points = parseInt(doc.new_points);
 			doc.notes = req.custom.local.points_types[doc.type];
 			if (doc.type === "transfered") {
 				const sender = members.find(m => m._id.toString() === doc.sender_id.toString());
