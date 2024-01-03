@@ -119,6 +119,15 @@ module.exports.read = function (req, res) {
 				  name: {
 					$ifNull: [`$categoryInfo.name.${req.custom.lang}`, `$categoryInfo.name.${req.custom.config.local}`]
 				  },
+				  parent_id: '$categoryInfo.parent_id',
+				},
+			  },
+			  {
+				$match: {
+				  $or: [
+					{ parent_id: { $exists: false } }, // Categories without parent_id
+					{ parent_id: null } // Categories with parent_id set to null
+				  ]
 				},
 			  },
 			  {
