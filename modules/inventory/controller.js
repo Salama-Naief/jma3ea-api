@@ -13,13 +13,12 @@ module.exports.list = async function (req, res) {
 
     const cache_key = `${collectionName}_${req.custom.lang}_city_${cityid}`;
 
-    if (false) {
+    if (cache_key) {
         const cached_data = await cache.get(cache_key).catch((e) => console.error(req.originalUrl, e));
         if (cached_data) {
             return res.out({ count: cached_data.length, data: cached_data });
         }
     }
-    req.custom.cache_key = false;
 
     /* if (!cityid) {
         return res.out({
