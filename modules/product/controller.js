@@ -285,17 +285,26 @@ module.exports.listByCategory = function (req, res) {
 	});
 };
 
-module.exports.listByFeature = function (req, res) {
+module.exports.listByFeature = async function (req, res) {
 	req.custom.isProducts = true;
+	req.custom.cache_key += '_with_subcategories';
 
 	if (!ObjectID.isValid(req.params.Id)) {
 		return res.out({}, status_message.INVALID_URL_PARAMETER);
 	}
 
-	req.custom.clean_filter['$or'] = [{ 'feature_id': ObjectID(req.params.Id) }, { 'features.feature_id': ObjectID(req.params.Id) }];
+	if (req.query.featured == 'true') {
+		//req.custom.clean_filter['feature_id'] = ObjectID(req.params.Id);
+		req.custom.clean_filter['$or'] = [{ 'feature_id': ObjectID(req.params.Id) }, { 'features.feature_id': ObjectID(req.params.Id) }];
+	} else {
+		const category_collection = req.custom.db.collection('category');
+		const subcategories = await category_collection.find({ parent_id: ObjectID(req.params.Id) }, { projection: { _id: 1 } }).toArray();
 
-	if (req.query.category_id && ObjectID.isValid(req.query.category_id)) {
-		req.custom.clean_filter['prod_n_categoryArr.category_id'] = ObjectID(req.query.category_id);
+		req.custom.clean_filter['prod_n_categoryArr.category_id'] = { $in: subcategories.map(c => ObjectID(c._id.toString())) };
+	}
+
+	if (req.query.feature_id && ObjectID.isValid(req.query.feature_id)) {
+		req.custom.clean_filter['$or'] = [{ 'feature_id': ObjectID(req.params.Id) }, { 'features.feature_id': ObjectID(req.params.Id) }];
 	}
 
 	if (req.query.supplier_id && ObjectID.isValid(req.query.supplier_id)) {
