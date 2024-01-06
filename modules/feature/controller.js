@@ -129,7 +129,7 @@ module.exports.read = function (req, res) {
   
 	  // Get parent categories
 	  const parentCategories = await category_collection.find({ status: true, _id: { $in: categories.filter(c => c.parent_id).map(c => ObjectID(c.parent_id.toString())) } }, { projection: { _id: 1, category_n_storeArr: 1, name: {
-		$ifNull: [`$categoryInfo.name.${req.custom.lang}`, `$categoryInfo.name.${req.custom.config.local}`]
+		$ifNull: [`name.${req.custom.lang}`, `name.${req.custom.config.local}`]
 	  } } }).toArray();
   
 	  // Sort parent categories and group items based on parent sorting
