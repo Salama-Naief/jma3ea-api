@@ -231,14 +231,20 @@ function sortBySku(arr, srt) {
  * @param {Object} req
  * @param {Object} res
  */
-module.exports.listByCategory = function (req, res) {
+module.exports.listByCategory = async function (req, res) {
 	req.custom.isProducts = true;
 
 	if (req.query.featured == 'true') {
 		//req.custom.clean_filter['feature_id'] = ObjectID(req.params.Id);
 		req.custom.clean_filter['$or'] = [{ 'feature_id': ObjectID(req.params.Id) }, { 'features.feature_id': ObjectID(req.params.Id) }];
 	} else {
-		req.custom.clean_filter['prod_n_categoryArr.category_id'] = ObjectID(req.params.Id);
+		if (req.query.with_children == 'true') {
+			const category_collection = req.custom.db.collection('category');
+			const subcategories = await category_collection.find({ parent_id: ObjectID(req.params.Id) }, { projection: { _id: 1 } }).toArray();
+			req.custom.clean_filter['prod_n_categoryArr.category_id'] = { $in: subcategories.map(c => ObjectID(c._id.toString())) };
+		} else {
+			req.custom.clean_filter['prod_n_categoryArr.category_id'] = ObjectID(req.params.Id);
+		}
 	}
 
 	if (req.query.feature_id && ObjectID.isValid(req.query.feature_id)) {
