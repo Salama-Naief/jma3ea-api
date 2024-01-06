@@ -128,7 +128,7 @@ module.exports.read = function (req, res) {
 		  const category_collection = req.custom.db.collection('category');
   
 	  // Get parent categories
-	  const parentCategories = await category_collection.find({ status: true, _id: { $in: categories.filter(c => c.parent_id).map(c => ObjectID(c.parent_id.toString())) } }, { projection: { _id: 1, category_n_storeArr: 1, "name": {
+	  const parentCategories = await category_collection.find({ status: true, _id: { $in: categories.filter(c => c.parent_id).map(c => ObjectID(c.parent_id.toString())) } }, { projection: { _id: 1, category_n_storeArr: 1, name: {
 		$ifNull: [`$name.${req.custom.lang}`, `$name.${req.custom.config.local}`]
 	} } }).toArray();
   
@@ -136,16 +136,16 @@ module.exports.read = function (req, res) {
 	  parentCategories.sort((a, b) => a.category_n_storeArr[0].sorting - b.category_n_storeArr[0].sorting);
   
 
-	  const groupedItems = [];
+	  /* const groupedItems = [];
 	  for (const parent of parentCategories) {
 		const children = categories.filter(c => c.parent_id && c.parent_id.toString() === parent._id.toString());
 		if (children.length > 0) {
 			children.sort((a, b) => a.category_n_storeArr[0].sorting - b.category_n_storeArr[0].sorting);
 			groupedItems.push(...children);
 		}
-	  }
+	  } */
   
-	  return res.out({ ...doc, categories: groupedItems, children: categories, parents: parentCategories });
+	  return res.out({ ...doc, categories: parentCategories });
 
 	});
 };
