@@ -11,6 +11,14 @@ const collectionName = 'ticker';
  */
 module.exports.list = function (req, res) {
 	req.custom.cache_key = `${collectionName}_${req.custom.lang}_all`;
+	if (req.query.show_in_ticker == 'true') {
+		req.custom.clean_filter['show_in_ticker'] = true;
+		req.custom.cache_key = `${collectionName}_${req.custom.lang}_show_in_ticker`;
+	}
+	if (req.query.show_in_featured_categories == 'true') {
+		req.custom.clean_filter['show_in_featured_categories'] = true;
+		req.custom.cache_key = `${collectionName}_${req.custom.lang}_show_in_featured_categories`;
+	}
 	mainController.list_all(req, res, collectionName, {
 		"_id": 1,
 		"name": {
