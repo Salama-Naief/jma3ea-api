@@ -80,6 +80,8 @@ module.exports.list = function (req, res) {
  * @param {Object} res
  */
 module.exports.read = function (req, res) {
+	req.custom.cache_key = false;
+	
 	mainController.read(req, res, collectionName, {
 		"_id": 1,
 		"name": {
