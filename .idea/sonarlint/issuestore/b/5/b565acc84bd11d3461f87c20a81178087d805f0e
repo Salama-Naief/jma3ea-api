@@ -1,0 +1,48 @@
+
+:javascript:S1256"Remove this commented out code.(˜ØÇè
+ujavascript:S3776A"TRefactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.(çúÀêüÿÿÿÿ
+vjavascript:S6582b"[Prefer using an optional chain expression instead, as it's more concise and easier to read.(¥½¦t
+:javascript:S125d"Remove this commented out code.(÷ 
+|javascript:S6582q"[Prefer using an optional chain expression instead, as it's more concise and easier to read.(õÈíûÿÿÿÿ
+qjavascript:S3776¶"TRefactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.(ÈæÙ’
+Vjavascript:S6544È"4Expected non-Promise value in a boolean conditional.(Ë‘«Æùÿÿÿÿ
+Xjavascript:S1481×";Remove the declaration of the unused 'userdecode' variable.(î†úà
+xjavascript:S6582Ø"[Prefer using an optional chain expression instead, as it's more concise and easier to read.(»İÃ‘
+qjavascript:S3776‡"TRefactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.(”Œå 
+Xjavascript:S1481"6Remove the declaration of the unused 'unset' variable.(ÃÓ€Çıÿÿÿÿ
+Ujavascript:S1854"3Remove this useless assignment to variable "unset".(ÃÓ€Çıÿÿÿÿ
+Ejavascript:S3504”")Unexpected var, use let or const instead.(†‰È
+]javascript:S1481¢";Remove the declaration of the unused 'reset_hash' variable.(Øá›½úÿÿÿÿ
+Zjavascript:S1854¢"8Remove this useless assignment to variable "reset_hash".(Øá›½úÿÿÿÿ
+fjavascript:S3358¸"DExtract this nested ternary operation into an independent statement.(éÍı¶şÿÿÿÿ
+.javascript:S1763Å"Unreachable code.(öõ»
+Kjavascript:S3504Ñ")Unexpected var, use let or const instead.(±¸àîûÿÿÿÿ
+Fjavascript:S3504Ó")Unexpected var, use let or const instead.(İ° 
+Ujavascript:S1854Ö"8Remove this useless assignment to variable "columnName".(­Ñöú
+Fjavascript:S3504")Unexpected var, use let or const instead.(ÄùÚò
+vjavascript:S3776È"TRefactor this function to reduce its Cognitive Complexity from 68 to the 15 allowed.(ÙşùÔøÿÿÿÿ
+Vjavascript:S1135Ğ"4Complete the task associated to this "TODO" comment.(ÃŸ—üÿÿÿÿ
+Qjavascript:S1135Ú"4Complete the task associated to this "TODO" comment.(ÉœÇò
+„javascript:S6582û"[Prefer using an optional chain expression instead, as it's more concise and easier to read.(‰øŒ—øÿÿÿÿ8ƒû‘Ù1
+xjavascript:S6582¢"[Prefer using an optional chain expression instead, as it's more concise and easier to read.(Ã·¯
+vjavascript:S3776í"TRefactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.(”ºçèşÿÿÿÿ
+vjavascript:S3776å"TRefactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.(ˆà½ıÿÿÿÿ
+Vjavascript:S1135¨"4Complete the task associated to this "TODO" comment.(öÈ¢¦úÿÿÿÿ
+pjavascript:S3776Ó"TRefactor this function to reduce its Cognitive Complexity from 20 to the 15 allowed.(‡–O
+xjavascript:S6582Ù"[Prefer using an optional chain expression instead, as it's more concise and easier to read.(ÌÜËØ
+xjavascript:S6582í"[Prefer using an optional chain expression instead, as it's more concise and easier to read.(ºéäÃ
+}javascript:S6582ó"[Prefer using an optional chain expression instead, as it's more concise and easier to read.(¦Õ‰€øÿÿÿÿ
+pjavascript:S3776É	"TRefactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.(¦ãòP
+vjavascript:S3776¯
+"TRefactor this function to reduce its Cognitive Complexity from 17 to the 15 allowed.(¥Ä‚©üÿÿÿÿ
+ajavascript:S3358¶
+"DExtract this nested ternary operation into an independent statement.(Œÿš­
+@javascript:S125¸
+"Remove this commented out code.(ÖîÙùûÿÿÿÿ
+xjavascript:S6582Ü
+"[Prefer using an optional chain expression instead, as it's more concise and easier to read.(®ıëô
+qjavascript:S3776Œ"TRefactor this function to reduce its Cognitive Complexity from 54 to the 15 allowed.(È¬„¯
+Vjavascript:S1135"4Complete the task associated to this "TODO" comment.(ÃŸ—üÿÿÿÿ
+Qjavascript:S1135˜"4Complete the task associated to this "TODO" comment.(ÉœÇò
+„javascript:S6582¶"[Prefer using an optional chain expression instead, as it's more concise and easier to read.(‰øŒ—øÿÿÿÿ8‹û‘Ù1
+xjavascript:S6582İ"[Prefer using an optional chain expression instead, as it's more concise and easier to read.(Ã·¯
