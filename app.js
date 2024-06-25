@@ -113,7 +113,7 @@ const app = express();
     optionsSuccessStatus: 200,
   };
 
-  // app.use(cors(corsOptions));
+  app.use(cors({ origin: "*" }));
 
   Sentry.init({
     dsn: config.sentry.dsn,

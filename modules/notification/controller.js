@@ -1,24 +1,25 @@
 // Notifications Controller
 const ObjectID = require("../../types/object_id");
-const common = require('../../libraries/common');
+const common = require("../../libraries/common");
 
 // Load required modules
-const status_message = require('../../enums/status_message');
-const collectionName = 'notification';
+const status_message = require("../../enums/status_message");
+const collectionName = "notification";
 /**
  * Read notification by id
  * @param {Object} req
  * @param {Object} res
  */
 module.exports.read = function (req, res) {
-    const collection = req.custom.db.collection(collectionName);
-    collection.findOne({ "sent": { $eq: null } }, function (e, result) {
-        if (e) {
-            console.error(req.originalUrl, e);
-            return res.out({ 'error': e.message }, status_message.UNEXPECTED_ERROR);
-        }
-        res.out(result);
-    });
+  const collection = req.custom.db.collection(collectionName);
+  // collection.findOne({ "sent": { $eq: null } }, function (e, result) {
+  collection.findOne({}, function (e, result) {
+    if (e) {
+      console.error(req.originalUrl, e);
+      return res.out({ error: e.message }, status_message.UNEXPECTED_ERROR);
+    }
+    res.out(result);
+  });
 };
 /**
  * Read notification by id
@@ -26,15 +27,24 @@ module.exports.read = function (req, res) {
  * @param {Object} res
  */
 module.exports.update2sent = function (req, res) {
-    if (!ObjectID.isValid(req.params.Id)) {
-        return res.out({
-            'message': req.custom.local.id_not_valid
-        }, status_message.INVALID_URL_PARAMETER);
-    }
-    const collection = req.custom.db.collection(collectionName);
-    collection.updateOne({ _id: ObjectID(req.params.Id) }, { $set: { sent: common.getDate() } })
-        .then((response) => res.out({ message: req.custom.local.saved_done }))
-        .catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
+  if (!ObjectID.isValid(req.params.Id)) {
+    return res.out(
+      {
+        message: req.custom.local.id_not_valid,
+      },
+      status_message.INVALID_URL_PARAMETER
+    );
+  }
+  const collection = req.custom.db.collection(collectionName);
+  collection
+    .updateOne(
+      { _id: ObjectID(req.params.Id) },
+      { $set: { sent: common.getDate() } }
+    )
+    .then((response) => res.out({ message: req.custom.local.saved_done }))
+    .catch((error) =>
+      res.out({ message: error.message }, status_message.UNEXPECTED_ERROR)
+    );
 };
 
 /**
@@ -43,17 +53,27 @@ module.exports.update2sent = function (req, res) {
  * @param {Object} res
  */
 module.exports.notificationOpened = (req, res) => {
-    if (!ObjectID.isValid(req.params.Id)) {
-        return res.out({
-            'message': req.custom.local.id_not_valid
-        }, status_message.INVALID_URL_PARAMETER);
-    }
-    const collection = req.custom.db.collection(collectionName);
-    collection.updateOne({ _id: ObjectID(req.params.Id) }, [
-        { $set: { incrementBy: 1 } },
-        { $addFields: { opened_count: { $sum: ["$opened_count", "$incrementBy"] } } },
-        { $unset: "incrementBy" }
-      ])
-        .then((response) => res.out({ message: req.custom.local.saved_done }))
-        .catch((error) => res.out({ 'message': error.message }, status_message.UNEXPECTED_ERROR));
-}
+  if (!ObjectID.isValid(req.params.Id)) {
+    return res.out(
+      {
+        message: req.custom.local.id_not_valid,
+      },
+      status_message.INVALID_URL_PARAMETER
+    );
+  }
+  const collection = req.custom.db.collection(collectionName);
+  collection
+    .updateOne({ _id: ObjectID(req.params.Id) }, [
+      { $set: { incrementBy: 1 } },
+      {
+        $addFields: {
+          opened_count: { $sum: ["$opened_count", "$incrementBy"] },
+        },
+      },
+      { $unset: "incrementBy" },
+    ])
+    .then((response) => res.out({ message: req.custom.local.saved_done }))
+    .catch((error) =>
+      res.out({ message: error.message }, status_message.UNEXPECTED_ERROR)
+    );
+};
